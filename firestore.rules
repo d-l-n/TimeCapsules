@@ -1,0 +1,107 @@
+rules_version = '2'
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuth() {
+      return request.auth != null
+    }
+
+    function isAdmin() {
+      return isAuth() && request.auth.token.admin == true
+    }
+
+    function isOwner(userId) {
+      return isAuth() && request.auth.uid == userId
+    }
+
+    function allowFields(fields) {
+      return request.resource.data.keys().hasAll(fields)
+        && request.resource.data.keys().minus(fields).size() == 0
+    }
+
+    match /shows/{docId} {
+      allow read: if isAuth()
+      allow create: if isAdmin()
+      allow update: if isAdmin()
+      allow delete: if isAdmin()
+    }
+
+    match /episodes/{docId} {
+      allow read: if isAuth()
+      allow create: if isAdmin()
+      allow update: if isAdmin()
+      allow delete: if isAdmin()
+    }
+
+    match /followed_shows/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+        && allowFields(['user_id', 'tv_time_user_id', 'show_tv_time_id', 'active', 'diffusion', 'followed_at', 'created_at'])
+      allow update: if isAuth() && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+      allow delete: if isAdmin()
+    }
+
+    match /watched_episodes/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+        && allowFields(['user_id', 'tv_time_user_id', 'episode_tv_time_id', 'watched_at', 'created_at'])
+      allow update: if isAuth() && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+      allow delete: if isAdmin()
+    }
+
+    match /ratings/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+        && allowFields(['user_id', 'tv_time_user_id', 'show_tv_time_id', 'rating', 'rated_at', 'created_at'])
+      allow update: if isAuth() && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+      allow delete: if isAdmin()
+    }
+
+    match /badges/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAdmin()
+      allow update: if isAdmin()
+      allow delete: if isAdmin()
+    }
+
+    match /episode_emotions/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+        && allowFields(['user_id', 'tv_time_user_id', 'episode_tv_time_id', 'emotion_id', 'created_at'])
+      allow update: if isAuth() && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+      allow delete: if isAdmin()
+    }
+
+    match /user_stats/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+      allow update: if isAuth() && resource.data.user_id == request.auth.uid
+      allow delete: if isAdmin()
+    }
+
+    match /group_watch_events/{docId} {
+      allow read: if isAuth()
+      allow create: if isAuth() && request.resource.data.marked_by == request.auth.uid
+        && allowFields(['group_id', 'episode_tv_time_id', 'show_tv_time_id', 'marked_by', 'created_at'])
+      allow update: if false
+      allow delete: if false
+    }
+
+    match /custom_lists/{docId} {
+      allow read: if isAuth() && resource.data.user_id == request.auth.uid
+      allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+        && (request.resource.data.is_default != true
+            || (request.resource.data.is_default == true
+                && docId in ['default-upcoming', 'default-pending', 'default-uptodate', 'default-finished']))
+      allow update: if isAuth() && resource.data.user_id == request.auth.uid
+        && request.resource.data.user_id == request.auth.uid
+        && request.resource.data.is_default != true
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
+        && resource.data.is_default != true
+    }
+  }
+}

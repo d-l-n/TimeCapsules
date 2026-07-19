@@ -1,0 +1,63 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "followed_shows",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "followed_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "watched_episodes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "watched_at", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "badges",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "badge_id", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "episodes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "show_id", "order": "ASCENDING" },
+        { "fieldPath": "season_number", "order": "ASCENDING" },
+        { "fieldPath": "episode_number", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "ratings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "show_id", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "watched_episodes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "show_id", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "resume_positions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "user_id", "order": "ASCENDING" },
+        { "fieldPath": "show_id", "order": "ASCENDING" }
+      ]
+    }
+  ]
+}

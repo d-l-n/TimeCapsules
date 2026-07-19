@@ -1,0 +1,236 @@
+import { collection, query, where, getDocs, addDoc, doc, getDoc, writeBatch, onSnapshot, setDoc } from 'firebase/firestore'
+import { db } from '../lib/firebase'
+import { findOneWithId, findMany, exists, deleteOne, deleteMany, buildShowsMap } from '../lib/firestore-utils'
+import type { GroupDoc, GroupMemberDoc, GroupShowDoc, ShowDoc, WatchedEpisodeDoc, GroupWatchEventDoc } from '../lib/firebase-queries'
+
+export interface GroupWithMeta {
+  id: string
+  name: string
+  invite_code: string
+  created_by: string
+  created_at: string
+  member_count: number
+}
+
+export interface MemberWithProfile {
+  user_id: string
+  role: 'admin' | 'member'
+  joined_at: string
+  display_name?: string
+  photo_url?: string
+}
+
+export interface GroupEpisodeProgress {
+  episode_id: number
+  user_ids: string[]
+}
+
+function generateInviteCode(): string {
+  return Math.random().toString(36).substring(2, 8).toUpperCase()
+}
+
+export async function createGroup(uid: string, name: string): Promise<string> {
+  const invite_code = generateInviteCode()
+  const batch = writeBatch(db)
+  const groupRef = doc(collection(db, 'groups'))
+  batch.set(groupRef, {
+    name,
+    invite_code,
+    created_by: uid,
+    created_at: new Date().toISOString(),
+  })
+  const memberRef = doc(collection(db, 'group_members'))
+  batch.set(memberRef, {
+    group_id: groupRef.id,
+    user_id: uid,
+    role: 'admin',
+    joined_at: new Date().toISOString(),
+  })
+  await batch.commit()
+  return groupRef.id
+}
+
+export async function joinGroupByCode(uid: string, inviteCode: string): Promise<string | null> {
+  const groupWithId = await findOneWithId<GroupDoc>('groups', where('invite_code', '==', inviteCode))
+  if (!groupWithId) return null
+  const groupId = groupWithId.id
+  const alreadyMember = await exists('group_members', where('group_id', '==', groupId), where('user_id', '==', uid))
+  if (alreadyMember) return groupId
+  await addDoc(collection(db, 'group_members'), {
+    group_id: groupId,
+    user_id: uid,
+    role: 'member',
+    joined_at: new Date().toISOString(),
+  })
+  return groupId
+}
+
+export async function getUserGroups(uid: string): Promise<GroupWithMeta[]> {
+  const memberItems = await findMany<GroupMemberDoc>('group_members', where('user_id', '==', uid))
+  if (memberItems.length === 0) return []
+  const groups: GroupWithMeta[] = []
+  for (const m of memberItems) {
+    const gSnap = await getDoc(doc(db, 'groups', m.group_id))
+    if (!gSnap.exists()) continue
+    const g = gSnap.data() as GroupDoc
+    const mSnap = await getDocs(query(collection(db, 'group_members'), where('group_id', '==', m.group_id)))
+    groups.push({ id: gSnap.id, name: g.name, invite_code: g.invite_code, created_by: g.created_by, created_at: g.created_at, member_count: mSnap.size })
+  }
+  return groups.sort((a, b) => b.created_at.localeCompare(a.created_at))
+}
+
+export async function getGroupMembers(groupId: string): Promise<MemberWithProfile[]> {
+  const items = await findMany<GroupMemberDoc>('group_members', where('group_id', '==', groupId))
+  const members = items.map(m => ({ user_id: m.user_id, role: m.role, joined_at: m.joined_at }))
+  const uids = members.map(m => m.user_id)
+  const profiles = await getUserProfiles(uids)
+  return members.map(m => ({
+    ...m,
+    display_name: profiles.get(m.user_id)?.display_name,
+    photo_url: profiles.get(m.user_id)?.photo_url,
+  }))
+}
+
+export async function getUserProfiles(uids: string[]): Promise<Map<string, { display_name: string; photo_url: string }>> {
+  if (uids.length === 0) return new Map()
+  const result = new Map<string, { display_name: string; photo_url: string }>()
+  const snapshots = await Promise.allSettled(uids.map(uid => getDoc(doc(db, 'user_profiles', uid))))
+  snapshots.forEach((res, i) => {
+    if (res.status === 'fulfilled' && res.value.exists()) {
+      const data = res.value.data()
+      result.set(uids[i], {
+        display_name: data.display_name || '',
+        photo_url: data.photo_url || '',
+      })
+    }
+  })
+  return result
+}
+
+export async function saveUserProfile(uid: string, displayName: string, photoURL: string) {
+  await setDoc(doc(db, 'user_profiles', uid), {
+    display_name: displayName,
+    photo_url: photoURL,
+    updated_at: new Date().toISOString(),
+  }, { merge: true })
+}
+
+export async function addShowToGroup(groupId: string, showId: number, uid: string) {
+  const alreadyAdded = await exists('group_shows', where('group_id', '==', groupId), where('show_id', '==', showId))
+  if (alreadyAdded) return
+  await addDoc(collection(db, 'group_shows'), {
+    group_id: groupId,
+    show_id: showId,
+    added_by: uid,
+    added_at: new Date().toISOString(),
+  })
+}
+
+export async function getGroupShows(groupId: string): Promise<(ShowDoc & { show_id: number })[]> {
+  const [showsMap, gsItems] = await Promise.all([
+    buildShowsMap(),
+    findMany<GroupShowDoc>('group_shows', where('group_id', '==', groupId)),
+  ])
+  return gsItems.map(g => ({ ...showsMap.get(g.show_id)!, show_id: g.show_id })).filter(Boolean)
+}
+
+export async function getGroupEpisodeProgress(groupId: string, showId: number): Promise<GroupEpisodeProgress[]> {
+  const members = await getGroupMembers(groupId)
+  const userIds = members.map(m => m.user_id)
+  if (userIds.length === 0) return []
+  const weItems = await findMany<WatchedEpisodeDoc>('watched_episodes', where('show_id', '==', showId))
+  const progressMap = new Map<number, string[]>()
+  weItems.forEach(w => {
+    if (userIds.includes(w.user_id)) {
+      const arr = progressMap.get(w.episode_id)
+      if (!arr) {
+        progressMap.set(w.episode_id, [w.user_id])
+      } else if (!arr.includes(w.user_id)) {
+        arr.push(w.user_id)
+      }
+    }
+  })
+  return Array.from(progressMap.entries()).map(([episode_id, user_ids]) => ({ episode_id, user_ids }))
+}
+
+export async function removeShowFromGroup(groupId: string, showId: number) {
+  await deleteOne('group_shows', where('group_id', '==', groupId), where('show_id', '==', showId))
+}
+
+export async function leaveGroup(groupId: string, uid: string) {
+  await deleteOne('group_members', where('group_id', '==', groupId), where('user_id', '==', uid))
+}
+
+export async function createGroupWatchEvent(groupId: string, episodeId: number, showId: number, uid: string) {
+  await addDoc(collection(db, 'group_watch_events'), {
+    group_id: groupId,
+    episode_id: episodeId,
+    show_id: showId,
+    marked_by: uid,
+    created_at: new Date().toISOString(),
+  })
+}
+
+/** Set of show IDs (movies) the given user has marked watched in the group */
+export async function getGroupMoviesWatched(uid: string, showIds: number[]): Promise<Set<number>> {
+  const watched = new Set<number>()
+  if (showIds.length === 0) return watched
+  const items = await findMany<WatchedEpisodeDoc>(
+    'watched_episodes',
+    where('user_id', '==', uid),
+    where('show_id', 'in', showIds),
+  )
+  items.forEach(w => {
+    if (w.episode_id === w.show_id) watched.add(w.show_id)
+  })
+  return watched
+}
+
+/** Mark/unmark a movie as watched by the current user in the group */
+export async function setGroupMovieWatched(groupId: string, showId: number, uid: string, watched: boolean): Promise<void> {
+  if (watched) {
+    await addDoc(collection(db, 'watched_episodes'), {
+      user_id: uid,
+      episode_id: showId,
+      show_id: showId,
+      watched_at: new Date().toISOString(),
+    })
+    await createGroupWatchEvent(groupId, showId, showId, uid)
+  } else {
+    await deleteMany(
+      'watched_episodes',
+      where('user_id', '==', uid),
+      where('show_id', '==', showId),
+      where('episode_id', '==', showId),
+    )
+  }
+}
+
+export function listenToGroupWatchEvents(groupId: string, callback: (event: GroupWatchEventDoc) => void): () => void {  const q = query(
+    collection(db, 'group_watch_events'),
+    where('group_id', '==', groupId),
+  )
+  return onSnapshot(q, (snapshot) => {
+    snapshot.docChanges().forEach(change => {
+      if (change.type === 'added') {
+        callback(change.doc.data() as GroupWatchEventDoc)
+      }
+    })
+  })
+}
+
+export async function getGroupInviteCode(groupId: string): Promise<string | null> {
+  const gSnap = await getDoc(doc(db, 'groups', groupId))
+  if (!gSnap.exists()) return null
+  return (gSnap.data() as GroupDoc).invite_code
+}
+
+export async function getGroup(groupId: string): Promise<(GroupDoc & { id: string }) | null> {
+  const gSnap = await getDoc(doc(db, 'groups', groupId))
+  if (!gSnap.exists()) return null
+  return { id: gSnap.id, ...(gSnap.data() as GroupDoc) }
+}
+
+export async function isUserInGroup(groupId: string, uid: string): Promise<boolean> {
+  return exists('group_members', where('group_id', '==', groupId), where('user_id', '==', uid))
+}

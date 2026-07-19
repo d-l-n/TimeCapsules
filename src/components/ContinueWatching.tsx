@@ -1,0 +1,78 @@
+import { Link } from 'react-router-dom'
+import { useI18n } from '../lib/I18nContext'
+import type { BingingItem } from '../hooks/useFollowedShows'
+
+interface ContinueWatchingProps {
+  items: BingingItem[]
+}
+
+export default function ContinueWatching({ items }: ContinueWatchingProps) {
+  const { t } = useI18n()
+
+  if (items.length === 0) return null
+
+  return (
+    <section aria-labelledby="continue-heading">
+      <div className="flex items-center gap-3 border-b-4 border-border pb-3 mb-4">
+        <h2 id="continue-heading" className="text-lg sm:text-xl font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>
+          {t.dashboard.continueWatching}
+        </h2>
+        <div className="h-2 w-2 bg-accent animate-pulse rounded-full" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {items.map(item => {
+          const episodesWatched = item.episodesWatched ?? 0
+          const totalEpisodes = item.totalEpisodes ?? 1
+          const progress = item.progress ?? 0
+          const neonHoverClass = 'card-neon-' + (['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.id) % 5]) + '-hover'
+
+          return (
+            <Link
+              key={item.id}
+              to={`/show/${item.id}`}
+              className={`group block bg-surface border-2 border-border overflow-hidden hover:translate-x-1 hover:-translate-y-1 hover-shadow-brutal transition-all ${neonHoverClass}`}
+              aria-label={`${item.name} — ${progress}%`}
+            >
+              <div className="flex">
+                <div className="w-24 sm:w-28 shrink-0 aspect-[2/3] bg-surface-light border-r-4 border-border overflow-hidden">
+                  {item.poster_url ? (
+                    <img src={item.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center p-2 text-center text-xs font-bold uppercase leading-tight">{item.name}</div>
+                  )}
+                </div>
+                <div className="flex-1 p-3 sm:p-4 flex flex-col justify-between min-w-0">
+                  <div>
+                    <h3 className="text-sm font-bold uppercase truncate mb-1">{item.name}</h3>
+                    <div className="text-xs text-text-secondary">
+                      {episodesWatched}/{totalEpisodes} {t.dashboard.episodes}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="relative h-3 bg-surface-light border-2 border-border overflow-hidden">
+                      <div
+                        className="h-full bg-accent progress-shimmer transition-all duration-500 ease-out"
+                        style={{ width: `${progress}%` }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-[8px] font-bold text-text drop-shadow-[0_0_2px_rgba(255,255,255,0.8)]">{progress}%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold uppercase text-text-secondary">{t.dashboard.progress}</span>
+                      <span className="text-[10px] font-bold uppercase bg-accent text-text px-2 py-0.5 border-2 border-border">
+                        {t.dashboard.continueBtn}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    </section>
+  )
+}

@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+*.local
+imdb_data
+service-account.json
+nul
+e2e/.auth/
