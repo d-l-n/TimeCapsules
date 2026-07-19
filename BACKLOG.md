@@ -11,8 +11,30 @@
 - [x] **Discover: alinear botones de acción** — Unificado el contenedor de acciones en un solo `<div className="relative">` con el botón de marca y el `moviePrompt` como hijo; eliminado el `space-y-1.5` que desalineaba "VISTA" vs "GUARDAR".
 - [x] **Iconografía de estados de visionado** — Añadidos `WatchedIcon` (✓), `RewatchIcon` (↻), `TimerIcon` (⏱) en `Icons.tsx` (SVG consistentes, `stroke` brutalista). Usados en `EpisodeRow` (badge W→ícono, rewatch, resume timer) y `GroupDetail` (✓ miembros).
 
+### Alta — Bugs que rompen flujo / dejan estado inconsistente
+- [ ] **Dark theme no funciona** — `ThemeContext` setea `data-theme="dark"` en `<html>` pero `index.css` no define `[data-theme="dark"]` overrides para `--color-bg`, `--color-surface`, etc. El toggle en sidebar/profile no cambia ningún color. CSS:314-320 faltantes.
+- [ ] **useNotifications.ts:19 FirebaseError: Missing or insufficient permissions** — `getUnreadCount(uid)` y `getNotifications(uid)` leen colección `notifications` sin permiso en Firestore Rules. Bloquea carga del perfil.
+- [ ] **ProfilePage.tsx:73 FirebaseError: Missing or insufficient permissions** — `getDoc(doc(db, 'trakt_credentials', user.uid))` sin regla de acceso en Firestore. Trakt integration entera debe eliminarse.
+
+### Media — UX / consistencia visual
+- [ ] **Desktop sidebar: hover sobre item activo lo vuelve ilegible** — `Layout.tsx:152` `.sidebar-link:hover` pisa a `.sidebar-link--active` cuando el item activo está hovereado. Se vuelve gris oscuro (`#222`) con texto negro (`#111`). CSS:152-156.
+- [ ] **Notification popup hereda color blanco del sidebar** — `Layout.tsx:101-102` el `<span>` del título carece de `text-text`, hereda `color: #FFFFFF` del sidebar → texto "Notificaciones (0)" invisible sobre `bg-surface-light` (#ECEAE4).
+- [ ] **Sidebar nav: Stats y Account se marcan ambos como activos** — `Layout.tsx:147-149` la detección `pathname.startsWith('/profile')` es true para `/profile?section=stats` Y `/profile`. Ambos items del sidebar reciben `sidebar-link--active`.
+- [ ] **Dashboard "Finalizados": primera card desproporcionada** — `smallSpans(i)` asigna `2x1` a `i % 5 === 0`, pero `as '1x1'` descarta el span. Se necesita rediseño: últ. finalizado como tile 2x, resto 1x, ordenado por fecha desc.
+- [ ] **EmotionPicker: botón Remove pasa string vacío en vez de null** — `EmotionPicker.tsx:48` `handlePick('')` → `setEmotion(uid, id, '')` en vez de `setEmotion(uid, id, null)`. Backend no interpreta `''` como remove.
+- [ ] **Dashboard: smallSpans cast '1x1' descarta variante '2x1'** — `Dashboard.tsx:261,296` casteo `as '1x1'` en cards con `smallSpans()` que retorna `'2x1'` en `i % 5 === 0`.
+- [ ] **ShowDetail: collapsePref no es reactivo** — `ShowDetail.tsx:408` lee `localStorage.getItem('collapsePreference')` sincrónicamente en render, no estado. Cambios desde ProfilePage no se reflejan hasta re-render.
+- [ ] **ShowDetail: handleResumeKeyDown causa re-render en cadena** — `ShowDetail.tsx:690` depende de `handleResumeSave` que depende de `editValue`. Cada keystroke recrea la callback → `SeasonSection` re-renderiza todo.
+- [ ] **integration.test.ts: errores TS en mocks de Firestore** — `src/services/integration.test.ts:17,18,28,83` tipos incorrectos en `collection()`, `where()`, `mockClear()`.
+
 ### Baja — Mejoras UX solicitadas (Julio 2026)
+- [ ] **# — ¿Qué significa filtro "COLEC" en Cuenta>Listas?** — Respuesta: es abreviatura de "Colecciones" (collections), muestra las listas personalizadas del usuario. Filtro correcto, solo confusión de label.
+- [ ] **Mock Firestore en e2e** — Reemplazar Firebase real por mock en Playwright para evitar dependencia de cuota, latencia y necesidad de cuenta/sembrado. Discutir beneficios vs costo de implementación.
+
 - [x] **GroupDetail: cards idénticas a Dashboard** — Reemplazado el wrapper propio por `ShowCard` (neon hover `card-neon-*-hover` + `card-brutal`); acciones (marca/progress/X) ahora en slot `actions` con `opacity-0 group-hover:opacity-100`.
+- [x] **Mobile UX/UI Redesign (Brutalist + Metro, mobile-first)** — `timecapsule-mobile-redesign-prompt.md`. Hecho: bottom nav fija negra + bloque amarillo activo con 5 ítems (Home·Library·Search·Stats·Profile) en `index.css` (`.nav-pill`) y `Layout.tsx`; nueva `LibraryPage.tsx` (`/library`) con grid 2-col + sticky filter chips (All/Watching/Completed/Planned/Favorites) reusando `ShowCard` + `useFollowedShows`/`useWatchlist`/`getUserWatchedShowIds`; `ShowDetail` botones full-width en móvil + episodios watched en verde (`EpisodeRow.tsx`); `DiscoverPage` búsqueda instantánea debounced (400ms). Base desktop previa (tokens, tiles Metro, StatsPage KPI) ya existía. Touch targets ≥44px globales. Skipped: heatmap en Stats (barras bastan), Home header avatar+saludo específico (DashboardHero ya tiene stats 2-col).
+- [x] **Instalar spec-kit (TimeCapsules)** — [github/spec-kit](https://github.com/github/spec-kit) v0.13.0 instalado vía `uv tool install specify-cli` + `specify init . --integration opencode --here --force`. Scaffold en `.specify/` (templates, scripts, workflows, memory/constitution.md) y 10 slash-commands en `.opencode/commands/` (`/speckit.constitution|specify|clarify|plan|checklist|tasks|analyze|implement|converge|taskstoissues`). Flujo SDD listo: constitution → specify → plan → tasks → implement → converge. `.specify/memory/constitution.md` y `data/` añadidos a `.gitignore`.
+- [ ] **Aplicar spec-kit a otros proyectos del workspace** — Repetir init en los demás proyectos (mismo patrón opencode). Pendiente evaluar.
 - [x] **Marcar show como visto desde la card (Dashboard + Grupos)** — Añadido helper `cardActions` en `Dashboard.tsx` usando el slot `actions` de `ShowCard`: botón "MARK AS WATCHED" para todo media type (no solo movies) en watchlist, más "✕" remove en watchlist/upToDate/finished. Skipped: prompt rewatch/unwatch (Dashboard no tiene estado watched por card; requeriría query extra).
 - [x] **GroupDetail: progreso de series inline** — El botón "PROGRESS" ahora expande `GroupProgressSection` inline debajo de la misma card (`col-span-full` cuando seleccionada), sin sacarlo del flujo.
 
@@ -61,3 +83,4 @@
 
 ### E2E
 - Playwright suite (`navigation`, `movie-detail`, `tv-show-detail`, `mobile-layout`), helper `loginAsGuest()`, seed fix con TMDB IDs conocidos, 0 tests skipped.
+- Migrado login a email real (`PLAYWRIGHT_USER`/`PLAYWRIGHT_PASSWORD`); specs nuevos (`auth`, `dashboard-flow`, `discover`, `groups`, `library-profile`) corren contra Firebase. Bloqueado por cuota Firestore del proyecto (`RESOURCE_EXHAUSTED`). Pendiente mock Firestore para CI.
