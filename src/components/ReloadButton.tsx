@@ -42,11 +42,11 @@ export default function ReloadButton() {
       onClick={handleClick}
       disabled={updating || complete}
       aria-label={complete ? t.install.updated : updating ? t.install.updating : t.install.update}
-      className={`fixed bottom-4 right-4 z-40 border-4 px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all shadow-brutal ${complete
-        ? 'border-accent bg-accent text-text cursor-default'
+      className={`fixed bottom-4 right-4 z-40 border-[3px] px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all shadow-[8px_8px_0_#111] ${complete
+        ? 'border-yellow bg-yellow text-text cursor-default'
         : updating
-          ? 'border-border bg-accent/50 text-text/70 animate-pulse cursor-wait'
-          : 'border-accent bg-surface text-text animate-pulse-green hover:bg-accent cursor-pointer'
+          ? 'border-border bg-yellow/50 text-text/70 animate-pulse cursor-wait'
+          : 'border-yellow bg-surface text-text animate-pulse-green hover:bg-yellow cursor-pointer'
       }`}
       style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}
     >

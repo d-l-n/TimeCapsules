@@ -13,11 +13,11 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
 
   return (
     <section aria-labelledby="continue-heading">
-      <div className="flex items-center gap-3 border-b-4 border-border pb-3 mb-4">
-        <h2 id="continue-heading" className="text-lg sm:text-xl font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>
+      <div className="flex items-center gap-3 border-b-[3px] border-border pb-3 mb-4">
+        <h2 id="continue-heading" className="text-xl sm:text-2xl font-black uppercase font-heading">
           {t.dashboard.continueWatching}
         </h2>
-        <div className="h-2 w-2 bg-accent animate-pulse rounded-full" />
+        <div className="h-2.5 w-2.5 bg-red animate-pulse" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -25,19 +25,18 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
           const episodesWatched = item.episodesWatched ?? 0
           const totalEpisodes = item.totalEpisodes ?? 1
           const progress = item.progress ?? 0
-          const neonHoverClass = 'card-neon-' + (['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.id) % 5]) + '-hover'
 
           return (
             <Link
               key={item.id}
               to={`/show/${item.id}`}
-              className={`group block bg-surface border-2 border-border overflow-hidden hover:translate-x-1 hover:-translate-y-1 hover-shadow-brutal transition-all ${neonHoverClass}`}
+              className="group block bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] overflow-hidden hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[10px_10px_0_#111] transition-all"
               aria-label={`${item.name} — ${progress}%`}
             >
               <div className="flex">
-                <div className="w-24 sm:w-28 shrink-0 aspect-[2/3] bg-surface-light border-r-4 border-border overflow-hidden">
+                <div className="w-24 sm:w-28 shrink-0 aspect-[2/3] bg-surface-light border-r-[3px] border-border overflow-hidden">
                   {item.poster_url ? (
-                    <img src={item.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <img src={item.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center p-2 text-center text-xs font-bold uppercase leading-tight">{item.name}</div>
                   )}
@@ -53,16 +52,16 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
                   <div className="space-y-2">
                     <div className="relative h-3 bg-surface-light border-2 border-border overflow-hidden">
                       <div
-                        className="h-full bg-accent progress-shimmer transition-all duration-500 ease-out"
+                        className="h-full bg-yellow progress-shimmer transition-all duration-500 ease-out"
                         style={{ width: `${progress}%` }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-[8px] font-bold text-text drop-shadow-[0_0_2px_rgba(255,255,255,0.8)]">{progress}%</span>
+                        <span className="text-[8px] font-bold text-text">{progress}%</span>
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold uppercase text-text-secondary">{t.dashboard.progress}</span>
-                      <span className="text-[10px] font-bold uppercase bg-accent text-text px-2 py-0.5 border-2 border-border">
+                      <span className="text-[10px] font-bold uppercase bg-blue text-text border-2 border-border px-2 py-0.5">
                         {t.dashboard.continueBtn}
                       </span>
                     </div>

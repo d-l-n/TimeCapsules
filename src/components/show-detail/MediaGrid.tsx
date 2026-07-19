@@ -26,7 +26,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
         aria-expanded={expanded}
         aria-label={label}
       >
-        <h2 className="text-base sm:text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4 flex items-center gap-2 hover:text-accent transition-colors">
+        <h2 className="text-base sm:text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4 flex items-center gap-2 hover:text-yellow transition-colors">
           <span>{expanded ? '▼' : '▶'}</span>
           <span>{label}</span>
           <span className="border-2 border-border px-2 py-0.5 text-xs font-bold">{items.length}</span>
@@ -38,8 +38,8 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
             const name = item.name || item.title || 'Unknown'
             const imgSrc = getTmdbImage(item.poster_path, 'w500')
             return (
-              <div key={item.id} className={`border-4 border-border bg-surface card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.id) % 5]} card-brutal`}>
-                <Link to={`/show/-${item.id}`} className="block hover:bg-accent transition-colors">
+              <div key={item.id} className={`border-[3px] border-border bg-surface card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.id) % 5]}`}>
+                <Link to={`/show/-${item.id}`} className="block hover:bg-yellow transition-colors">
                   {imgSrc ? (
                     <img src={imgSrc} alt={name} className="w-full" />
                   ) : (
@@ -54,7 +54,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
                     <button
                       onClick={() => onWatch(item)}
                       disabled={adding === item.id || added.has(item.id)}
-                      className={`w-full border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase transition-colors ${added.get(item.id) ? 'bg-accent text-text' : 'bg-surface text-text hover:bg-accent'}`}
+                      className={`w-full border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase transition-colors ${added.get(item.id) ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
                       aria-label={`${t.showDetail.markAsWatched} — ${name}`}
                     >
                       {adding === item.id ? '...' : added.get(item.id) ? t.showDetail.watched : t.showDetail.markAsWatched}
@@ -63,7 +63,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
                     <button
                       onClick={() => onAdd(item)}
                       disabled={adding === item.id || added.has(item.id)}
-                      className={`w-full border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase transition-colors ${added.get(item.id) ? 'bg-accent text-text' : 'bg-surface text-text hover:bg-accent'}`}
+                      className={`w-full border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase transition-colors ${added.get(item.id) ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
                       aria-label={`${t.discover.addToDashboard} — ${name}`}
                     >
                       {adding === item.id ? '...' : added.get(item.id) ? t.discover.added : t.discover.addToDashboard}

@@ -8,10 +8,10 @@ interface ConfirmSeasonModalProps {
 export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t }: ConfirmSeasonModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onClick={onCancel}>
-      <div className="bg-surface border-8 border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl relative" onClick={e => e.stopPropagation()}>
+      <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] relative" onClick={e => e.stopPropagation()}>
         <button
           onClick={onCancel}
-          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm hover:bg-highlight transition-colors cursor-pointer"
+          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm hover:bg-pink transition-colors cursor-pointer"
           aria-label={t.lists.cancel}
         >
           X
@@ -27,14 +27,14 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t }: Con
         <div className="flex gap-3">
           <button
             onClick={onConfirm}
-            className="flex-1 border-4 border-border bg-accent text-text px-4 py-3 text-sm font-bold uppercase hover:bg-highlight transition-colors"
+            className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase hover:bg-pink transition-colors"
             aria-label={t.showDetail.catchUpYes}
           >
             {t.showDetail.catchUpYes}
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 border-4 border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-highlight transition-colors"
+            className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-pink transition-colors"
             aria-label={t.lists.cancel}
           >
             {t.lists.cancel}

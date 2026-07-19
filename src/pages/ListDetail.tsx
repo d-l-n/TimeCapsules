@@ -75,7 +75,7 @@ export default function ListDetail() {
               <input value={name} onChange={e => setName(e.target.value)} className="border-2 border-border bg-bg px-2 py-1 text-sm font-bold w-full" />
               <input value={desc} onChange={e => setDesc(e.target.value)} className="border-2 border-border bg-bg px-2 py-1 text-sm w-full" />
               <div className="flex gap-2">
-                <button onClick={handleSave} aria-label={t.lists.save} className="bg-accent border-2 border-border px-2 py-0.5 text-xs font-bold uppercase cursor-pointer">{t.lists.save}</button>
+                <button onClick={handleSave} aria-label={t.lists.save} className="bg-yellow border-2 border-border px-2 py-0.5 text-xs font-bold uppercase cursor-pointer">{t.lists.save}</button>
                 <button onClick={() => setEditing(false)} aria-label={t.lists.cancel} className="border-2 border-border px-2 py-0.5 text-xs font-bold uppercase cursor-pointer">{t.lists.cancel}</button>
               </div>
             </div>
@@ -93,12 +93,12 @@ export default function ListDetail() {
               <span className="border-2 border-border px-2 py-1 text-xs font-bold uppercase text-text-secondary">{t.lists.defaultList}</span>
             ) : (
               <>
-                <button onClick={() => setEditing(true)} aria-label={t.lists.edit} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer hover:bg-accent transition-colors">{t.lists.edit}</button>
-                <button onClick={handleDelete} aria-label={t.lists.delete} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer text-highlight hover:bg-highlight hover:text-bg transition-colors">{t.lists.delete}</button>
+                <button onClick={() => setEditing(true)} aria-label={t.lists.edit} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer hover:bg-yellow transition-colors">{t.lists.edit}</button>
+                <button onClick={handleDelete} aria-label={t.lists.delete} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer text-pink hover:bg-pink hover:text-bg transition-colors">{t.lists.delete}</button>
               </>
             )}
             {shows.length > 0 && (
-              <button onClick={handleEmpty} aria-label={t.lists.emptyListBtn} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer hover:bg-highlight hover:text-bg transition-colors">{t.lists.emptyListBtn}</button>
+              <button onClick={handleEmpty} aria-label={t.lists.emptyListBtn} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer hover:bg-pink hover:text-bg transition-colors">{t.lists.emptyListBtn}</button>
             )}
           </div>
         )}

@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 import { AxeBuilder } from '@axe-core/playwright'
-import { loginAsGuest, waitForLoadComplete } from './helpers'
+import { login, waitForLoadComplete } from './helpers'
 
 test.describe('Accessibility', () => {
   test('login page has no critical violations', async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('Accessibility', () => {
 
   test.describe('authenticated pages', () => {
     test.beforeEach(async ({ page }) => {
-      await loginAsGuest(page)
+      await login(page)
       await waitForLoadComplete(page)
     })
 

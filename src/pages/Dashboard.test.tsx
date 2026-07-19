@@ -21,6 +21,7 @@ vi.mock('../hooks', () => ({
 vi.mock('../services/showService', () => ({
   getFinishedContent: vi.fn(),
   toggleWatchedEpisode: vi.fn(),
+  getBingingShows: vi.fn(() => Promise.resolve([])),
 }))
 
 vi.mock('../services/watchlistService', () => ({
@@ -35,6 +36,7 @@ vi.mock('../services/tmdb', () => ({
 
 vi.mock('../lib/firestore-utils', () => ({
   buildShowsMap: vi.fn(),
+  findMany: vi.fn(() => Promise.resolve([])),
 }))
 
 vi.mock('../lib/memento', () => ({
@@ -82,6 +84,8 @@ const enT = {
     finished: 'Finished',
   },
   watchlist: { title: 'Watchlist', add: 'ADD TO WATCHLIST', added: 'IN WATCHLIST' },
+  lists: { addToList: 'ADD TO LIST', noLists: 'No lists', remove: 'REMOVE' },
+  discover: { movie: 'MOVIE', tv: 'TV' },
   upcoming: { title: 'Upcoming Releases', days: 'days', today: 'TODAY', tomorrow: 'TOMORROW' },
   settings: { light: 'Light', dark: 'Dark' },
   stats: { minutes: 'm', hours: 'h' },

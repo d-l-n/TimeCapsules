@@ -3,11 +3,13 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 type Theme = 'light' | 'dark'
 
 const ACCENT_PRESETS = {
-  lime: '#ccff00',
-  pink: '#ff2d78',
-  cyan: '#00e5ff',
-  orange: '#ff9100',
-  purple: '#b388ff',
+  yellow: '#FFD400',
+  blue: '#4D7CFE',
+  green: '#76E56F',
+  pink: '#FF5CA8',
+  orange: '#FF8A00',
+  purple: '#A855F7',
+  red: '#FF4A4A',
 } as const
 
 type AccentKey = keyof typeof ACCENT_PRESETS
@@ -33,7 +35,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [accent, setAccentState] = useState<AccentKey>(() => {
     const stored = localStorage.getItem('timecapsules-accent')
     if (stored && stored in ACCENT_PRESETS) return stored as AccentKey
-    return 'lime'
+    return 'yellow'
   })
 
   const accentHex = ACCENT_PRESETS[accent]

@@ -139,6 +139,6 @@ describe('UpcomingTimeline', () => {
     ]
     render(<UpcomingTimeline items={items} />, { wrapper })
     const todayLabel = screen.getByText(/TODAY/)
-    expect(todayLabel.className).toContain('bg-highlight')
+    expect(todayLabel.className).toContain('bg-red')
   })
 })

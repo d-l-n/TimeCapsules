@@ -63,12 +63,12 @@ describe('Layout', () => {
     expect(screen.getByText(/TIME CAPSULES/i)).toBeInTheDocument()
   })
 
-  it('renders Dashboard and Groups nav links on desktop', () => {
+  it('renders Dashboard and Library nav links on desktop', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true })
     render(<Layout />, { wrapper })
     const dashboardLinks = screen.getAllByRole('link', { name: /Dashboard/i })
     expect(dashboardLinks.length).toBeGreaterThanOrEqual(1)
-    expect(screen.getByRole('link', { name: /Groups/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Library/i })).toBeInTheDocument()
   })
 
   it('renders Discover button on desktop', () => {
@@ -187,10 +187,12 @@ describe('Layout', () => {
     expect(main.className).toContain('pb-28')
   })
 
-  it('shows user initial on mobile profile link', () => {
+  it('renders bottom navigation items on mobile', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false })
     render(<Layout />, { wrapper })
-    expect(screen.getByText('T')).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Dashboard/i }).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getByRole('link', { name: /Library/i })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Discover/i })).toBeInTheDocument()
   })
 
   it('opens notification panel on mobile bell click', async () => {
@@ -213,15 +215,15 @@ describe('Layout', () => {
     expect(screen.getByText(/user/i)).toBeInTheDocument()
   })
 
-  it('shows initial from email when displayName is null on mobile', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false })
+  it('shows username from email when displayName is null on desktop', () => {
+    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true })
     vi.mocked(useAuth).mockReturnValue({
       user: { uid: 'user-1', email: 'alice@example.com', displayName: null, photoURL: null },
       logout: vi.fn(),
       loading: false,
     } as any)
     render(<Layout />, { wrapper })
-    expect(screen.getByText('A')).toBeInTheDocument()
+    expect(screen.getByText(/alice/i)).toBeInTheDocument()
   })
 
   it('renders user photo when photoURL is provided', () => {

@@ -9,6 +9,7 @@ import ShowDetail from './pages/ShowDetail'
 import DiscoverPage from './pages/DiscoverPage'
 import ProfilePage from './pages/ProfilePage'
 import GroupsPage from './pages/GroupsPage'
+import LibraryPage from './pages/LibraryPage'
 import GroupDetail from './pages/GroupDetail'
 import UpcomingPage from './pages/UpcomingPage'
 import ListDetail from './pages/ListDetail'
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/show/:id" element={<ShowDetail />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/groups" element={<GroupsPage />} />
+          <Route path="/library" element={<LibraryPage />} />
           <Route path="/groups/:groupId" element={<GroupDetail />} />
           <Route path="/upcoming" element={<UpcomingPage />} />
           <Route path="/lists" element={<Navigate to="/profile?section=lists" replace />} />

@@ -125,6 +125,7 @@ const enT = {
     groupProgress: 'Group Progress',
   },
   groups: { you: 'You' },
+  discover: { movie: 'MOVIE', tv: 'TV' },
 }
 
 const mockUser = { uid: 'user-1', email: 'test@test.com' } as any

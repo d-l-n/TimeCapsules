@@ -98,14 +98,14 @@ export default function UpcomingPage() {
           <button
             onClick={() => setMode('followed')}
             aria-label={t.upcoming.followed}
-            className={`border-4 border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'followed' ? 'bg-accent text-text border-text' : 'bg-surface text-text hover:bg-accent'}`}
+            className={`border-[3px] border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'followed' ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow'}`}
           >
             {t.upcoming.followed}
           </button>
           <button
             onClick={() => setMode('all')}
             aria-label={t.upcoming.all}
-            className={`border-4 border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'all' ? 'bg-accent text-text border-text' : 'bg-surface text-text hover:bg-accent'}`}
+            className={`border-[3px] border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'all' ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow'}`}
           >
             {t.upcoming.all}
           </button>
@@ -117,7 +117,7 @@ export default function UpcomingPage() {
       ) : (
         <div className="space-y-10">
           {mode === 'followed' && tvUpcoming.length === 0 && movieUpcoming.length === 0 && (
-            <div className="border-4 border-border bg-surface p-8 text-center">
+            <div className="border-[3px] border-border bg-surface p-8 text-center">
               <p className="text-sm font-bold">{t.upcoming.noneFollowed}</p>
             </div>
           )}
@@ -130,7 +130,7 @@ export default function UpcomingPage() {
                   <Link
                     key={item.show_id}
                     to={`/show/${item.show_id}`}
-                    className={`bg-surface border-2 border-border hover:bg-accent transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.show_id) % 5]}-hover card-brutal`}
+                    className={`bg-surface border-2 border-border hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.show_id) % 5]}-hover`}
                   >
                     {item.poster_url ? (
                       <img src={item.poster_url} alt={item.name} className="w-full" loading="lazy" />
@@ -142,7 +142,7 @@ export default function UpcomingPage() {
                       {item.next_episode && (
                         <div className="text-[10px] text-text-secondary">
                           <div>{t.upcoming.sE} {item.next_episode.season_number}x{item.next_episode.episode_number} — {item.next_episode.name}</div>
-                          <div className="font-bold text-highlight mt-1">
+                          <div className="font-bold text-pink mt-1">
                             {item.daysUntil === 0 ? t.upcoming.today : item.daysUntil === 1 ? t.upcoming.tomorrow : `${item.daysUntil} ${t.upcoming.days}`}
                           </div>
                         </div>
@@ -166,7 +166,7 @@ export default function UpcomingPage() {
                     <Link
                       key={m.id}
                       to={`/show/-${m.id}`}
-                      className={`bg-surface border-2 border-border hover:bg-accent transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(m.id) % 5]}-hover card-brutal`}
+                      className={`bg-surface border-2 border-border hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(m.id) % 5]}-hover`}
                     >
                       {imgSrc ? (
                         <img src={imgSrc} alt={m.title} className="w-full" loading="lazy" />
@@ -178,7 +178,7 @@ export default function UpcomingPage() {
                         <div className="text-[10px] text-text-secondary">
                           <div>{m.release_date || '—'}</div>
                           {daysUntil !== null && (
-                            <div className="font-bold text-highlight mt-1">
+                            <div className="font-bold text-pink mt-1">
                               {daysUntil <= 0 ? t.upcoming.outNow : daysUntil === 1 ? t.upcoming.tomorrow : `${daysUntil} ${t.upcoming.days}`}
                             </div>
                           )}
@@ -202,7 +202,7 @@ export default function UpcomingPage() {
                     <Link
                       key={show.id}
                       to={`/show/-${show.id}`}
-                      className={`bg-surface border-2 border-border hover:bg-accent transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(show.id) % 5]}-hover card-brutal`}
+                      className={`bg-surface border-2 border-border hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(show.id) % 5]}-hover`}
                     >
                       {imgSrc ? (
                         <img src={imgSrc} alt={name} className="w-full" loading="lazy" />

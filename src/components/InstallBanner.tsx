@@ -90,10 +90,10 @@ export default function InstallBanner() {
   if (mode === 'ios') {
     return (
       <div className={`fixed bottom-24 left-4 right-4 z-30 transition-opacity duration-300 ${hiding ? 'opacity-0' : 'opacity-100'}`}>
-        <div className="bg-surface border-4 border-border p-4 relative shadow-[4px_4px_0px_#0a0a0a]">
+        <div className="bg-surface border-[3px] border-border p-4 relative shadow-[4px_4px_0px_#0a0a0a]">
           <button
             onClick={() => dismiss()}
-            className="absolute -top-3 -right-3 border-2 border-border bg-surface text-text w-7 h-7 flex items-center justify-center text-xs font-bold hover:bg-accent"
+            className="absolute -top-3 -right-3 border-2 border-border bg-surface text-text w-7 h-7 flex items-center justify-center text-xs font-bold hover:bg-yellow"
             aria-label="Close"
           >
             X
@@ -122,21 +122,21 @@ export default function InstallBanner() {
         <button
           onClick={handleInstall}
           aria-label={t.install.btn}
-          className="border-4 border-border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold bg-accent text-bg hover:bg-highlight hover:text-text transition-colors shrink-0 uppercase"
+          className="border-[3px] border-border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold bg-yellow text-bg hover:bg-pink hover:text-text transition-colors shrink-0 uppercase"
         >
           {t.install.btn}
         </button>
         <button
           onClick={() => dismiss(true)}
           aria-label={t.install.later}
-          className="border-2 border-border px-2 py-1.5 text-[10px] sm:text-xs font-bold bg-surface text-text hover:bg-accent transition-colors shrink-0 uppercase"
+          className="border-2 border-border px-2 py-1.5 text-[10px] sm:text-xs font-bold bg-surface text-text hover:bg-yellow transition-colors shrink-0 uppercase"
         >
           {t.install.later}
         </button>
         <button
           onClick={() => dismiss()}
           aria-label={t.install.dismiss}
-          className="border-2 border-border px-2 py-1.5 text-[10px] sm:text-xs font-bold bg-surface text-text hover:bg-highlight transition-colors shrink-0 uppercase"
+          className="border-2 border-border px-2 py-1.5 text-[10px] sm:text-xs font-bold bg-surface text-text hover:bg-pink transition-colors shrink-0 uppercase"
         >
           {t.install.dismiss}
         </button>

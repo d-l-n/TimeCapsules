@@ -23,7 +23,7 @@ export default function ErrorBox({ message, title, onRetry, retryLabel, classNam
   return (
     <div
       role="alert"
-      className={`border-4 border-highlight bg-highlight/10 text-highlight p-4 ${className}`}
+      className={`border-[3px] border-pink bg-pink/10 text-pink p-4 ${className}`}
     >
       <div className="flex items-start gap-3">
         <AlertIcon className="w-5 h-5 shrink-0 mt-0.5" />
@@ -35,7 +35,7 @@ export default function ErrorBox({ message, title, onRetry, retryLabel, classNam
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-3 border-2 border-highlight bg-surface text-highlight px-3 py-1.5 text-xs font-bold uppercase hover:bg-highlight hover:text-bg transition-colors cursor-pointer"
+          className="mt-3 border-2 border-pink bg-surface text-pink px-3 py-1.5 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer"
         >
           {retryLabel ?? 'RETRY'}
         </button>

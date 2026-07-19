@@ -48,7 +48,7 @@ export default function PositionEditor({ contentId, contentType, maxSeconds, edi
       {maxSeconds > 0 && (
         <div className="flex items-center gap-2">
           <div className="flex-1 h-2 border border-border bg-surface relative overflow-hidden">
-            <div className="h-full transition-all duration-200 bg-accent" style={{ width: `${pct}%` }} />
+            <div className="h-full transition-all duration-200 bg-yellow" style={{ width: `${pct}%` }} />
           </div>
           <span className="text-[9px] font-bold text-text-secondary tabular-nums whitespace-nowrap">
             {currentSeconds != null ? fmtPos(currentSeconds) : '--'} / {maxLabel}
@@ -61,7 +61,7 @@ export default function PositionEditor({ contentId, contentType, maxSeconds, edi
             key={pt.seconds}
             onMouseDown={e => e.preventDefault()}
             onClick={() => onPreset(contentId, contentType, pt.seconds)}
-            className={`border-2 border-border font-bold bg-surface hover:bg-accent transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
+            className={`border-2 border-border font-bold bg-surface hover:bg-yellow transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
             aria-label={`${t.showDetail.setPosition} ${pt.label}`}
           >
             {pt.label}
@@ -91,7 +91,7 @@ export default function PositionEditor({ contentId, contentType, maxSeconds, edi
         <button
           onMouseDown={e => e.preventDefault()}
           onClick={() => onClear(contentId, contentType)}
-          className={`border-2 border-border font-bold bg-surface text-highlight hover:bg-highlight hover:text-bg transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
+          className={`border-2 border-border font-bold bg-surface text-pink hover:bg-pink hover:text-bg transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
           aria-label={`${t.showDetail.setPosition} — clear`}
         >
           ✕

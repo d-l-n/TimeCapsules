@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
-import { waitForLoadComplete, loginAsGuest } from './helpers'
+import { waitForLoadComplete, login } from './helpers'
 
 test.describe('Navigation', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAsGuest(page)
+    await login(page)
   })
 
   test('dashboard loads and shows navigation tabs', async ({ page }) => {

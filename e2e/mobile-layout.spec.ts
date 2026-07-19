@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test'
-import { waitForLoadComplete, loginAsGuest } from './helpers'
+import { waitForLoadComplete, login } from './helpers'
 
 test.describe('Mobile Layout', () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
-    await loginAsGuest(page)
+    await login(page)
   })
 
   test('bottom nav pill has links on mobile', async ({ page }) => {

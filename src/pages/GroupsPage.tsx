@@ -48,7 +48,7 @@ export default function GroupsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface border-4 border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
+      <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 animate-fade-in-up">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.groups.eyebrow}</div>
@@ -60,26 +60,26 @@ export default function GroupsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <div className="bg-surface border-4 border-border p-4 sm:p-5 space-y-4">
+        <div className="bg-surface border-[3px] border-border p-4 sm:p-5 space-y-4">
           <h2 className="text-sm font-bold uppercase border-b-2 border-border pb-2">{t.groups.createGroup}</h2>
           <input
             type="text"
             value={createName}
             onChange={e => setCreateName(e.target.value)}
             placeholder={t.groups.createPlaceholder}
-            className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-accent/10 transition-colors"
+            className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-yellow/30 transition-colors"
           />
           <button
             onClick={handleCreate}
             disabled={busy || !createName.trim()}
             aria-label={t.groups.createBtn}
-            className="w-full border-4 border-border bg-accent text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-highlight transition-colors disabled:opacity-40 cursor-pointer"
+            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
           >
             {busy ? '...' : t.groups.createBtn}
           </button>
         </div>
 
-        <div className="bg-surface border-4 border-border p-4 sm:p-5 space-y-4">
+        <div className="bg-surface border-[3px] border-border p-4 sm:p-5 space-y-4">
           <h2 className="text-sm font-bold uppercase border-b-2 border-border pb-2">{t.groups.joinGroup}</h2>
           <input
             type="text"
@@ -87,13 +87,13 @@ export default function GroupsPage() {
             onChange={e => setJoinCode(e.target.value.toUpperCase())}
             placeholder={t.groups.joinPlaceholder}
             maxLength={6}
-            className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-accent/10 uppercase tracking-widest transition-colors"
+            className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-yellow/30 uppercase tracking-widest transition-colors"
           />
           <button
             onClick={handleJoin}
             disabled={busy || joinCode.trim().length < 4}
             aria-label={t.groups.joinBtn}
-            className="w-full border-4 border-border bg-accent text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-highlight transition-colors disabled:opacity-40 cursor-pointer"
+            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
           >
             {busy ? '...' : t.groups.joinBtn}
           </button>
@@ -101,7 +101,7 @@ export default function GroupsPage() {
       </div>
 
       {error && <ErrorBox message={error} className="mb-4" />}
-      {createdId && <div className="border-2 border-border bg-accent/10 p-3 text-xs font-bold uppercase">{t.groups.created} <Link to={`/groups/${createdId}`} className="underline">{t.groups.viewGroup}</Link></div>}
+      {createdId && <div className="border-2 border-border bg-yellow/30 p-3 text-xs font-bold uppercase">{t.groups.created} <Link to={`/groups/${createdId}`} className="underline">{t.groups.viewGroup}</Link></div>}
 
       {groups.length === 0 ? (
         <EmptyState title={t.groups.noGroups} description={t.groups.noGroupsDesc} />
@@ -113,16 +113,16 @@ export default function GroupsPage() {
               <Link
                 key={g.id}
                 to={`/groups/${g.id}`}
-                className="group bg-surface border-4 border-border p-4 hover:translate-x-1 hover:-translate-y-1 hover-shadow-brutal transition-all flex items-center gap-4"
+                className="group bg-surface border-[3px] border-border p-4 shadow-[8px_8px_0_#111] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#111] transition-all flex items-center gap-4"
               >
-                <div className="w-11 h-11 shrink-0 bg-accent border-2 border-border flex items-center justify-center text-lg font-bold text-bg">
+                <div className="w-11 h-11 shrink-0 bg-yellow border-2 border-border flex items-center justify-center text-lg font-bold text-bg">
                   {initial}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="font-bold uppercase text-sm truncate">{g.name}</div>
                   <div className="text-[10px] font-mono text-text-secondary mt-1">{t.groups.code}: <span className="border border-border px-1 bg-surface-light">{g.invite_code}</span></div>
                 </div>
-                <div className="border-2 border-border px-2 py-1 text-xs font-bold shrink-0 group-hover:bg-accent transition-colors">{g.member_count}</div>
+                <div className="border-2 border-border px-2 py-1 text-xs font-bold shrink-0 group-hover:bg-yellow transition-colors">{g.member_count}</div>
               </Link>
             )
           })}

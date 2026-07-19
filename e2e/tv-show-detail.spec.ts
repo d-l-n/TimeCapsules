@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { loginAsGuest, navigateToShow, KNOWN_SHOWS } from './helpers'
+import { login, navigateToShow, KNOWN_SHOWS } from './helpers'
 
 const TMDB_TV = KNOWN_SHOWS['breaking-bad']
 
 test.describe('TV Show Detail', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAsGuest(page)
+    await login(page)
   })
 
   test('navigates to show detail with episodes rendered', async ({ page }) => {

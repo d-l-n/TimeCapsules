@@ -1,23 +1,31 @@
-import type { Page, Locator } from '@playwright/test'
+import { expect, type Page, type Locator } from '@playwright/test'
 
 export async function waitForLoadComplete(page: Page) {
   await page.waitForFunction(() => {
     const loading = document.querySelector('[class*="animate-pulse"]')
     return !loading
-  }, { timeout: 15000 }).catch(() => {})
+  }, null, { timeout: 30000 }).catch(() => {})
 }
 
 export async function getShowCards(page: Page): Promise<Locator> {
   return page.locator('a[href^="/show/"]')
 }
 
-export async function loginAsGuest(page: Page) {
+export async function login(page: Page) {
+  const email = process.env.PLAYWRIGHT_USER
+  const password = process.env.PLAYWRIGHT_PASSWORD
   await page.goto('/')
-  await page.waitForSelector('text=CONTINUE AS GUEST', { timeout: 15000 })
-  await page.click('text=CONTINUE AS GUEST')
-  await page.waitForSelector('text=CONTINUE AS GUEST ANYWAY', { timeout: 15000 })
-  await page.click('text=CONTINUE AS GUEST ANYWAY')
-  await page.waitForURL('/dashboard', { timeout: 15000 })
+  if (email && password) {
+    await page.waitForSelector('input[type="email"]', { timeout: 15000 })
+    await page.fill('input[type="email"]', email)
+    await page.fill('input[type="password"]', password)
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+    await expect(page).toHaveURL('/dashboard', { timeout: 20000 })
+    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 20000 })
+    await waitForLoadComplete(page)
+    return
+  }
+  throw new Error('PLAYWRIGHT_USER / PLAYWRIGHT_PASSWORD env vars required for e2e auth')
 }
 
 const KNOWN_SHOWS = {

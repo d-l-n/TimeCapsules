@@ -6,6 +6,8 @@ import { fmtTime } from '../lib/formatting'
 import Loading from '../components/Loading'
 import { triggerConfetti } from '../lib/confetti'
 
+const KPI_COLORS = ['bg-yellow', 'bg-blue', 'bg-green', 'bg-pink', 'bg-orange', 'bg-purple', 'bg-red']
+
 export default function StatsPage() {
   const { user } = useAuth()
   const { t, lang } = useI18n()
@@ -22,26 +24,37 @@ export default function StatsPage() {
 
   if (loading) return <Loading text={t.stats.loading} />
 
+  const kpis = [
+    { label: t.stats.episodesWatched, value: stats.nb_episodes_watched ?? 0 },
+    { label: t.stats.showsFollowed, value: showCount },
+    { label: t.stats.totalShows, value: showCount },
+    { label: t.stats.timeSpent, value: fmtTime(stats.time_spent ?? 0, t) },
+    ...(streak > 1 ? [{ label: t.stats.streak, value: `${streak}` }] : []),
+    { label: t.stats.avgRating, value: ratingDist.length ? (ratingDist.reduce((s, r) => s + r.rating * r.count, 0) / ratingDist.reduce((s, r) => s + r.count, 0)).toFixed(1) : '—' },
+  ]
+
   return (
     <div className="space-y-10">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard label={t.stats.episodesWatched} value={stats.nb_episodes_watched ?? 0} />
-        <StatCard label={t.stats.showsFollowed} value={showCount} />
-        <StatCard label={t.stats.totalShows} value={showCount} />
-        <StatCard label={t.stats.timeSpent} value={fmtTime(stats.time_spent ?? 0, t)} />
-        {streak > 1 && <StatCard label={t.stats.streak} value={`${streak}`} />}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+        {kpis.map((kpi, i) => (
+          <div key={kpi.label} className={`${KPI_COLORS[i % KPI_COLORS.length]} border-[3px] border-border p-4 sm:p-5 shadow-[8px_8px_0_#111] flex flex-col justify-between min-h-[120px]`} role="figure" aria-label={`${kpi.label}: ${kpi.value}`}>
+            <div className="text-4xl sm:text-6xl font-black leading-none font-heading">{kpi.value}</div>
+            <div className="text-[10px] sm:text-xs font-bold uppercase mt-3">{kpi.label}</div>
+          </div>
+        ))}
       </div>
+
       {ratingDist.length > 0 && (
-        <section aria-label={t.stats.ratingDistribution}>
-          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4">{t.stats.ratingDistribution}</h3>
-          <div className="space-y-2">
+        <section aria-label={t.stats.ratingDistribution} className="bg-surface border-[3px] border-border p-5 shadow-[8px_8px_0_#111]">
+          <h3 className="text-xl sm:text-2xl font-black uppercase border-b-[3px] border-border pb-3 mb-5 font-heading">{t.stats.ratingDistribution}</h3>
+          <div className="space-y-3">
             {ratingDist.map(({ rating, count }) => {
               const maxCount = Math.max(...ratingDist.map(r => r.count))
               return (
                 <div key={rating} className="flex items-center gap-3">
-                  <span className="text-sm font-bold w-6 text-right border-2 border-border px-1 py-0.5">{rating}</span>
-                  <div className="flex-1 h-7 bg-surface border-2 border-border" role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={maxCount} aria-label={`${rating} stars: ${count} ratings`}>
-                    <div className="h-full bg-accent border-r-2 border-border transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
+                  <span className="text-sm font-bold w-8 text-right border-2 border-border px-1 py-1 bg-surface-light">{rating}</span>
+                  <div className="flex-1 h-8 bg-surface-light border-2 border-border" role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={maxCount} aria-label={`${rating} stars: ${count} ratings`}>
+                    <div className="h-full bg-purple border-r-2 border-border transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
                   </div>
                   <span className="text-sm font-bold w-10 text-right">{count}</span>
                 </div>
@@ -50,12 +63,13 @@ export default function StatsPage() {
           </div>
         </section>
       )}
+
       {badges.length > 0 && (
-        <section aria-label={t.stats.badges}>
-          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4">{t.stats.badges}<span className="ml-2 border-2 border-border px-2 py-0.5 text-sm">{badges.length}</span></h3>
+        <section aria-label={t.stats.badges} className="bg-surface border-[3px] border-border p-5 shadow-[8px_8px_0_#111]">
+          <h3 className="text-xl sm:text-2xl font-black uppercase border-b-[3px] border-border pb-3 mb-5 font-heading">{t.stats.badges}<span className="ml-2 border-2 border-border bg-yellow px-2 py-0.5 text-sm">{badges.length}</span></h3>
           <div className="flex flex-wrap gap-3">
             {badges.map(badge => (
-              <div key={badge.badge_id} className="bg-surface border-4 border-border px-4 py-3 text-center min-w-[120px] hover:translate-x-0.5 hover:-translate-y-0.5 hover-shadow-brutal transition-all" role="img" aria-label={`${t.stats.badgeLabel} ${BADGE_NAMES[parseInt(badge.badge_id)] || `${t.stats.badgeFallback} #${badge.badge_id}`}${badge.earned_at ? `, ${t.stats.earned} ${new Date(badge.earned_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US')}` : ''}`}>
+              <div key={badge.badge_id} className="bg-surface-light border-[3px] border-border px-4 py-3 text-center min-w-[120px] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#111] transition-all" role="img" aria-label={`${t.stats.badgeLabel} ${BADGE_NAMES[parseInt(badge.badge_id)] || `${t.stats.badgeFallback} #${badge.badge_id}`}${badge.earned_at ? `, ${t.stats.earned} ${new Date(badge.earned_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US')}` : ''}`}>
                 <div className="text-3xl mb-1" aria-hidden="true">◆</div>
                 <div className="text-xs font-bold uppercase">{BADGE_NAMES[parseInt(badge.badge_id)] || `${t.stats.badgeFallback} #${badge.badge_id}`}</div>
                 {badge.earned_at && <div className="text-[10px] text-text-secondary mt-1 border-t-2 border-border pt-1">{new Date(badge.earned_at).toLocaleDateString()}</div>}
@@ -67,9 +81,3 @@ export default function StatsPage() {
     </div>
   )
 }
-
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return <div className="bg-surface border-4 border-border p-3 sm:p-4 text-center hover:translate-x-0.5 hover:-translate-y-0.5 hover-shadow-brutal transition-all" role="figure" aria-label={`${label}: ${value}`}><div className="text-xl sm:text-3xl font-bold truncate" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{value}</div><div className="text-[10px] sm:text-xs font-bold mt-1 sm:mt-2 uppercase">{label}</div></div>
-}
-
-

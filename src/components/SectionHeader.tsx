@@ -14,10 +14,10 @@ interface SectionHeaderProps {
 
 export default function SectionHeader({ id, title, count, actionLabel, actionTo, onAction, actionLoading, children }: SectionHeaderProps) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b-4 border-border pb-3 mb-4">
+    <div className="flex items-center justify-between gap-3 border-b-[3px] border-border pb-3 mb-4">
       <div className="flex items-center gap-3 min-w-0">
-        <h2 id={id} className="text-lg sm:text-xl font-bold uppercase font-heading truncate">{title}</h2>
-        {count != null && <span className="border-2 border-border px-2 py-0.5 text-xs font-bold shrink-0">{count}</span>}
+        <h2 id={id} className="text-xl sm:text-2xl font-black uppercase font-heading truncate">{title}</h2>
+        {count != null && <span className="border-2 border-border bg-yellow px-2 py-0.5 text-xs font-bold shrink-0">{count}</span>}
       </div>
       {actionLabel && (actionTo || onAction) && (
         actionTo ? (

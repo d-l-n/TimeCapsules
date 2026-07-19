@@ -35,15 +35,15 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
   }
 
   const getDayColor = (days: number) => {
-    if (days === 0) return 'bg-highlight text-text'
-    if (days === 1) return 'bg-accent text-text'
+    if (days === 0) return 'bg-red text-text'
+    if (days === 1) return 'bg-yellow text-text'
     return 'bg-surface text-text'
   }
 
   return (
     <section aria-labelledby="upcoming-heading">
-      <div className="flex items-center justify-between border-b-4 border-border pb-3 mb-4">
-        <h2 id="upcoming-heading" className="text-lg sm:text-xl font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>
+      <div className="flex items-center justify-between border-b-[3px] border-border pb-3 mb-4">
+        <h2 id="upcoming-heading" className="text-xl sm:text-2xl font-black uppercase font-heading">
           {t.upcoming.title}
         </h2>
         <Link to="/upcoming" className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary hover:text-text transition-colors">
@@ -59,12 +59,12 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
                 {getDayLabel(days)}
               </div>
             </div>
-            <div className="flex-1 border-l-4 border-border pl-3 sm:pl-4 space-y-2">
+            <div className="flex-1 border-l-[3px] border-border pl-3 sm:pl-4 space-y-2">
               {grouped[days].map(item => (
                 <Link
                   key={item.show_id}
                   to={`/show/${item.show_id}`}
-                  className="group flex items-center gap-3 bg-surface border-2 border-border p-2 sm:p-3 hover:translate-x-1 hover:-translate-y-0.5 hover-shadow-brutal transition-all"
+                  className="group flex items-center gap-3 bg-surface border-[3px] border-border p-2 sm:p-3 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#111] transition-all"
                 >
                   <div className="w-10 h-14 sm:w-12 sm:h-16 shrink-0 bg-surface-light border-2 border-border overflow-hidden">
                     {item.poster_url ? (
@@ -84,7 +84,7 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
                       </div>
                     )}
                   </div>
-                  <div className="shrink-0 text-xs font-bold text-text-secondary group-hover:text-highlight transition-colors">
+                  <div className="shrink-0 text-xs font-bold text-text-secondary group-hover:text-orange transition-colors">
                     →
                   </div>
                 </Link>

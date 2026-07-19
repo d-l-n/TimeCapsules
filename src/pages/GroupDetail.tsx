@@ -223,10 +223,10 @@ export default function GroupDetail() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface border-4 border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
+      <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 animate-fade-in-up">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="border-4 border-border px-3 py-1.5 bg-surface text-xs font-bold hover:bg-accent transition-colors shrink-0">&larr;</button>
-          <div className="w-14 h-14 shrink-0 bg-accent border-4 border-border flex items-center justify-center text-2xl font-bold text-bg">
+          <button onClick={() => navigate(-1)} className="border-[3px] border-border px-3 py-1.5 bg-surface text-xs font-bold hover:bg-yellow transition-colors shrink-0">&larr;</button>
+          <div className="w-14 h-14 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-2xl font-bold text-bg">
             {(groupName || t.groups.groupDetail).charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
@@ -242,14 +242,14 @@ export default function GroupDetail() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-1 space-y-4">
-          <div className="bg-surface border-4 border-border p-4 space-y-4">
+          <div className="bg-surface border-[3px] border-border p-4 space-y-4">
             <SectionHeader id="members-heading" title={t.groups.members} count={members.length} />
               <div className="space-y-2">
                 {members.map(m => {
                   const label = m.user_id === user?.uid ? t.groups.you : (m.display_name || m.user_id.slice(0, 8))
                   return (
                     <div key={m.user_id} className="flex items-center gap-2 border-2 border-border p-2">
-                      <div className="w-7 h-7 bg-accent border-2 border-border flex items-center justify-center text-[11px] font-bold text-bg shrink-0">
+                      <div className="w-7 h-7 bg-yellow border-2 border-border flex items-center justify-center text-[11px] font-bold text-bg shrink-0">
                         {label.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-xs font-bold truncate flex-1">{label}</span>
@@ -262,7 +262,7 @@ export default function GroupDetail() {
               <button
                 onClick={() => setConfirmLeave(true)}
                 aria-label={t.groups.leaveGroup}
-                className="w-full border-2 border-border bg-highlight/10 text-highlight py-2 text-xs font-bold uppercase hover:bg-highlight hover:text-bg transition-colors cursor-pointer"
+                className="w-full border-2 border-border bg-pink/10 text-pink py-2 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer"
               >
                 {t.groups.leaveGroup}
               </button>
@@ -270,7 +270,7 @@ export default function GroupDetail() {
           </div>
 
           {isMember && inviteCode && (
-            <div className="bg-surface border-4 border-border p-4 space-y-3">
+            <div className="bg-surface border-[3px] border-border p-4 space-y-3">
               <h2 className="text-sm font-bold uppercase">{t.groups.inviteCode}</h2>
               <div className="border-2 border-border bg-surface-light px-3 py-2 text-center">
                 <span className="text-lg font-bold font-mono tracking-widest">{inviteCode}</span>
@@ -278,13 +278,13 @@ export default function GroupDetail() {
               <div className="flex gap-2">
                 <button
                   onClick={handleCopyCode}
-                  className="flex-1 border-4 border-border bg-accent text-text py-2 text-xs font-bold uppercase hover:bg-highlight hover:text-text transition-colors cursor-pointer"
+                  className="flex-1 border-[3px] border-border bg-yellow text-text py-2 text-xs font-bold uppercase hover:bg-orange hover:text-text transition-colors cursor-pointer"
                 >
                   {copied ? t.groups.copied : t.groups.copyCode}
                 </button>
                 <button
                   onClick={handleShareCode}
-                  className="flex-1 border-4 border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                  className="flex-1 border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
                 >
                   {t.groups.shareCode}
                 </button>
@@ -293,7 +293,7 @@ export default function GroupDetail() {
           )}
 
           {isMember && (
-            <div className="bg-surface border-4 border-border p-4 space-y-4" ref={searchRef}>
+            <div className="bg-surface border-[3px] border-border p-4 space-y-4" ref={searchRef}>
               <h2 className="text-sm font-bold uppercase">{t.groups.addShow}</h2>
               <div className="relative">
                 <input
@@ -302,13 +302,13 @@ export default function GroupDetail() {
                   onChange={e => { setSearchQuery(e.target.value); setError('') }}
                   onFocus={handleFocus}
                   placeholder={t.groups.showSearchPlaceholder}
-                  className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold uppercase outline-none focus:bg-accent/10 pr-10"
+                  className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold uppercase outline-none focus:bg-yellow/30 pr-10"
                 />
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => { setSearchQuery(''); setSearchResults([]); setShowDropdown(false) }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 border border-border px-1.5 py-0.5 text-[10px] font-bold bg-surface hover:bg-highlight transition-colors"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 border border-border px-1.5 py-0.5 text-[10px] font-bold bg-surface hover:bg-pink transition-colors"
                     aria-label="Clear search"
                   >
                     X
@@ -320,7 +320,7 @@ export default function GroupDetail() {
 
                 {/* Trending dropdown (shown when input is empty and focused) */}
                 {showDropdown && !searchQuery.trim() && trending.length > 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-4 border-border bg-surface shadow-brutal max-h-80 overflow-y-auto">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface shadow-[8px_8px_0_#111] max-h-80 overflow-y-auto">
                     <div className="sticky top-0 bg-surface border-b-2 border-border px-3 py-2 text-[10px] font-bold uppercase text-text-secondary">
                       {trendingLoading ? t.groups.trendingLoading : t.groups.trending}
                     </div>
@@ -345,7 +345,7 @@ export default function GroupDetail() {
 
                 {/* Search results dropdown */}
                 {showDropdown && searchQuery.trim() && filteredResults.length > 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-4 border-border bg-surface shadow-brutal max-h-80 overflow-y-auto">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface shadow-[8px_8px_0_#111] max-h-80 overflow-y-auto">
                     {filteredResults.map(item => (
                       <SearchResultItem
                         key={item.id}
@@ -360,7 +360,7 @@ export default function GroupDetail() {
                       <button
                         onClick={handleLoadMore}
                         disabled={searching}
-                        className="w-full border-t-2 border-border px-3 py-3 text-[10px] font-bold uppercase bg-surface hover:bg-accent/20 transition-colors disabled:opacity-40 cursor-pointer text-center"
+                        className="w-full border-t-2 border-border px-3 py-3 text-[10px] font-bold uppercase bg-surface hover:bg-yellow/30 transition-colors disabled:opacity-40 cursor-pointer text-center"
                       >
                         {searching ? '...' : t.groups.seeMore}
                       </button>
@@ -370,14 +370,14 @@ export default function GroupDetail() {
 
                 {/* No results state */}
                 {searchQuery.trim() && !searching && searchResults.length > 0 && filteredResults.length === 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-4 border-border bg-surface p-4 text-center">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface p-4 text-center">
                     <span className="text-[10px] font-bold text-text-secondary">{t.groups.searchNoResults}</span>
                   </div>
                 )}
 
                 {/* Raw no results from TMDB */}
                 {searchQuery.trim() && !searching && searchResults.length === 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-4 border-border bg-surface p-4 text-center">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface p-4 text-center">
                     <span className="text-[10px] font-bold text-text-secondary">{t.groups.searchNoResults}</span>
                   </div>
                 )}
@@ -389,7 +389,7 @@ export default function GroupDetail() {
         <div className="lg:col-span-2 space-y-4">
           <SectionHeader id="shows-heading" title={t.groups.shows} count={shows.length} />
           {shows.length === 0 ? (
-            <div className="border-4 border-border bg-surface p-6 text-center text-xs font-bold text-text-secondary">{t.groups.noShows}</div>
+            <div className="border-[3px] border-border bg-surface p-6 text-center text-xs font-bold text-text-secondary">{t.groups.noShows}</div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 items-start">
               {shows.map(s => {
@@ -402,7 +402,7 @@ export default function GroupDetail() {
                       posterUrl={s.poster_url}
                       imdbRating={s.imdb_rating}
                       mediaType={s.media_type}
-                      wrapperClassName={`${selected ? 'ring-2 ring-accent' : ''}`}
+                      wrapperClassName={`${selected ? 'ring-2 ring-yellow' : ''}`}
                       onRemove={isMember ? () => setConfirmRemove(s.tmdb_id) : undefined}
                       actions={(
                         <>
@@ -410,7 +410,7 @@ export default function GroupDetail() {
                             onClick={() => handleMarkWatched(s.tmdb_id)}
                             disabled={markingId === s.tmdb_id}
                             aria-label={t.showDetail.markAsWatched}
-                            className="border-2 border-border bg-accent text-text px-2 py-1 text-[10px] font-bold uppercase hover:bg-highlight transition-colors disabled:opacity-40 cursor-pointer"
+                            className="border-2 border-border bg-yellow text-text px-2 py-1 text-[10px] font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer"
                           >
                             {markingId === s.tmdb_id ? '...' : t.showDetail.markAsWatched}
                           </button>
@@ -418,7 +418,7 @@ export default function GroupDetail() {
                             <button
                               onClick={() => setSelectedShowId(selected ? null : s.tmdb_id)}
                               aria-label={t.groups.progress}
-                              className={`border-2 border-border px-2 py-1 text-[10px] font-bold transition-colors cursor-pointer ${selected ? 'bg-accent text-text' : 'bg-surface hover:bg-accent'}`}
+                              className={`border-2 border-border px-2 py-1 text-[10px] font-bold transition-colors cursor-pointer ${selected ? 'bg-yellow text-text' : 'bg-surface hover:bg-yellow'}`}
                             >
                               {t.groups.progress}
                             </button>
@@ -450,20 +450,20 @@ export default function GroupDetail() {
 
       {confirmLeave && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true">
-          <div className="bg-surface border-8 border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.leaveConfirm}</h3>
             <div className="flex gap-3">
               <button
                 onClick={handleLeave}
                 aria-label="Confirm leave group"
-                className="flex-1 border-4 border-border bg-highlight text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-highlight transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'SALIR' : 'LEAVE'}
               </button>
               <button
                 onClick={() => setConfirmLeave(false)}
                 aria-label="Cancel"
-                className="flex-1 border-4 border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -474,20 +474,20 @@ export default function GroupDetail() {
 
       {confirmRemove != null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true">
-          <div className="bg-surface border-8 border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.removeConfirm}</h3>
             <div className="flex gap-3">
               <button
                 onClick={confirmRemoveShow}
                 aria-label="Confirm remove"
-                className="flex-1 border-4 border-border bg-highlight text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-highlight transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'QUITAR' : 'REMOVE'}
               </button>
               <button
                 onClick={() => setConfirmRemove(null)}
                 aria-label="Cancel"
-                className="flex-1 border-4 border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -521,7 +521,7 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
       className={`w-full flex items-center gap-3 px-3 py-2.5 border-b-2 border-border text-left disabled:opacity-50 cursor-pointer transition-colors ${
         alreadyInGroup
           ? 'bg-surface-light cursor-not-allowed'
-          : 'hover:bg-accent/20'
+          : 'hover:bg-yellow/30'
       }`}
     >
       {/* Poster thumbnail */}
@@ -546,12 +546,12 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
         <div className="flex items-center gap-2 mt-1">
           {year && <span className="text-[10px] font-mono text-text-secondary">{year}</span>}
           <span className={`border px-1 text-[9px] font-bold uppercase leading-none py-[1px] ${
-            isMovie ? 'border-cyan text-cyan bg-cyan/5' : 'border-accent text-accent bg-accent/5'
+            isMovie ? 'border-blue text-blue bg-blue/5' : 'border-yellow text-text bg-yellow/5'
           }`}>
             {isMovie ? 'MOVIE' : 'TV'}
           </span>
           {alreadyInGroup && (
-            <span className="border border-highlight px-1 text-[9px] font-bold uppercase leading-none py-[1px] text-highlight bg-highlight/5">
+            <span className="border border-pink px-1 text-[9px] font-bold uppercase leading-none py-[1px] text-pink bg-pink/5">
               {t.groups.alreadyInGroup}
             </span>
           )}
@@ -561,7 +561,7 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
       {/* Add button (hidden for already-in-group items) */}
       {!alreadyInGroup && (
         <span className={`border-2 border-border px-2.5 py-1 text-[10px] font-bold shrink-0 transition-colors ${
-          isAdding ? 'bg-accent text-text' : 'bg-accent text-text'
+          isAdding ? 'bg-yellow text-text' : 'bg-yellow text-text'
         }`}>
           {isAdding ? '...' : t.groups.addShowBtn}
         </span>
@@ -587,7 +587,7 @@ function GroupProgressSection({ groupId, showTvTimeId, mediaType, members, userI
   const pct = members.length ? Math.round((watchedMembers.length / members.length) * 100) : 0
 
   return (
-    <div className="bg-surface border-4 border-border shadow-brutal">
+    <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111]">
       <div className="flex items-center justify-between border-b-4 border-border px-4 py-3">
         <h3 className="text-sm font-bold uppercase">{isMovie ? t.groups.movieProgress : t.groups.episodeProgress}</h3>
         <span className="text-[10px] font-mono text-text-secondary">
@@ -601,7 +601,7 @@ function GroupProgressSection({ groupId, showTvTimeId, mediaType, members, userI
         <div className="p-4 space-y-3">
           <div className="flex items-center gap-3">
             <div className="flex-1 h-2 border-2 border-border bg-surface overflow-hidden">
-              <div className="h-full bg-accent" style={{ width: `${pct}%` }} />
+              <div className="h-full bg-yellow" style={{ width: `${pct}%` }} />
             </div>
             <span className="text-[10px] font-mono text-text-secondary">{pct}%</span>
           </div>
@@ -611,7 +611,7 @@ function GroupProgressSection({ groupId, showTvTimeId, mediaType, members, userI
               return (
                 <span
                   key={m.user_id}
-                  className={`flex items-center gap-1 text-[10px] font-bold uppercase border-2 px-1.5 py-0.5 ${watched ? 'border-border bg-accent text-text' : 'border-border bg-surface text-text-secondary'}`}
+                  className={`flex items-center gap-1 text-[10px] font-bold uppercase border-2 px-1.5 py-0.5 ${watched ? 'border-border bg-yellow text-text' : 'border-border bg-surface text-text-secondary'}`}
                 >
                   {watched ? <WatchedIcon className="w-3 h-3" /> : '—'} {memberLabel(m.user_id)}
                 </span>
@@ -624,7 +624,7 @@ function GroupProgressSection({ groupId, showTvTimeId, mediaType, members, userI
           <div className="flex flex-wrap gap-2 border-b-2 border-border px-4 py-2 bg-surface-light">
             {members.map(m => (
               <span key={m.user_id} className="flex items-center gap-1 text-[10px] font-bold uppercase">
-                <span className="w-3 h-3 border-2 border-border bg-accent" />
+                <span className="w-3 h-3 border-2 border-border bg-yellow" />
                 {memberLabel(m.user_id)}
               </span>
             ))}

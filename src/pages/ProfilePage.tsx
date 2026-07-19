@@ -23,10 +23,10 @@ export default function ProfilePage() {
   const { theme, setTheme, accent, setAccent } = useTheme()
   const { t, lang, setLang } = useI18n()
 
-  const dangerBtn = `w-full border-4 border-border py-2 text-xs font-bold uppercase transition-colors cursor-pointer ${
+  const dangerBtn = `w-full border-[3px] border-border py-2 text-xs font-bold uppercase transition-colors cursor-pointer ${
     theme === 'dark'
-      ? 'bg-[#f5f0eb] text-[#0a0a0a] hover:bg-accent hover:text-text'
-      : 'bg-[#0a0a0a] text-[#f5f0eb] hover:bg-accent hover:text-text'
+      ? 'bg-[#f5f0eb] text-[#0a0a0a] hover:bg-yellow hover:text-text'
+      : 'bg-[#0a0a0a] text-[#f5f0eb] hover:bg-yellow hover:text-text'
   }`
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -407,8 +407,8 @@ export default function ProfilePage() {
               key={s.key}
               onClick={() => { setSection(s.key); setSettingsOpen(false) }}
               aria-current={section === s.key}
-              className={`w-full text-left border-4 border-border px-4 py-3 text-sm font-bold uppercase transition-colors cursor-pointer ${
-                section === s.key ? 'bg-accent text-text border-text' : 'bg-surface text-text hover:bg-accent hover:border-text'
+              className={`w-full text-left border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors cursor-pointer ${
+                section === s.key ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow hover:border-text'
               }`}
             >
               {s.label}
@@ -419,11 +419,11 @@ export default function ProfilePage() {
         {/* Right Column: Section Content */}
         <div className="space-y-6 lg:col-span-3">
           {section === 'account' && (
-            <div className="space-y-8 bg-surface border-4 border-border p-4 lg:p-6 shadow-brutal">
+            <div className="space-y-8 bg-surface border-[3px] border-border p-4 lg:p-6 shadow-[8px_8px_0_#111]">
               {message && (
                 <div
                   role={message.type === 'error' ? 'alert' : undefined}
-                  className={`border-4 border-border p-3 text-xs font-bold uppercase ${message.type === 'success' ? 'bg-accent/10' : 'bg-highlight/10 text-highlight'}`}
+                  className={`border-[3px] border-border p-3 text-xs font-bold uppercase ${message.type === 'success' ? 'bg-yellow/30' : 'bg-pink/10 text-pink'}`}
                 >
                   {message.text}
                 </div>
@@ -444,7 +444,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     aria-label={t.auth.signOut}
-                    className="w-full border-4 border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-highlight hover:text-text transition-colors cursor-pointer"
+                    className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer"
                   >
                     {t.auth.signOut}
                   </button>
@@ -461,7 +461,7 @@ export default function ProfilePage() {
           )}
 
           {section === 'settings' && (
-            <div className="space-y-8 bg-surface border-4 border-border p-4 lg:p-6 shadow-brutal">
+            <div className="space-y-8 bg-surface border-[3px] border-border p-4 lg:p-6 shadow-[8px_8px_0_#111]">
               <SettingsBlock title={t.settings.appearance}>
                 <div className="space-y-5">
                   <div className="space-y-1.5">
@@ -482,7 +482,7 @@ export default function ProfilePage() {
                           key={key}
                           onClick={() => setAccent(key)}
                           className={`w-7 h-7 border-2 transition-all cursor-pointer ${
-                            accent === key ? 'border-border scale-110 ring-2 ring-accent ring-offset-2 ring-offset-surface' : 'border-transparent hover:scale-110'
+                            accent === key ? 'border-border scale-110 ring-2 ring-yellow ring-offset-2 ring-offset-surface' : 'border-transparent hover:scale-110'
                           }`}
                           style={{ backgroundColor: ACCENT_PRESETS[key] }}
                           aria-label={t.settings[key as keyof typeof t.settings] as string}
@@ -562,12 +562,12 @@ export default function ProfilePage() {
               <SettingsBlock title={t.profile.clearCache} bordered>
                 <p className="text-[10px] text-text-secondary leading-tight mb-3">{t.profile.clearCacheDesc}</p>
                 {cacheMessage && (
-                  <div className="border-4 border-border bg-accent/10 px-3 py-2 text-[10px] font-bold uppercase mb-3">{cacheMessage}</div>
+                  <div className="border-[3px] border-border bg-yellow/30 px-3 py-2 text-[10px] font-bold uppercase mb-3">{cacheMessage}</div>
                 )}
                 <button
                   onClick={() => setShowClearCacheConfirm(true)}
                   aria-label={t.profile.clearCache}
-                  className="w-full border-4 border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                  className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
                 >
                   {t.profile.clearCache}
                 </button>
@@ -580,7 +580,7 @@ export default function ProfilePage() {
               <div className="flex justify-end gap-2">
                 <TogglePill
                   active={historyView === 'timeline'}
-                  borderWidth="border-4"
+                  borderWidth="border-[3px]"
                   onClick={() => {
                     const nextParams = new URLSearchParams(searchParams)
                     nextParams.set('view', 'timeline')
@@ -592,7 +592,7 @@ export default function ProfilePage() {
                 </TogglePill>
                 <TogglePill
                   active={historyView === 'calendar'}
-                  borderWidth="border-4"
+                  borderWidth="border-[3px]"
                   onClick={() => {
                     const nextParams = new URLSearchParams(searchParams)
                     nextParams.set('view', 'calendar')
@@ -616,7 +616,7 @@ export default function ProfilePage() {
       {/* Confirmation Modals */}
       {showSignOutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowSignOutConfirm(false)}>
-          <div className="bg-surface border-8 border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.auth.signOut}
             </h3>
@@ -631,14 +631,14 @@ export default function ProfilePage() {
                   navigate('/login')
                 }}
                 aria-label="Confirm sign out"
-                className="flex-1 border-4 border-border bg-accent text-text px-4 py-3 text-sm font-bold uppercase hover:bg-accent hover:text-text transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase hover:bg-orange hover:text-text transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'SÍ, CERRAR SESIÓN' : 'YES, SIGN OUT'}
               </button>
               <button
                 onClick={() => setShowSignOutConfirm(false)}
                 aria-label="Cancel"
-                className="flex-1 border-4 border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -649,11 +649,11 @@ export default function ProfilePage() {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && (setShowDeleteConfirm(false), setDeleteError(null))}>
-          <div className="bg-surface border-8 border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.profile.deleteAccount}
             </h3>
-            <p className="text-sm font-bold text-highlight">
+            <p className="text-sm font-bold text-pink">
               {t.profile.deleteConfirm}
             </p>
             {deleteError && (
@@ -666,14 +666,14 @@ export default function ProfilePage() {
                   await handleDeleteAccount()
                 }}
                 aria-label="Confirm delete"
-                className="flex-1 border-4 border-border bg-highlight text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-highlight transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'ELIMINAR' : 'DELETE'}
               </button>
               <button
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError(null) }}
                 aria-label="Cancel"
-                className="flex-1 border-4 border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -684,7 +684,7 @@ export default function ProfilePage() {
 
       {showClearCacheConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowClearCacheConfirm(false)}>
-          <div className="bg-surface border-8 border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.profile.clearCache}
             </h3>
@@ -695,14 +695,14 @@ export default function ProfilePage() {
               <button
                 onClick={handleClearCache}
                 aria-label={t.profile.clearCache}
-                className="flex-1 border-4 border-border bg-accent text-text px-4 py-3 text-sm font-bold uppercase hover:bg-highlight transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase hover:bg-orange transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'LIMPIAR' : 'CLEAR'}
               </button>
               <button
                 onClick={() => setShowClearCacheConfirm(false)}
                 aria-label="Cancel"
-                className="flex-1 border-4 border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-accent transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -725,12 +725,12 @@ function ProfileHero({ user, initial, hideEmail, settingsOpen, onToggleSettings,
   t: ReturnType<typeof useI18n>['t']
 }) {
   return (
-    <div className="bg-surface border-4 border-border shadow-brutal p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5 animate-fade-in-up">
+    <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5 animate-fade-in-up">
       <div className="shrink-0">
         {user?.photoURL ? (
-          <img src={user.photoURL} alt="" className="w-20 h-20 sm:w-24 sm:h-24 border-4 border-border object-cover bg-accent" />
+          <img src={user.photoURL} alt="" className="w-20 h-20 sm:w-24 sm:h-24 border-[3px] border-border object-cover bg-yellow" />
         ) : (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-accent border-4 border-border flex items-center justify-center text-3xl sm:text-4xl font-bold text-bg">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow border-[3px] border-border flex items-center justify-center text-3xl sm:text-4xl font-bold text-bg">
             {initial}
           </div>
         )}
@@ -742,7 +742,7 @@ function ProfileHero({ user, initial, hideEmail, settingsOpen, onToggleSettings,
       </div>
       <button
         onClick={onToggleSettings}
-        className="sm:hidden border-4 border-border px-3 py-2 bg-surface text-text hover:bg-accent transition-colors cursor-pointer flex items-center gap-2 self-start"
+        className="sm:hidden border-[3px] border-border px-3 py-2 bg-surface text-text hover:bg-yellow transition-colors cursor-pointer flex items-center gap-2 self-start"
         aria-label={t.profile.settings}
         aria-expanded={settingsOpen}
       >
@@ -772,7 +772,7 @@ function TogglePill({ active, onClick, label, children, borderWidth = 'border-2'
       aria-label={label}
       aria-pressed={active}
       className={`flex items-center justify-center gap-1 px-2.5 whitespace-nowrap shrink-0 ${borderWidth} border-border py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${
-        active ? 'bg-accent text-text border-text' : 'bg-surface text-text hover:bg-accent'
+        active ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow'
       }`}
     >
       {children ?? label}
@@ -809,7 +809,7 @@ function ProfileForm({ displayName, setDisplayName, photoURL, setPhotoURL, email
   onSubmit: (e: React.FormEvent) => void
   t: ReturnType<typeof useI18n>['t']
 }) {
-  const inputCls = 'w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-accent/10 transition-colors'
+  const inputCls = 'w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-yellow/30 transition-colors'
   return (
     <section className="space-y-4">
       <h2 className="text-lg font-bold uppercase border-b-4 border-border pb-2 font-heading">{t.profile.settings}</h2>
@@ -832,7 +832,7 @@ function ProfileForm({ displayName, setDisplayName, photoURL, setPhotoURL, email
           <label htmlFor="profile-email" className="text-xs font-bold uppercase text-text-secondary">{t.profile.email}</label>
           <input id="profile-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="johndoe@example.com" className={inputCls} />
         </div>
-        <button type="submit" disabled={saving} aria-label={t.profile.save} className="w-full border-4 border-border bg-accent text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-highlight transition-colors cursor-pointer disabled:opacity-50">
+        <button type="submit" disabled={saving} aria-label={t.profile.save} className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-pink transition-colors cursor-pointer disabled:opacity-50">
           {saving ? t.profile.saving : t.profile.save}
         </button>
       </form>
@@ -869,10 +869,10 @@ function TraktSection(props: {
       <p className="text-xs text-text-secondary leading-tight">{t.trakt.importDesc}</p>
       {!props.connected ? (
         <div className="space-y-2">
-          <input type="text" value={props.clientId} onChange={e => props.setClientId(e.target.value)} placeholder={t.trakt.clientIdPlaceholder} className="w-full border-2 border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none focus:bg-accent/10" />
+          <input type="text" value={props.clientId} onChange={e => props.setClientId(e.target.value)} placeholder={t.trakt.clientIdPlaceholder} className="w-full border-2 border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none focus:bg-yellow/30" />
           <div className="flex gap-2">
-            <input type={props.showToken ? 'text' : 'password'} value={props.token} onChange={e => props.setToken(e.target.value)} placeholder={t.trakt.tokenPlaceholder} className="flex-1 border-2 border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none focus:bg-accent/10" />
-            <button type="button" onClick={() => props.setShowToken(!props.showToken)} className="border-2 border-border bg-surface px-2 hover:bg-accent transition-colors cursor-pointer shrink-0" aria-label={props.showToken ? 'Hide token' : 'Show token'}>
+            <input type={props.showToken ? 'text' : 'password'} value={props.token} onChange={e => props.setToken(e.target.value)} placeholder={t.trakt.tokenPlaceholder} className="flex-1 border-2 border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none focus:bg-yellow/30" />
+            <button type="button" onClick={() => props.setShowToken(!props.showToken)} className="border-2 border-border bg-surface px-2 hover:bg-yellow transition-colors cursor-pointer shrink-0" aria-label={props.showToken ? 'Hide token' : 'Show token'}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
                 {props.showToken ? (
                   <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
@@ -886,8 +886,8 @@ function TraktSection(props: {
             </button>
           </div>
           <div className="flex gap-2">
-            <button onClick={props.onTest} disabled={props.testing || !props.clientId.trim() || !props.token.trim()} className="flex-1 border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">{props.testing ? t.trakt.testing : t.trakt.test}</button>
-            <button onClick={props.onSave} disabled={!props.clientId.trim() || !props.token.trim()} className="flex-1 border-2 border-border bg-accent text-text py-1.5 text-xs font-bold uppercase hover:bg-highlight transition-colors disabled:opacity-40 cursor-pointer">{t.trakt.connect}</button>
+            <button onClick={props.onTest} disabled={props.testing || !props.clientId.trim() || !props.token.trim()} className="flex-1 border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.testing ? t.trakt.testing : t.trakt.test}</button>
+            <button onClick={props.onSave} disabled={!props.clientId.trim() || !props.token.trim()} className="flex-1 border-2 border-border bg-yellow text-text py-1.5 text-xs font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer">{t.trakt.connect}</button>
           </div>
           <button onClick={() => props.setShowInstructions(!props.showInstructions)} className="w-full text-xs font-bold uppercase text-text-secondary hover:text-text underline transition-colors cursor-pointer">{t.trakt.getToken}</button>
           {props.showInstructions && <div className="text-xs text-text-secondary leading-relaxed whitespace-pre-line bg-surface border border-border p-2">{t.trakt.instructions}</div>}
@@ -895,13 +895,13 @@ function TraktSection(props: {
         </div>
       ) : (
         <div className="space-y-2">
-          <div className="text-xs font-bold uppercase text-accent">{t.trakt.connected}</div>
+          <div className="text-xs font-bold uppercase text-yellow">{t.trakt.connected}</div>
           {props.importMsg && <ErrorBox message={props.importMsg} />}
-          <button onClick={props.onImportAll} disabled={props.importing} className="w-full border-4 border-border bg-accent text-text py-2 text-xs font-bold uppercase hover:bg-highlight transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importAll}</button>
-          <button onClick={props.onImportHistory} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importHistory}</button>
-          <button onClick={props.onImportRatings} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importRatings}</button>
-          <button onClick={props.onImportWatchlist} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-accent transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importWatchlist}</button>
-          <button onClick={props.onDisconnect} className="w-full border-2 border-border bg-highlight/10 text-highlight py-1.5 text-xs font-bold uppercase hover:bg-highlight hover:text-bg transition-colors cursor-pointer">{t.trakt.disconnect}</button>
+          <button onClick={props.onImportAll} disabled={props.importing} className="w-full border-[3px] border-border bg-yellow text-text py-2 text-xs font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importAll}</button>
+          <button onClick={props.onImportHistory} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importHistory}</button>
+          <button onClick={props.onImportRatings} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importRatings}</button>
+          <button onClick={props.onImportWatchlist} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importWatchlist}</button>
+          <button onClick={props.onDisconnect} className="w-full border-2 border-border bg-pink/10 text-pink py-1.5 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer">{t.trakt.disconnect}</button>
         </div>
       )}
     </SettingsBlock>

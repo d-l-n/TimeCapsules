@@ -706,23 +706,23 @@ export default function ShowDetail() {
 
   return (
     <div className="space-y-8">
-      {backdrop && <div className="relative h-64 sm:h-80 overflow-hidden sm:border-4 sm:border-border -mx-4 sm:-mx-0"><img src={backdrop} alt="" aria-hidden="true" className="w-full h-full object-cover" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)' }} /><div className="absolute inset-0 bg-gradient-to-t from-bg to-transparent" /><div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-bg to-transparent" /></div>}
-      <div className="relative -mt-16 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-4 border-border shadow-brutal space-y-4 z-10">
-        <button onClick={() => navigate(-1)} className="inline-block border-4 border-border px-3 sm:px-4 py-1.5 sm:py-2 bg-surface text-xs sm:text-sm font-bold hover:bg-accent transition-colors" aria-label={`${t.showDetail.back}`}>&larr; {t.showDetail.back}</button>
+      {backdrop && <div className="relative h-56 sm:h-72 overflow-hidden sm:border-[3px] sm:border-border -mx-4 sm:-mx-0"><img src={backdrop} alt="" aria-hidden="true" className="w-full h-full object-cover" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)' }} /><div className="absolute inset-0 bg-gradient-to-t from-bg to-transparent" /><div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-bg to-transparent" /></div>}
+      <div className="relative -mt-16 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] space-y-4 z-10">
+        <button onClick={() => navigate(-1)} className="btn-brutal text-xs sm:text-sm w-full sm:w-auto" aria-label={`${t.showDetail.back}`}>&larr; {t.showDetail.back}</button>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase bg-accent">{isMovie ? t.discover.movie : t.discover.tv}</span>
+          <span className="border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase bg-yellow">{isMovie ? t.discover.movie : t.discover.tv}</span>
         </div>
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold uppercase leading-tight break-words font-heading">{show.name}</h1>
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase leading-tight break-words font-heading">{show.name}</h1>
         {(tmdbOverview ?? show.synopsis) && <p className="text-sm leading-relaxed max-w-3xl">{tmdbOverview ?? show.synopsis}</p>}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
           {user?.uid && (
             <div className="relative">
               <button
                 onClick={() => setShowRatingPicker(prev => !prev)}
-                className="border-4 border-border px-2 sm:px-3 py-1.5 sm:py-2 bg-surface font-bold text-xs sm:text-sm hover:bg-accent transition-colors cursor-pointer"
+                className="btn-brutal text-xs sm:text-sm w-full sm:w-auto"
                 aria-label={t.showDetail.yourRating}
               >
-                {t.showDetail.yourRating}: <span className="text-highlight">{rating?.rating ?? '?'}/10</span>
+                {t.showDetail.yourRating}: <span className="text-pink">{rating?.rating ?? '?'}/10</span>
               </button>
               {showRatingPicker && (
                 <RatingPicker
@@ -736,14 +736,14 @@ export default function ShowDetail() {
               )}
             </div>
           )}
-          {!spoilerFree && show.imdb_rating != null && <div className="border-4 border-border px-2 sm:px-3 py-1.5 sm:py-2 bg-surface font-bold text-xs sm:text-sm">{t.showDetail.imdb}: <span className="text-highlight">{show.imdb_rating}</span>{show.imdb_votes != null && <span className="font-normal text-text-secondary ml-1">({show.imdb_votes.toLocaleString()} {t.showDetail.votes})</span>}</div>}
+          {!spoilerFree && show.imdb_rating != null && <div className="border-[3px] border-border px-2 sm:px-3 py-1.5 sm:py-2 bg-surface font-bold text-xs sm:text-sm">{t.showDetail.imdb}: <span className="text-pink">{show.imdb_rating}</span>{show.imdb_votes != null && <span className="font-normal text-text-secondary ml-1">({show.imdb_votes.toLocaleString()} {t.showDetail.votes})</span>}</div>}
           {!wlLoading && user?.uid && show?.tmdb_id && (
             <button
               onClick={async () => {
                 if (inWatchlist) { await removeFromWatchlist(user.uid, show.tmdb_id); setInWatchlist(false) }
                 else { await addToWatchlist(user.uid, show.tmdb_id); setInWatchlist(true) }
               }}
-              className={`border-4 border-border px-2 sm:px-3 py-1.5 sm:py-2 font-bold text-xs sm:text-sm transition-colors ${inWatchlist ? 'bg-accent text-text' : 'bg-surface text-text hover:bg-accent'}`}
+              className={`btn-brutal text-xs sm:text-sm w-full sm:w-auto ${inWatchlist ? 'bg-yellow' : 'bg-surface'}`}
               aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
             >
               {inWatchlist ? t.watchlist.added : t.watchlist.add}
@@ -751,13 +751,13 @@ export default function ShowDetail() {
           )}
           {user?.uid && show?.tmdb_id && (
             <div className="relative">
-              <button onClick={() => setShowListPicker(prev => !prev)} className="border-4 border-border px-2 sm:px-3 py-1.5 sm:py-2 font-bold text-xs sm:text-sm bg-surface text-text hover:bg-accent transition-colors cursor-pointer" aria-label={t.lists.addToList}>{t.lists.addToList}</button>
+              <button onClick={() => setShowListPicker(prev => !prev)} className="btn-brutal text-xs sm:text-sm w-full sm:w-auto">{t.lists.addToList}</button>
               {showListPicker && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowListPicker(false)} />
-                  <div className="absolute top-full left-0 mt-1 bg-surface border-4 border-border z-20 min-w-48 max-h-60 overflow-y-auto shadow-brutal">
+                  <div className="absolute top-full left-0 mt-1 bg-surface border-[3px] border-border z-20 min-w-48 max-h-60 overflow-y-auto shadow-[6px_6px_0_#111]">
                   {userLists.length === 0 && <div className="px-3 py-2 text-xs text-text-secondary">{t.lists.noLists}</div>}
-                  {userLists.map(list => {
+                      {userLists.map(list => {
                     const inList = showInLists.has(list.id)
                     return (
                       <button
@@ -766,7 +766,7 @@ export default function ShowDetail() {
                           if (inList) { await removeShowFromList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.delete(list.id); return n }) }
                           else { await addShowToList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.add(list.id); return n }) }
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 hover:bg-accent transition-colors cursor-pointer ${inList ? 'bg-accent text-text' : ''}`}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 hover:bg-yellow transition-colors cursor-pointer ${inList ? 'bg-yellow text-text' : ''}`}
                         aria-label={`${inList ? "Remove from" : "Add to"} list: ${list.name}`}
                       >
                         {list.name} {inList && 'OK'}
@@ -782,7 +782,7 @@ export default function ShowDetail() {
             <>
               <button
                 onClick={handleMovieToggle}
-                className={`border-4 border-border px-2 sm:px-3 py-1.5 sm:py-2 font-bold text-xs sm:text-sm transition-colors ${movieWatched ? 'bg-accent text-text' : 'bg-surface text-text hover:bg-accent'}`}
+                className={`btn-brutal text-xs sm:text-sm w-full sm:w-auto ${movieWatched ? 'bg-yellow' : 'bg-surface'}`}
                 aria-label={movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               >
                 {movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
@@ -805,7 +805,7 @@ export default function ShowDetail() {
               ) : (
                 <button
                   onClick={() => handleResumeClick(show.tmdb_id, resumePositions.get(show.tmdb_id))}
-                  className="border-2 border-border px-1.5 py-1 text-[10px] font-bold bg-surface text-text hover:bg-accent transition-colors"
+                  className="border-2 border-border px-1.5 py-1 text-[10px] font-bold bg-surface text-text hover:bg-yellow transition-colors"
                   aria-label={t.showDetail.resumePosition}
                 >
                   @ {resumePositions.has(show.tmdb_id) ? fmtPos(resumePositions.get(show.tmdb_id)!) : t.showDetail.noPosition}
@@ -825,12 +825,12 @@ export default function ShowDetail() {
         )}
       </div>
       {groups.length > 0 && (
-        <div className="bg-surface border-4 border-border p-3 flex items-center gap-3 flex-wrap">
+        <div className="bg-surface border-[3px] border-border p-3 flex items-center gap-3 flex-wrap">
           <span className="text-xs font-bold uppercase text-text-secondary">{t.watchParty.watchingTogether}</span>
           <select
             value={selectedGroupId ?? ''}
             onChange={e => setSelectedGroupId(e.target.value || null)}
-            className="border-2 border-border bg-surface text-xs font-bold px-2 py-1 uppercase cursor-pointer hover:bg-accent transition-colors"
+            className="border-2 border-border bg-surface text-xs font-bold px-2 py-1 uppercase cursor-pointer hover:bg-yellow transition-colors"
             aria-label={t.watchParty.selectGroup}
           >
             <option value="">{t.watchParty.justMe}</option>
@@ -857,14 +857,14 @@ export default function ShowDetail() {
         </div>
       )}
       {selectedGroupId && (
-        <div className="bg-surface border-4 border-border p-3 space-y-2">
+        <div className="bg-surface border-[3px] border-border p-3 space-y-2">
           <button
             onClick={() => setShowGroupFeed(prev => !prev)}
             className="w-full text-left cursor-pointer"
             aria-expanded={showGroupFeed}
             aria-label={t.watchParty.activity}
           >
-            <h3 className="text-[10px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 flex items-center gap-1.5 hover:text-accent transition-colors">
+            <h3 className="text-[10px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 flex items-center gap-1.5 hover:text-orange transition-colors">
               <span>{showGroupFeed ? '▼' : '▶'}</span>
               <span>{t.watchParty.activity}</span>
               {groupWatchFeed.length > 0 && <span className="border border-border px-1 text-[9px]">{groupWatchFeed.length}</span>}
@@ -880,7 +880,7 @@ export default function ShowDetail() {
                   const isYou = ev.marked_by === user?.uid
                   return (
                     <div key={`${ev.created_at}-${i}`} className="text-[10px] font-bold flex items-center gap-1.5">
-                      <span className={`w-2 h-2 border border-border ${isYou ? 'bg-accent' : 'bg-highlight'}`} />
+                      <span className={`w-2 h-2 border border-border ${isYou ? 'bg-yellow' : 'bg-pink'}`} />
                       <span className="text-text-secondary">{isYou ? t.groups.you : t.watchParty.aMember}</span>
                       <span>{t.watchParty.watchedEpisode.replace('{episode}', ep ? `${t.showDetail.episode} ${ep.episode_number}` : `#${ev.episode_id}`)}</span>
                     </div>
@@ -892,18 +892,18 @@ export default function ShowDetail() {
         </div>
       )}
       {!isMovie && hasTmdbData && remainingCount > 0 && (
-        <div className="bg-surface border-4 border-border p-4 space-y-2">
+        <div className="bg-surface border-[3px] border-border p-4 space-y-2">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xs font-bold uppercase">{t.showDetail.remaining}</span>
             <span className="text-xs font-bold">{remainingCount} / {totalEpsCount}{remainingDuration && <span className="font-normal text-text-secondary ml-2">({remainingDuration})</span>}</span>
           </div>
           <div className="h-3 bg-surface-light border-2 border-border overflow-hidden">
-            <div className="h-full bg-accent progress-shimmer transition-all duration-500 ease-out" style={{ width: `${totalEpsCount ? ((totalEpsCount - remainingCount) / totalEpsCount) * 100 : 0}%` }} />
+            <div className="h-full bg-yellow progress-shimmer transition-all duration-500 ease-out" style={{ width: `${totalEpsCount ? ((totalEpsCount - remainingCount) / totalEpsCount) * 100 : 0}%` }} />
           </div>
         </div>
       )}
       {!isMovie && hasTmdbData && remainingCount === 0 && (
-        <div className="bg-surface border-4 border-border p-3 text-xs font-bold text-center bg-accent/10">{t.showDetail.allCaughtUp}</div>
+        <div className="bg-surface border-[3px] border-border p-3 text-xs font-bold text-center bg-green/30">{t.showDetail.allCaughtUp}</div>
       )}
       {isMovie && collection ? (
         <CollectionGrid collection={collection} parts={collectionParts} excludeId={show?.tmdb_id} t={t} />
@@ -1011,10 +1011,10 @@ export default function ShowDetail() {
       )}
       {groupWatchToast && (
         <div className="fixed bottom-24 right-4 z-50 animate-slide-up">
-          <div className="bg-surface border-4 border-accent px-4 py-3 shadow-brutal max-w-xs">
+          <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-[12px_12px_0_#111] max-w-xs">
             <div className="text-[10px] font-bold text-text-secondary uppercase">{t.watchParty.watchingTogether}</div>
             <div className="text-xs font-bold mt-1">
-              <span className="text-highlight">{t.watchParty.aMember}</span>
+              <span className="text-pink">{t.watchParty.aMember}</span>
               {' '}{t.watchParty.watchedEpisode.replace('{episode}', (() => {
                 const ep = mergedEpisodes.find(e => e.id === groupWatchToast.episode_id)
                 return ep ? `${t.showDetail.episode} ${ep.episode_number} — ${ep.title}` : `#${groupWatchToast.episode_id}`
@@ -1029,7 +1029,7 @@ export default function ShowDetail() {
           style={{ left: feedbackEp.x, top: feedbackEp.y, transform: 'translate(-50%, -50%)' }}
           aria-hidden="true"
         >
-          <span className={`text-3xl font-bold ${feedbackEp.watched ? 'text-accent' : 'text-highlight'}`}>
+          <span className={`text-3xl font-bold ${feedbackEp.watched ? 'text-yellow' : 'text-pink'}`}>
             {feedbackEp.watched ? 'OK' : 'X'}
           </span>
         </div>

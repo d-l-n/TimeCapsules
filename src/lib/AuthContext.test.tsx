@@ -1,15 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
+import { I18nProvider } from './I18nContext'
 import { AuthProvider, useAuth } from './AuthContext'
 
 vi.mock('./firebase-auth', () => ({
+  app: {},
   auth: {},
   googleProvider: {},
 }))
 
 vi.mock('firebase/app', () => ({
   initializeApp: vi.fn(() => ({})),
+}))
+
+vi.mock('./firebase', () => ({ db: {} }))
+vi.mock('firebase/firestore', () => ({
+  initializeFirestore: vi.fn(() => ({})),
+  persistentLocalCache: vi.fn(() => ({})),
+  persistentMultipleTabManager: vi.fn(() => ({})),
+}))
+
+vi.mock('../services/listService', () => ({
+  ensureDefaultLists: vi.fn(() => Promise.resolve()),
+  syncDefaultLists: vi.fn(() => Promise.resolve()),
+}))
+
+vi.mock('../services/dashboardData', () => ({
+  gatherSeedData: vi.fn(() => Promise.resolve({})),
 }))
 
 vi.mock('firebase/auth', () => ({
@@ -27,7 +45,11 @@ const firebaseAuth = await import('firebase/auth')
 const mockUser = { uid: 'user-1', email: 'test@test.com', displayName: 'Test User' } as any
 
 function wrapper({ children }: { children: ReactNode }) {
-  return <AuthProvider>{children}</AuthProvider>
+  return (
+    <I18nProvider>
+      <AuthProvider>{children}</AuthProvider>
+    </I18nProvider>
+  )
 }
 
 describe('AuthContext', () => {

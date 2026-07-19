@@ -74,8 +74,8 @@ export default function SeasonSection({
         aria-expanded={!collapsed}
         aria-label={`${t.showDetail.season} ${seasonNum}`}
       >
-        <h2 className="text-base sm:text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4 flex items-center gap-2 sm:gap-3 flex-wrap">
-          <span className="hover:text-accent transition-colors">{collapsed ? '▶' : '▼'}</span>
+        <h2 className="text-base sm:text-lg font-black uppercase border-b-[3px] border-border pb-2 mb-4 flex items-center gap-2 sm:gap-3 flex-wrap font-heading">
+          <span className="hover:text-orange transition-colors">{collapsed ? '▶' : '▼'}</span>
           <span>{t.showDetail.season} {season}</span>
           <span className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-xs sm:text-sm">{hasTmdbData ? `${watchedCount} / ${eps.length}` : eps.length}</span>
           {hasTmdbData && eps.length - watchedCount > 0 && (
@@ -87,7 +87,7 @@ export default function SeasonSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkSeasonWatched(seasonNum, eps.map(e => e.id)) }}
                   disabled={markingSeason === seasonNum}
-                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface hover:bg-accent transition-colors disabled:opacity-40"
+                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface hover:bg-yellow transition-colors disabled:opacity-40"
                   aria-label={t.showDetail.markAllWatched}
                 >
                   {markingSeason === seasonNum ? '...' : t.showDetail.markAllWatched}
@@ -97,7 +97,7 @@ export default function SeasonSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkSeasonUnwatched(seasonNum, eps.map(e => e.id)) }}
                   disabled={markingSeason === seasonNum}
-                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface hover:bg-accent transition-colors disabled:opacity-40"
+                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface hover:bg-yellow transition-colors disabled:opacity-40"
                   aria-label={t.showDetail.markAllUnwatched}
                 >
                   {markingSeason === seasonNum ? '...' : t.showDetail.markAllUnwatched}
@@ -106,7 +106,7 @@ export default function SeasonSection({
               {selectedGroupId && groupMembers.length > 1 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onSortByProgressToggle(seasonNum) }}
-                  className={`border-2 border-border px-2 py-0.5 text-[10px] font-bold transition-colors ${sortByProgress.has(seasonNum) ? 'bg-accent text-text' : 'bg-surface text-text hover:bg-accent'}`}
+                  className={`border-2 border-border px-2 py-0.5 text-[10px] font-bold transition-colors ${sortByProgress.has(seasonNum) ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
                   title="Sort by most group members watched"
                   aria-label="Sort by group progress"
                 >
@@ -118,7 +118,7 @@ export default function SeasonSection({
         </h2>
       </div>
       {selectedGroupId && groupMembers.length > 1 && (
-        <div className="mb-3 border-2 border-border p-2 bg-surface">
+        <div className="mb-3 border-2 border-border p-2 bg-surface-light">
           <div className="text-[9px] font-bold uppercase text-text-secondary mb-1.5">{t.watchParty.groupProgress}</div>
           {groupMembers.map(m => {
             const memberCount = memberSeasonProgress.counts.get(m.user_id)?.get(seasonNum) ?? 0
@@ -142,16 +142,18 @@ export default function SeasonSection({
       )}
       {!collapsed && (
         <div className="grid grid-cols-1 gap-2">
-          {sortedEps.map(ep => {
+          {sortedEps.map((ep, idx) => {
             const isWatched = (watchedCounts.get(ep.id) ?? 0) > 0
             const isToggling = toggling === ep.id
             const isExpanded = expandedSynopsis.has(ep.id)
             const hasInfo = !!(ep.overview || ep.still_path || ep.air_date)
+            const isCurrent = !isWatched && idx === sortedEps.findIndex(e => (watchedCounts.get(e.id) ?? 0) <= 0)
             return (
               <EpisodeRow
                 key={`${ep.season_number}-${ep.episode_number}`}
                 ep={ep}
                 isWatched={isWatched}
+                isCurrent={isCurrent}
                 isToggling={isToggling}
                 isExpanded={isExpanded}
                 hasInfo={hasInfo}

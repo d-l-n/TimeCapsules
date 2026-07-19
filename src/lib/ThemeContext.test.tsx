@@ -61,12 +61,12 @@ describe('ThemeContext', () => {
 
     it('provides default accent color', () => {
       const { result } = renderHook(() => useTheme(), { wrapper })
-      expect(result.current.accent).toBe('lime')
+      expect(result.current.accent).toBe('yellow')
     })
 
-    it('returns correct accentHex for default lime', () => {
+    it('returns correct accentHex for default yellow', () => {
       const { result } = renderHook(() => useTheme(), { wrapper })
-      expect(result.current.accentHex).toBe(ACCENT_PRESETS.lime)
+      expect(result.current.accentHex).toBe(ACCENT_PRESETS.yellow)
     })
 
     it('restores accent from localStorage', () => {
@@ -78,7 +78,7 @@ describe('ThemeContext', () => {
     it('ignores invalid stored accent and defaults to lime', () => {
       localStorage.setItem('timecapsules-accent', 'invalid_color')
       const { result } = renderHook(() => useTheme(), { wrapper })
-      expect(result.current.accent).toBe('lime')
+      expect(result.current.accent).toBe('yellow')
     })
 
     it('sets accent color', () => {
@@ -90,8 +90,8 @@ describe('ThemeContext', () => {
 
     it('persists accent to localStorage', () => {
       const { result } = renderHook(() => useTheme(), { wrapper })
-      act(() => result.current.setAccent('cyan'))
-      expect(localStorage.getItem('timecapsules-accent')).toBe('cyan')
+      act(() => result.current.setAccent('blue'))
+      expect(localStorage.getItem('timecapsules-accent')).toBe('blue')
     })
 
     it('sets --color-accent CSS variable', () => {
@@ -102,16 +102,18 @@ describe('ThemeContext', () => {
   })
 
   describe('ACCENT_PRESETS', () => {
-    it('defines 5 accent colors', () => {
-      expect(Object.keys(ACCENT_PRESETS)).toHaveLength(5)
+    it('defines 7 accent colors', () => {
+      expect(Object.keys(ACCENT_PRESETS)).toHaveLength(7)
     })
 
     it('has all required keys', () => {
-      expect(ACCENT_PRESETS).toHaveProperty('lime')
+      expect(ACCENT_PRESETS).toHaveProperty('yellow')
+      expect(ACCENT_PRESETS).toHaveProperty('blue')
+      expect(ACCENT_PRESETS).toHaveProperty('green')
       expect(ACCENT_PRESETS).toHaveProperty('pink')
-      expect(ACCENT_PRESETS).toHaveProperty('cyan')
       expect(ACCENT_PRESETS).toHaveProperty('orange')
       expect(ACCENT_PRESETS).toHaveProperty('purple')
+      expect(ACCENT_PRESETS).toHaveProperty('red')
     })
 
     it('has valid color hex values', () => {

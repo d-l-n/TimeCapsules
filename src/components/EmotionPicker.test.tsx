@@ -45,7 +45,7 @@ describe('EmotionPicker', () => {
   it('highlights current emotion with accent class', () => {
     render(<EmotionPicker {...baseProps} currentEmotion="happy" />)
     const happyBtn = screen.getByLabelText('Happy')
-    expect(happyBtn.className).toContain('bg-accent')
+    expect(happyBtn.className).toContain('bg-yellow')
   })
 
   it('calls setEmotion and onSelect when an emotion is picked', async () => {
@@ -97,7 +97,7 @@ describe('EmotionPicker', () => {
 
   it('does not call onClose when clicking inside the modal', () => {
     render(<EmotionPicker {...baseProps} />)
-    const innerDiv = screen.getByRole('dialog').querySelector('[class*="border-8"]')
+    const innerDiv = screen.getByRole('dialog').querySelector('[class*="border-[3px]"]')
     if (innerDiv) {
       fireEvent.click(innerDiv)
       expect(baseProps.onClose).not.toHaveBeenCalled()

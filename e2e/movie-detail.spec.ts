@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test'
-import { loginAsGuest, navigateToShow, KNOWN_SHOWS } from './helpers'
+import { login, navigateToShow, KNOWN_SHOWS } from './helpers'
 
 const TMDB_MOVIE = KNOWN_SHOWS['the-matrix']
 
 test.describe('Movie Detail', () => {
   test.beforeEach(async ({ page }) => {
-    await loginAsGuest(page)
+    await login(page)
   })
 
   test('navigates to movie detail with title and MARK AS WATCHED', async ({ page }) => {

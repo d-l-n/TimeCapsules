@@ -20,7 +20,7 @@ export default function CollectionGrid({ collection, parts, excludeId, t }: Coll
             <Link
               key={p.id}
               to={`/show/-${p.id}`}
-              className={`border-4 border-border bg-surface hover:bg-accent transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(p.id) % 5]} card-brutal`}
+              className={`border-[3px] border-border bg-surface hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(p.id) % 5]}`}
             >
               {p.poster_path ? (
                 <img src={getTmdbImage(p.poster_path, 'w500')!} alt={p.title || p.name || ''} className="w-full" />
