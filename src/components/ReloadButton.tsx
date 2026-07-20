@@ -42,7 +42,7 @@ export default function ReloadButton() {
       onClick={handleClick}
       disabled={updating || complete}
       aria-label={complete ? t.install.updated : updating ? t.install.updating : t.install.update}
-      className={`fixed bottom-4 right-4 z-40 border-[3px] px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all shadow-[8px_8px_0_#111] ${complete
+      className={`fixed bottom-4 right-4 z-40 border-[3px] px-4 py-3 text-sm font-bold uppercase tracking-wider transition-all shadow-brutal ${complete
         ? 'border-yellow bg-yellow text-text cursor-default'
         : updating
           ? 'border-border bg-yellow/50 text-text/70 animate-pulse cursor-wait'

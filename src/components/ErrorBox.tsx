@@ -35,7 +35,7 @@ export default function ErrorBox({ message, title, onRetry, retryLabel, classNam
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-3 border-2 border-pink bg-surface text-pink px-3 py-1.5 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer"
+          className="mt-3 border-2 border-pink bg-surface text-pink px-3 py-1.5 text-xs font-bold uppercase hover:bg-pink hover:text-text transition-colors cursor-pointer"
         >
           {retryLabel ?? 'RETRY'}
         </button>

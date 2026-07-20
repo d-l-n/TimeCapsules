@@ -223,10 +223,10 @@ export default function GroupDetail() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 animate-fade-in-up">
+      <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate(-1)} className="border-[3px] border-border px-3 py-1.5 bg-surface text-xs font-bold hover:bg-yellow transition-colors shrink-0">&larr;</button>
-          <div className="w-14 h-14 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-2xl font-bold text-bg">
+          <div className="w-14 h-14 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-2xl font-bold text-text">
             {(groupName || t.groups.groupDetail).charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0 flex-1">
@@ -249,7 +249,7 @@ export default function GroupDetail() {
                   const label = m.user_id === user?.uid ? t.groups.you : (m.display_name || m.user_id.slice(0, 8))
                   return (
                     <div key={m.user_id} className="flex items-center gap-2 border-2 border-border p-2">
-                      <div className="w-7 h-7 bg-yellow border-2 border-border flex items-center justify-center text-[11px] font-bold text-bg shrink-0">
+                      <div className="w-7 h-7 bg-yellow border-2 border-border flex items-center justify-center text-[11px] font-bold text-text shrink-0">
                         {label.charAt(0).toUpperCase()}
                       </div>
                       <span className="text-xs font-bold truncate flex-1">{label}</span>
@@ -262,7 +262,7 @@ export default function GroupDetail() {
               <button
                 onClick={() => setConfirmLeave(true)}
                 aria-label={t.groups.leaveGroup}
-                className="w-full border-2 border-border bg-pink/10 text-pink py-2 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer"
+                className="w-full border-2 border-border bg-pink/10 text-pink py-2 text-xs font-bold uppercase hover:bg-pink hover:text-text transition-colors cursor-pointer"
               >
                 {t.groups.leaveGroup}
               </button>
@@ -320,7 +320,7 @@ export default function GroupDetail() {
 
                 {/* Trending dropdown (shown when input is empty and focused) */}
                 {showDropdown && !searchQuery.trim() && trending.length > 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface shadow-[8px_8px_0_#111] max-h-80 overflow-y-auto">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface shadow-brutal max-h-80 overflow-y-auto">
                     <div className="sticky top-0 bg-surface border-b-2 border-border px-3 py-2 text-[10px] font-bold uppercase text-text-secondary">
                       {trendingLoading ? t.groups.trendingLoading : t.groups.trending}
                     </div>
@@ -345,7 +345,7 @@ export default function GroupDetail() {
 
                 {/* Search results dropdown */}
                 {showDropdown && searchQuery.trim() && filteredResults.length > 0 && (
-                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface shadow-[8px_8px_0_#111] max-h-80 overflow-y-auto">
+                  <div className="absolute z-50 top-full left-0 right-0 mt-1 border-[3px] border-border bg-surface shadow-brutal max-h-80 overflow-y-auto">
                     {filteredResults.map(item => (
                       <SearchResultItem
                         key={item.id}
@@ -450,13 +450,13 @@ export default function GroupDetail() {
 
       {confirmLeave && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true">
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.leaveConfirm}</h3>
             <div className="flex gap-3">
               <button
                 onClick={handleLeave}
                 aria-label="Confirm leave group"
-                className="flex-1 border-[3px] border-border bg-pink text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'SALIR' : 'LEAVE'}
               </button>
@@ -474,13 +474,13 @@ export default function GroupDetail() {
 
       {confirmRemove != null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true">
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.removeConfirm}</h3>
             <div className="flex gap-3">
               <button
                 onClick={confirmRemoveShow}
                 aria-label="Confirm remove"
-                className="flex-1 border-[3px] border-border bg-pink text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'QUITAR' : 'REMOVE'}
               </button>
@@ -587,7 +587,7 @@ function GroupProgressSection({ groupId, showTvTimeId, mediaType, members, userI
   const pct = members.length ? Math.round((watchedMembers.length / members.length) * 100) : 0
 
   return (
-    <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111]">
+    <div className="bg-surface border-[3px] border-border shadow-brutal">
       <div className="flex items-center justify-between border-b-4 border-border px-4 py-3">
         <h3 className="text-sm font-bold uppercase">{isMovie ? t.groups.movieProgress : t.groups.episodeProgress}</h3>
         <span className="text-[10px] font-mono text-text-secondary">

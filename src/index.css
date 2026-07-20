@@ -1,10 +1,12 @@
 @import "tailwindcss";
+@custom-media --lg (width >= 1100px);
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap');
 
 /* ══════════════════════════════════════════════════════
    Time Capsules — Metro × Neo Brutalism design system
    Flat colors · thick black borders · hard shadows
    ══════════════════════════════════════════════════════ */
-@theme {
+:root {
   --color-bg: #F6F6F3;
   --color-surface: #FFFFFF;
   --color-surface-light: #ECEAE4;
@@ -12,7 +14,6 @@
   --color-text: #111111;
   --color-text-secondary: #555555;
 
-  --color-yellow: #FFD400;
   --color-blue: #4D7CFE;
   --color-green: #76E56F;
   --color-pink: #FF5CA8;
@@ -21,14 +22,66 @@
   --color-red: #FF4A4A;
 
   --color-accent: #FFD400;
+  --color-accent-border: #111111;
   --color-highlight: #FF5CA8;
+
+  /* Brutalist shadows — solid offset blocks */
+  --shadow-brutal-xs: 3px 3px 0 var(--color-border);
+  --shadow-brutal-sm: 4px 4px 0 var(--color-border);
+  --shadow-brutal-md: 6px 6px 0 var(--color-border);
+  --shadow-brutal:    8px 8px 0 var(--color-border);
+  --shadow-brutal-lg: 10px 10px 0 var(--color-border);
+  --shadow-brutal-xl: 12px 12px 0 var(--color-border);
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f0f0f;
+  --color-surface: #1c1c1c;
+  --color-surface-light: #282828;
+  --color-border: #f0f0f0;
+  --color-text: #f0f0f0;
+  --color-text-secondary: #999999;
+
+  --shadow-brutal-xs: 3px 3px 0 var(--color-border);
+  --shadow-brutal-sm: 4px 4px 0 var(--color-border);
+  --shadow-brutal-md: 6px 6px 0 var(--color-border);
+  --shadow-brutal:    8px 8px 0 var(--color-border);
+  --shadow-brutal-lg: 10px 10px 0 var(--color-border);
+  --shadow-brutal-xl: 12px 12px 0 var(--color-border);
+}
+
+@theme {
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-light: var(--color-surface-light);
+  --color-border: var(--color-border);
+  --color-text: var(--color-text);
+  --color-text-secondary: var(--color-text-secondary);
+
+  --color-yellow: var(--color-accent);
+  --color-blue: var(--color-blue);
+  --color-green: var(--color-green);
+  --color-pink: var(--color-pink);
+  --color-orange: var(--color-orange);
+  --color-purple: var(--color-purple);
+  --color-red: var(--color-red);
+
+  --color-accent: var(--color-accent);
+  --color-accent-border: var(--color-accent-border);
+  --color-highlight: var(--color-highlight);
 
   --font-family-mono: 'IBM Plex Mono', 'Courier New', Courier, monospace;
   --font-family-sans: 'Inter', 'Geist', system-ui, sans-serif;
   --font-family-heading: 'Inter', 'Geist', system-ui, sans-serif;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@500;600;700&display=swap');
+/* ── Tailwind v4 shadow utilities (theme-aware) ─────── */
+@utility shadow-brutal-xs { box-shadow: var(--shadow-brutal-xs); }
+@utility shadow-brutal-sm { box-shadow: var(--shadow-brutal-sm); }
+@utility shadow-brutal-md { box-shadow: var(--shadow-brutal-md); }
+@utility shadow-brutal    { box-shadow: var(--shadow-brutal); }
+@utility shadow-brutal-lg { box-shadow: var(--shadow-brutal-lg); }
+@utility shadow-brutal-xl { box-shadow: var(--shadow-brutal-xl); }
 
 @utility font-heading {
   font-family: var(--font-family-heading);
@@ -41,8 +94,9 @@
   min-width: 0;
 }
 
-body {
+html, body {
   margin: 0;
+  overflow-x: hidden;
   background-color: var(--color-bg);
   color: var(--color-text);
   font-family: 'Inter', 'Geist', system-ui, sans-serif;
@@ -81,44 +135,44 @@ a.hover\:bg-highlight:hover,
   letter-spacing: 0.02em;
   padding: 0.75rem 1.25rem;
   cursor: pointer;
-  box-shadow: 4px 4px 0 var(--color-border);
+  box-shadow: var(--shadow-brutal-sm);
   transition: translate 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
 .btn-brutal:hover:not(:disabled) {
   translate: -2px -2px;
-  box-shadow: 6px 6px 0 var(--color-border);
+  box-shadow: var(--shadow-brutal-md);
 }
 .btn-brutal:active:not(:disabled) {
   translate: 2px 2px;
-  box-shadow: 0 0 0 var(--color-border);
+  box-shadow: none;
   transition: none;
 }
 .btn-brutal:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-accent { background: var(--color-accent); }
-.btn-accent:hover:not(:disabled) { background: var(--color-yellow); }
+.btn-accent:hover:not(:disabled) { background: var(--color-accent); filter: brightness(1.1); }
 .btn-highlight { background: var(--color-highlight); }
 .btn-highlight:hover:not(:disabled) { background: var(--color-pink); }
 
 /* Giant CTA variant */
-.btn-xl { padding: 1rem 1.75rem; font-size: 1rem; box-shadow: 6px 6px 0 var(--color-border); }
-.btn-xl:hover:not(:disabled) { box-shadow: 8px 8px 0 var(--color-border); }
+.btn-xl { padding: 1rem 1.75rem; font-size: 1rem; box-shadow: var(--shadow-brutal-md); }
+.btn-xl:hover:not(:disabled) { box-shadow: var(--shadow-brutal); }
 
 /* ── Brutalist cards ─────────────────────────────────── */
 .card-brutal {
   background: var(--color-surface);
   border: 3px solid var(--color-border);
   border-radius: 4px;
-  box-shadow: 8px 8px 0 var(--color-border);
+  box-shadow: var(--shadow-brutal);
 }
-.card-brutal-sm { box-shadow: 4px 4px 0 var(--color-border); }
+.card-brutal-sm { box-shadow: var(--shadow-brutal-sm); }
 
-.shadow-brutal-xl { box-shadow: 12px 12px 0 var(--color-border); }
+.shadow-brutal-xl-static { box-shadow: var(--shadow-brutal-xl); }
 
 /* Hover lift for clickable cards */
 .card-lift { transition: translate 0.12s ease, box-shadow 0.12s ease; }
-.card-lift:hover { translate: -2px -2px; box-shadow: 10px 10px 0 var(--color-border); }
-.card-lift:active { translate: 2px 2px; box-shadow: 0 0 0 var(--color-border); transition: none; }
+.card-lift:hover { translate: -2px -2px; box-shadow: var(--shadow-brutal-lg); }
+.card-lift:active { translate: 2px 2px; box-shadow: none; transition: none; }
 
 /* ── Metro tile size spans (12-col grid) ────────────── */
 .tile-1x1 { grid-column: span 1; grid-row: span 1; }
@@ -137,6 +191,13 @@ a.hover\:bg-highlight:hover,
   border-right: 3px solid var(--color-text);
   color: #FFFFFF;
 }
+
+/* Dark mode: sidebar flips to white (var --color-text = #f0f0f0) */
+[data-theme="dark"] .sidebar {
+  color: #111111;
+  border-right-color: var(--color-border);
+}
+
 .sidebar-link {
   display: flex;
   align-items: center;
@@ -149,12 +210,15 @@ a.hover\:bg-highlight:hover,
   font-size: 0.8rem;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.sidebar-link:hover { background: #222222; }
-.sidebar-link--active {
+.sidebar-link:hover { background: rgba(255,255,255,0.1); }
+[data-theme="dark"] .sidebar-link { color: #111111; }
+[data-theme="dark"] .sidebar-link:hover { background: rgba(0,0,0,0.06); }
+.sidebar-link--active,
+.sidebar-link--active:hover {
   background: var(--color-accent);
-  color: var(--color-text);
+  color: #111111;
 }
-.sidebar-link--active svg { color: var(--color-text); }
+.sidebar-link--active svg { color: #111111; }
 
 .sidebar-pill {
   display: flex;
@@ -162,13 +226,137 @@ a.hover\:bg-highlight:hover,
   justify-content: center;
   width: 44px;
   height: 44px;
-  border: 3px solid #FFFFFF;
+  border: 3px solid rgba(255,255,255,0.3);
   background: var(--color-text);
   color: #FFFFFF;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.sidebar-pill:hover { background: #222222; }
-.sidebar-pill--active { background: var(--color-accent); color: var(--color-text); border-color: var(--color-accent); }
+/* Dark mode pill: dark pill on white sidebar */
+[data-theme="dark"] .sidebar-pill {
+  background: #111111;
+  border-color: rgba(0,0,0,0.15);
+  color: #FFFFFF;
+}
+.sidebar-pill:hover { background: rgba(255,255,255,0.1); }
+[data-theme="dark"] .sidebar-pill:hover { background: #222222; }
+.sidebar-pill--active { background: var(--color-accent); color: #111111; border-color: var(--color-accent); }
+
+/* Invert pill in dark mode: white bg + subtle border — matches divider/profile frame */
+[data-theme="dark"] .sidebar-pill--invert {
+  background: #FFFFFF;
+  border-color: rgba(0,0,0,0.15);
+  color: #111111;
+}
+[data-theme="dark"] header.bg-text .sidebar-pill--invert {
+  background: #111111;
+  border-color: rgba(0,0,0,0.15);
+  color: #FFFFFF;
+}
+
+/* ── Sidebar overlay & drawer (tablet/hamburger) ────── */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0,0,0,0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+[data-theme="dark"] .sidebar-overlay {
+  background: rgba(0,0,0,0.7);
+}
+
+.sidebar-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 224px;
+  z-index: 50;
+  background: var(--color-text);
+  border-right: 3px solid var(--color-text);
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  box-shadow: 8px 0 16px rgba(0,0,0,0);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease;
+}
+
+[data-theme="dark"] .sidebar-drawer {
+  color: #111111;
+  border-right-color: var(--color-border);
+}
+
+.sidebar-drawer--open {
+  transform: translateX(0);
+  box-shadow: 8px 0 24px rgba(0,0,0,0.12);
+}
+
+[data-theme="dark"] .sidebar-drawer--open {
+  box-shadow: 8px 0 24px rgba(0,0,0,0.4);
+}
+
+/* Nav items stagger entrance inside drawer */
+.sidebar-drawer .sidebar-link {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.12s ease, color 0.12s ease;
+  transition-delay: 0s;
+}
+
+.sidebar-drawer--open .sidebar-link {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar-drawer--open .sidebar-link:nth-child(1) { transition-delay: 0.04s; }
+.sidebar-drawer--open .sidebar-link:nth-child(2) { transition-delay: 0.07s; }
+.sidebar-drawer--open .sidebar-link:nth-child(3) { transition-delay: 0.10s; }
+.sidebar-drawer--open .sidebar-link:nth-child(4) { transition-delay: 0.13s; }
+.sidebar-drawer--open .sidebar-link:nth-child(5) { transition-delay: 0.16s; }
+
+/* On close: snap links out quickly (no delay, fast duration) */
+.sidebar-drawer:not(.sidebar-drawer--open) .sidebar-link {
+  transition-duration: 0.12s, 0.12s, 0.12s, 0.12s;
+  transition-delay: 0s;
+}
+
+.sidebar-drawer .sidebar-link { color: #FFFFFF; }
+[data-theme="dark"] .sidebar-drawer .sidebar-link { color: #111111; }
+.sidebar-drawer .sidebar-link--active,
+.sidebar-drawer .sidebar-link--active:hover {
+  color: #111111;
+}
+
+[data-theme="dark"] .sidebar-drawer .text-white,
+[data-theme="dark"] .sidebar-drawer [class*="border-white"] {
+  color: #111111 !important;
+  border-color: rgba(0,0,0,0.15) !important;
+}
+
+[data-theme="dark"] .sidebar-drawer a[href*="/profile"]:not([class*="bg-yellow"]) {
+  color: #111111;
+}
+
+[data-theme="dark"] .sidebar-drawer img,
+[data-theme="dark"] .sidebar-drawer .w-9 {
+  border-color: #111111 !important;
+}
+
+/* ── Hide scrollbar (ribbon nav) ──────────────────────── */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
 
 /* ── Status badges ───────────────────────────────────── */
 .badge-brutal {
@@ -184,7 +372,7 @@ a.hover\:bg-highlight:hover,
 }
 
 /* ── Focus & selection ──────────────────────────────── */
-::selection { background: var(--color-accent); color: var(--color-text); }
+::selection { background: var(--color-accent); color: #111111; }
 
 :focus-visible {
   outline: 3px solid var(--color-blue);
@@ -208,7 +396,7 @@ h1, h2, h3, h4, h5, h6 {
   100% { background-position: 200% 0; }
 }
 .progress-shimmer {
-  background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent) 40%, rgba(0,0,0,0.12) 50%, var(--color-accent) 60%, var(--color-accent) 100%);
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent) 40%, rgba(255,255,255,0.25) 50%, var(--color-accent) 60%, var(--color-accent) 100%);
   background-size: 200% 100%;
   animation: progress-shimmer 2s ease-in-out infinite;
 }
@@ -227,14 +415,29 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   max-width: 100%;
 }
+
+[data-theme="dark"] .nav-pill {
+  background: #FFFFFF;
+  border-top-color: #111111;
+}
+
+[data-theme="dark"] .nav-pill-btn {
+  color: #111111;
+  border-right-color: rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] .nav-pill-btn:hover:not(.nav-pill-btn--active) {
+  background: rgba(0,0,0,0.08);
+}
+
 .nav-pill-btn {
   flex: 1 1 0;
   min-width: 0;
   min-height: 56px;
   padding: 0;
   border: none;
-  border-right: 1px solid #FFFFFF;
-  background: var(--color-text);
+  border-right: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
   color: #FFFFFF;
   cursor: pointer;
   display: flex;
@@ -245,9 +448,9 @@ h1, h2, h3, h4, h5, h6 {
   transition: background 0.15s, color 0.15s;
 }
 .nav-pill-btn:last-child { border-right: none; }
-.nav-pill-btn--active { background: var(--color-accent); color: var(--color-text); }
-.nav-pill-btn--active svg { color: var(--color-text); }
-.nav-pill-btn:hover:not(.nav-pill-btn--active) { background: #222222; }
+.nav-pill-btn--active { background: var(--color-accent); color: #111111; }
+.nav-pill-btn--active svg { color: #111111; }
+.nav-pill-btn:hover:not(.nav-pill-btn--active) { background: rgba(255,255,255,0.1); }
 .nav-pill-icon { font-size: 1.4rem; line-height: 1; display: inline-flex; }
 .nav-pill-label {
   display: block;
@@ -311,4 +514,77 @@ h1, h2, h3, h4, h5, h6 {
 .grid-virtualize > * {
   content-visibility: auto;
   contain-intrinsic-size: 200px;
+}
+
+/* ── Dark mode input/form overrides ─────────────────── */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--color-text-secondary);
+}
+
+/* ── Dark mode mobile/tablet header ──────────────────── */
+/* header.bg-text: flip from #f0f0f0 to pure white + dark border */
+[data-theme="dark"] header.bg-text {
+  background: #FFFFFF;
+  color: #111111;
+  border-bottom-color: #111111;
+}
+[data-theme="dark"] header.bg-text .sidebar-pill {
+  background: #111111;
+  border-color: rgba(0,0,0,0.15);
+  color: #FFFFFF;
+}
+[data-theme="dark"] header.bg-text .sidebar-pill:hover {
+  background: #333333;
+}
+/* Inverted pills in header: flip to dark so visible on white */
+[data-theme="dark"] header.bg-text .sidebar-pill--invert {
+  background: #111111;
+  border-color: #111111;
+  color: #FFFFFF;
+}
+[data-theme="dark"] header.bg-text .sidebar-pill--invert:hover {
+  background: #222222;
+}
+
+/* ── Dark mode sidebar: fix hardcoded white elements ─── */
+
+/* Logo "TC" label: text-white → black on white sidebar */
+[data-theme="dark"] .sidebar .text-white,
+[data-theme="dark"] header.bg-text .text-white {
+  color: #111111;
+}
+
+/* Logo link hover: hover:bg-[#222] → light tint on white sidebar */
+[data-theme="dark"] .sidebar a:hover,
+[data-theme="dark"] .sidebar > a:hover {
+  background: rgba(0,0,0,0.05) !important;
+}
+
+/* Top/bottom dividers: border-white/20 → visible dark divider */
+[data-theme="dark"] .sidebar [class*="border-white"] {
+  border-color: rgba(0,0,0,0.15) !important;
+}
+
+/* Profile link: inactive state text-white + hover:bg-[#222] → dark */
+[data-theme="dark"] .sidebar a[href*="/profile"]:not([class*="bg-yellow"]),
+[data-theme="dark"] .sidebar a[href="/profile"]:not([class*="bg-yellow"]) {
+  color: #111111;
+}
+[data-theme="dark"] .sidebar a[href*="/profile"]:hover:not([class*="bg-yellow"]) {
+  background: rgba(0,0,0,0.06) !important;
+}
+
+/* Avatar border: border-white → dark border on white sidebar */
+[data-theme="dark"] .sidebar img,
+[data-theme="dark"] .sidebar .w-9 {
+  border-color: rgba(0,0,0,0.15) !important;
 }

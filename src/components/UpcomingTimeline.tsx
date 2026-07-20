@@ -47,7 +47,7 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
           {t.upcoming.title}
         </h2>
         <Link to="/upcoming" className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary hover:text-text transition-colors">
-          {t.dashboard.viewAll} →
+          {t.dashboard.viewAll} <re-icon icon="arrow-right" decorative></re-icon>
         </Link>
       </div>
 
@@ -64,7 +64,7 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
                 <Link
                   key={item.show_id}
                   to={`/show/${item.show_id}`}
-                  className="group flex items-center gap-3 bg-surface border-[3px] border-border p-2 sm:p-3 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#111] transition-all"
+                  className="group flex items-center gap-3 bg-surface border-[3px] border-border p-2 sm:p-3 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md transition-all"
                 >
                   <div className="w-10 h-14 sm:w-12 sm:h-16 shrink-0 bg-surface-light border-2 border-border overflow-hidden">
                     {item.poster_url ? (
@@ -85,7 +85,7 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
                     )}
                   </div>
                   <div className="shrink-0 text-xs font-bold text-text-secondary group-hover:text-orange transition-colors">
-                    →
+                    <re-icon icon="arrow-right" decorative></re-icon>
                   </div>
                 </Link>
               ))}

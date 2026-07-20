@@ -19,7 +19,7 @@ export default function DashboardHero({ streak, episodesWatched, showsTracked, t
   const greeting = hour < 12 ? t.dashboard.goodMorning : hour < 19 ? t.dashboard.goodAfternoon : t.dashboard.goodEvening
 
   return (
-    <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 animate-fade-in-up">
+    <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.dashboard.overview}</div>
@@ -32,7 +32,7 @@ export default function DashboardHero({ streak, episodesWatched, showsTracked, t
           className="btn-brutal btn-accent shrink-0"
         >
           {t.dashboard.goDiscover}
-          <span aria-hidden="true">→</span>
+          <re-icon icon="arrow-right" decorative></re-icon>
         </Link>
       </div>
 
@@ -55,7 +55,7 @@ function StatLink({ to, value, label, tone }: { to: string; value: string; label
   return (
     <Link
       to={to}
-      className={`group bg-surface-light border-[3px] border-border p-4 sm:p-5 relative overflow-hidden transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_#111] ${tone === 'highlight' ? 'hover:bg-pink/30' : ''}`}
+      className={`group bg-surface-light border-[3px] border-border p-4 sm:p-5 relative overflow-hidden transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md ${tone === 'highlight' ? 'hover:bg-pink/30' : ''}`}
     >
       <div className="text-3xl sm:text-5xl font-black mb-1 font-heading leading-none">{value}</div>
       <div className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary">{label}</div>

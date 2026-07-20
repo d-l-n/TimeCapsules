@@ -30,7 +30,7 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
             <Link
               key={item.id}
               to={`/show/${item.id}`}
-              className="group block bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] overflow-hidden hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[10px_10px_0_#111] transition-all"
+              className="group block bg-surface border-[3px] border-border shadow-brutal overflow-hidden hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-lg transition-all"
               aria-label={`${item.name} — ${progress}%`}
             >
               <div className="flex">

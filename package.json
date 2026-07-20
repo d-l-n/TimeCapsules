@@ -22,6 +22,7 @@
     "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=timecapsules --branch main"
   },
   "dependencies": {
+    "boneyard-js": "^1.9.0",
     "firebase": "^12.15.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

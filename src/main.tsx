@@ -6,6 +6,7 @@ import { ThemeProvider } from './lib/ThemeContext'
 import { I18nProvider } from './lib/I18nContext'
 import App from './App'
 import './index.css'
+import './bones/registry'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

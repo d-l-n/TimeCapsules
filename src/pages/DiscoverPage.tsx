@@ -82,7 +82,7 @@ export default function DiscoverPage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 space-y-5 animate-fade-in-up">
+      <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 space-y-5 animate-fade-in-up">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.discover.eyebrow}</div>
           <h1 className="text-2xl sm:text-4xl font-black uppercase leading-none font-heading">{t.discover.title}</h1>
@@ -257,7 +257,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
         return (
           <div
             key={item.id}
-            className="group bg-surface border-[3px] border-border card-lift flex flex-col h-full shadow-[8px_8px_0_#111]"
+            className="group bg-surface border-[3px] border-border card-lift flex flex-col h-full shadow-brutal"
           >
             <Link to={detailPath} className="block relative" aria-label={name}>
               <div className="aspect-[2/3] bg-surface-light border-b-[3px] border-border overflow-hidden">
@@ -302,7 +302,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                     {isAdded && meta?.tvTimeId && item.media_type === 'movie' && moviePrompt === item.id && (
                       <>
                         <div className="fixed inset-0 z-10" onClick={() => setMoviePrompt(null)} />
-                        <div className="absolute bottom-full left-0 mb-1 w-full bg-surface border-[3px] border-border z-20 shadow-[6px_6px_0_#111]">
+                        <div className="absolute bottom-full left-0 mb-1 w-full bg-surface border-[3px] border-border z-20 shadow-brutal-md">
                           <div className="relative">
                             <button
                               onClick={() => setMoviePrompt(null)}

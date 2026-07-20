@@ -7,6 +7,7 @@ import { findMany } from '../lib/firestore-utils'
 import { where } from 'firebase/firestore'
 import type { DashItem } from '../services/showService'
 import ShowCard from '../components/ShowCard'
+import { Skeleton } from 'boneyard-js/react'
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 
@@ -76,16 +77,15 @@ export default function LibraryPage() {
     return items.filter(i => i.status === filter)
   }, [items, filter])
 
-  if (followedLoading && wlLoading && items.length === 0) return <Loading text={t.library.title} />
-
   return (
+    <Skeleton name="library" loading={followedLoading && wlLoading && items.length === 0} fallback={<Loading text={t.library.title} />} animate="pulse" transition={300}>
     <div className="space-y-6">
       <div>
         <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.library.subtitle}</div>
         <h1 className="text-3xl sm:text-4xl font-black uppercase leading-none font-heading">{t.library.title}</h1>
       </div>
 
-      <div className="sticky top-14 z-10 -mx-4 px-4 py-3 bg-bg/95 backdrop-blur-0 border-b-[3px] border-border flex gap-2 overflow-x-auto">
+      <div className="sticky top-14 z-10 -mx-5 px-5 py-3 bg-bg/95 backdrop-blur-0 border-b-[3px] border-border flex gap-2 overflow-x-auto">
         {FILTERS.map(f => (
           <button
             key={f}
@@ -122,5 +122,6 @@ export default function LibraryPage() {
         </div>
       )}
     </div>
+    </Skeleton>
   )
 }

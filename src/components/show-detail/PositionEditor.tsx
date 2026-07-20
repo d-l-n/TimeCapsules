@@ -91,7 +91,7 @@ export default function PositionEditor({ contentId, contentType, maxSeconds, edi
         <button
           onMouseDown={e => e.preventDefault()}
           onClick={() => onClear(contentId, contentType)}
-          className={`border-2 border-border font-bold bg-surface text-pink hover:bg-pink hover:text-bg transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
+          className={`border-2 border-border font-bold bg-surface text-pink hover:bg-pink hover:text-text transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
           aria-label={`${t.showDetail.setPosition} — clear`}
         >
           ✕

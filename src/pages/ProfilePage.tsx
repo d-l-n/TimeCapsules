@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { updateProfile, updateEmail, deleteUser } from 'firebase/auth'
-import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
-import { auth, db } from '../lib/firebase'
+import { auth } from '../lib/firebase'
 import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { useTheme, ACCENT_PRESETS, type AccentKey } from '../lib/ThemeContext'
 import { useSpoilerFree } from '../hooks'
 import { saveUserProfile } from '../services/groupService'
-import { testConnection, getHistory, getRatings, getWatchlist } from '../services/trakt'
-import { getShowByTmdbId, createShowFromTmdb, toggleWatchedEpisode, setRating as setShowRating } from '../services/showService'
-import { addToWatchlist } from '../services/watchlistService'
-import { SunIcon, MoonIcon } from '../components/Icons'
+
 import HistoryTimeline from './HistoryTimeline'
 import CalendarPage from './CalendarPage'
 import StatsPage from './StatsPage'
@@ -45,42 +41,12 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Mobile settings dropdown open state
-  const [settingsOpen, setSettingsOpen] = useState(() => searchParams.get('settings') === 'open')
-
-  // Trakt import
-  const [traktClientId, setTraktClientId] = useState('')
-  const [traktToken, setTraktToken] = useState('')
-  const [traktConnected, setTraktConnected] = useState(false)
-  const [traktTesting, setTraktTesting] = useState(false)
-  const [traktTestMsg, setTraktTestMsg] = useState<{ ok: boolean; text: string } | null>(null)
-  const [traktImporting, setTraktImporting] = useState(false)
-  const [traktImportMsg, setTraktImportMsg] = useState<string | null>(null)
-  const [traktShowInstructions, setTraktShowInstructions] = useState(false)
-  const [showTraktToken, setShowTraktToken] = useState(false)
-
   // Confirmations
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showClearCacheConfirm, setShowClearCacheConfirm] = useState(false)
   const [cacheMessage, setCacheMessage] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-
-  // Load saved Trakt credentials
-  useEffect(() => {
-    if (!user?.uid) return
-    ;(async () => {
-      const snap = await getDoc(doc(db, 'trakt_credentials', user.uid))
-      if (snap.exists()) {
-        const d = snap.data() as { client_id: string; access_token: string }
-        if (d.client_id && d.access_token) {
-          setTraktClientId(d.client_id)
-          setTraktToken(d.access_token)
-          setTraktConnected(true)
-        }
-      }
-    })()
-  }, [user?.uid])
 
   const handleClearCache = () => {
     const cacheKeys: string[] = [
@@ -190,184 +156,6 @@ export default function ProfilePage() {
     }
   }
 
-  const handleTraktTest = async () => {
-    if (!traktClientId.trim() || !traktToken.trim()) return
-    setTraktTesting(true)
-    setTraktTestMsg(null)
-    const ok = await testConnection(traktClientId.trim(), traktToken.trim())
-    setTraktTesting(false)
-    setTraktTestMsg({ ok, text: ok ? t.trakt.connectionOk : t.trakt.connectionFail })
-  }
-
-  const handleTraktSave = async () => {
-    if (!user?.uid) return
-    if (!traktClientId.trim() || !traktToken.trim()) return
-    await setDoc(doc(db, 'trakt_credentials', user.uid), {
-      client_id: traktClientId.trim(),
-      access_token: traktToken.trim(),
-      updated_at: new Date().toISOString(),
-    })
-    setTraktConnected(true)
-    setTraktTestMsg({ ok: true, text: t.trakt.connectionOk })
-  }
-
-  const handleTraktDisconnect = async () => {
-    if (!user?.uid) return
-    await deleteDoc(doc(db, 'trakt_credentials', user.uid))
-    setTraktClientId('')
-    setTraktToken('')
-    setTraktConnected(false)
-    setTraktTestMsg(null)
-    setTraktImportMsg(null)
-  }
-
-  const handleImportAll = async () => {
-    if (!user?.uid || !traktClientId || !traktToken || traktImporting) return
-    setTraktImporting(true)
-    setTraktImportMsg(null)
-    let total = 0
-    try {
-      const [history, movieRatings, showRatings, movieWl, showWl] = await Promise.all([
-        getHistory(traktClientId, traktToken, 'episodes', 1, 500),
-        getRatings(traktClientId, traktToken, 'movies', 1, 500),
-        getRatings(traktClientId, traktToken, 'shows', 1, 500),
-        getWatchlist(traktClientId, traktToken, 'movies', 1, 500),
-        getWatchlist(traktClientId, traktToken, 'shows', 1, 500),
-      ])
-      for (const item of history) {
-        if (!item.episode?.ids?.tmdb) continue
-        const showId = item.show?.ids?.tmdb
-        if (!showId) continue
-        const existing = await getShowByTmdbId(showId)
-        if (!existing) await createShowFromTmdb(showId, item.show?.title || 'Unknown', null, null, null, 'tv')
-        const tvTimeId = existing ? existing.data.tmdb_id : showId
-        await toggleWatchedEpisode(user.uid, -(item.episode.ids.trakt), tvTimeId, true)
-        total++
-      }
-      const allRatings = [...movieRatings, ...showRatings]
-      for (const item of allRatings) {
-        const tmdbId = item.movie?.ids?.tmdb || item.show?.ids?.tmdb
-        if (!tmdbId) continue
-        const existing = await getShowByTmdbId(tmdbId)
-        if (!existing) await createShowFromTmdb(tmdbId, item.movie?.title || item.show?.title || 'Unknown', null, null, null, item.type === 'movie' ? 'movie' : 'tv')
-        await setShowRating(user.uid, existing ? existing.data.tmdb_id : tmdbId, item.rating)
-        total++
-      }
-      const allWl = [...movieWl, ...showWl]
-      for (const item of allWl) {
-        const tmdbId = item.movie?.ids?.tmdb || item.show?.ids?.tmdb
-        if (!tmdbId) continue
-        const existing = await getShowByTmdbId(tmdbId)
-        if (!existing) await createShowFromTmdb(tmdbId, item.movie?.title || item.show?.title || 'Unknown', null, null, null, item.type === 'movie' ? 'movie' : 'tv')
-        await addToWatchlist(user.uid, existing ? existing.data.tmdb_id : tmdbId)
-        total++
-      }
-      setTraktImportMsg(t.trakt.importSuccess.replace('{count}', String(total)))
-    } catch {
-      setTraktImportMsg(t.trakt.importError)
-    }
-    setTraktImporting(false)
-  }
-
-  const handleImportHistory = async () => {
-    if (!user?.uid || !traktClientId || !traktToken || traktImporting) return
-    setTraktImporting(true)
-    setTraktImportMsg(null)
-    let imported = 0
-    try {
-      const history = await getHistory(traktClientId, traktToken, 'episodes', 1, 500)
-      for (const item of history) {
-        if (!item.episode?.ids?.tmdb) continue
-        // Ensure the show exists in our DB
-        const showId = item.show?.ids?.tmdb
-        if (!showId) continue
-        const existing = await getShowByTmdbId(showId)
-        if (!existing) {
-          await createShowFromTmdb(
-            showId,
-            item.show?.title || 'Unknown',
-            null, null, null, 'tv'
-          )
-        }
-        const tvTimeId = existing ? existing.data.tmdb_id : showId
-        await toggleWatchedEpisode(user.uid, -(item.episode.ids.trakt), tvTimeId, true)
-        imported++
-      }
-      setTraktImportMsg(t.trakt.importSuccess.replace('{count}', String(imported)))
-    } catch {
-      setTraktImportMsg(t.trakt.importError)
-    }
-    setTraktImporting(false)
-  }
-
-  const handleImportRatings = async () => {
-    if (!user?.uid || !traktClientId || !traktToken || traktImporting) return
-    setTraktImporting(true)
-    setTraktImportMsg(null)
-    let imported = 0
-    try {
-      const [movieRatings, showRatings] = await Promise.all([
-        getRatings(traktClientId, traktToken, 'movies', 1, 500),
-        getRatings(traktClientId, traktToken, 'shows', 1, 500),
-      ])
-      const allRatings = [...movieRatings, ...showRatings]
-      for (const item of allRatings) {
-        const tmdbId = item.movie?.ids?.tmdb || item.show?.ids?.tmdb
-        if (!tmdbId) continue
-        const existing = await getShowByTmdbId(tmdbId)
-        if (!existing) {
-          await createShowFromTmdb(
-            tmdbId,
-            item.movie?.title || item.show?.title || 'Unknown',
-            null, null, null,
-            item.type === 'movie' ? 'movie' : 'tv'
-          )
-        }
-        const tvTimeId = existing ? existing.data.tmdb_id : tmdbId
-        await setShowRating(user.uid, tvTimeId, item.rating)
-        imported++
-      }
-      setTraktImportMsg(t.trakt.importSuccess.replace('{count}', String(imported)))
-    } catch {
-      setTraktImportMsg(t.trakt.importError)
-    }
-    setTraktImporting(false)
-  }
-
-  const handleImportWatchlist = async () => {
-    if (!user?.uid || !traktClientId || !traktToken || traktImporting) return
-    setTraktImporting(true)
-    setTraktImportMsg(null)
-    let imported = 0
-    try {
-      const [movieWl, showWl] = await Promise.all([
-        getWatchlist(traktClientId, traktToken, 'movies', 1, 500),
-        getWatchlist(traktClientId, traktToken, 'shows', 1, 500),
-      ])
-      const allWl = [...movieWl, ...showWl]
-      for (const item of allWl) {
-        const tmdbId = item.movie?.ids?.tmdb || item.show?.ids?.tmdb
-        if (!tmdbId) continue
-        const existing = await getShowByTmdbId(tmdbId)
-        if (!existing) {
-          await createShowFromTmdb(
-            tmdbId,
-            item.movie?.title || item.show?.title || 'Unknown',
-            null, null, null,
-            item.type === 'movie' ? 'movie' : 'tv'
-          )
-        }
-        const tvTimeId = existing ? existing.data.tmdb_id : tmdbId
-        await addToWatchlist(user.uid, tvTimeId)
-        imported++
-      }
-      setTraktImportMsg(t.trakt.importSuccess.replace('{count}', String(imported)))
-    } catch {
-      setTraktImportMsg(t.trakt.importError)
-    }
-    setTraktImporting(false)
-  }
-
   const accentKeys = Object.keys(ACCENT_PRESETS) as AccentKey[]
 
   const initial = (user.displayName || user.email?.split('@')[0] || 'U').charAt(0).toUpperCase()
@@ -393,33 +181,28 @@ export default function ProfilePage() {
         user={user}
         initial={initial}
         hideEmail={hideEmail}
-        settingsOpen={settingsOpen}
-        onToggleSettings={() => setSettingsOpen(!settingsOpen)}
-        t={t}
       />
 
-      {/* Section nav + content */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-        {/* Left Column: Section Nav */}
-        <nav className={`${settingsOpen ? 'block' : 'hidden'} lg:block lg:col-span-1 space-y-2 lg:sticky lg:top-24`} aria-label={t.profile.sections}>
-          {sections.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => { setSection(s.key); setSettingsOpen(false) }}
-              aria-current={section === s.key}
-              className={`w-full text-left border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors cursor-pointer ${
-                section === s.key ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow hover:border-text'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
-        </nav>
+      {/* Ribbon nav */}
+      <nav className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-none" aria-label={t.profile.sections}>
+        {sections.map((s) => (
+          <button
+            key={s.key}
+            onClick={() => setSection(s.key)}
+            aria-current={section === s.key}
+            className={`flex-shrink-0 snap-start whitespace-nowrap border-[3px] border-border px-4 py-2.5 text-xs font-bold uppercase transition-colors cursor-pointer ${
+              section === s.key ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow hover:border-text'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </nav>
 
-        {/* Right Column: Section Content */}
-        <div className="space-y-6 lg:col-span-3">
+      {/* Section content */}
+      <div className="space-y-6">
           {section === 'account' && (
-            <div className="space-y-8 bg-surface border-[3px] border-border p-4 lg:p-6 shadow-[8px_8px_0_#111]">
+            <div className="space-y-8 bg-surface border-[3px] border-border p-4 lg:p-6 shadow-brutal">
               {message && (
                 <div
                   role={message.type === 'error' ? 'alert' : undefined}
@@ -444,7 +227,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     aria-label={t.auth.signOut}
-                    className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer"
+                    className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-pink hover:text-text transition-colors cursor-pointer"
                   >
                     {t.auth.signOut}
                   </button>
@@ -461,15 +244,15 @@ export default function ProfilePage() {
           )}
 
           {section === 'settings' && (
-            <div className="space-y-8 bg-surface border-[3px] border-border p-4 lg:p-6 shadow-[8px_8px_0_#111]">
+            <div className="space-y-8 bg-surface border-[3px] border-border p-4 lg:p-6 shadow-brutal">
               <SettingsBlock title={t.settings.appearance}>
                 <div className="space-y-5">
                   <div className="space-y-1.5">
                     <Row label={t.settings.theme} />
                     <p className="text-[11px] text-text-secondary leading-tight">{t.settings.themeDesc}</p>
                     <div className="flex gap-2 w-full">
-                      <TogglePill active={theme === 'light'} onClick={() => setTheme('light')} label={t.settings.light}><SunIcon /></TogglePill>
-                      <TogglePill active={theme === 'dark'} onClick={() => setTheme('dark')} label={t.settings.dark}><MoonIcon /></TogglePill>
+                      <TogglePill active={theme === 'light'} onClick={() => setTheme('light')} label={t.settings.light}><re-icon icon="sun" className="w-6 h-6"></re-icon></TogglePill>
+                      <TogglePill active={theme === 'dark'} onClick={() => setTheme('dark')} label={t.settings.dark}><re-icon icon="moon"></re-icon></TogglePill>
                     </div>
                   </div>
 
@@ -535,30 +318,6 @@ export default function ProfilePage() {
                 </div>
               </SettingsBlock>
 
-              <TraktSection
-                connected={traktConnected}
-                clientId={traktClientId}
-                setClientId={setTraktClientId}
-                token={traktToken}
-                setToken={setTraktToken}
-                showToken={showTraktToken}
-                setShowToken={setShowTraktToken}
-                testing={traktTesting}
-                testMsg={traktTestMsg}
-                importMsg={traktImportMsg}
-                importing={traktImporting}
-                showInstructions={traktShowInstructions}
-                setShowInstructions={setTraktShowInstructions}
-                onTest={handleTraktTest}
-                onSave={handleTraktSave}
-                onDisconnect={handleTraktDisconnect}
-                onImportAll={handleImportAll}
-                onImportHistory={handleImportHistory}
-                onImportRatings={handleImportRatings}
-                onImportWatchlist={handleImportWatchlist}
-                t={t}
-              />
-
               <SettingsBlock title={t.profile.clearCache} bordered>
                 <p className="text-[10px] text-text-secondary leading-tight mb-3">{t.profile.clearCacheDesc}</p>
                 {cacheMessage && (
@@ -611,12 +370,11 @@ export default function ProfilePage() {
           {section === 'stats' && <StatsPage />}
           {section === 'lists' && <ListsPage />}
         </div>
-      </div>
 
       {/* Confirmation Modals */}
       {showSignOutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowSignOutConfirm(false)}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.auth.signOut}
             </h3>
@@ -649,7 +407,7 @@ export default function ProfilePage() {
 
       {showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && (setShowDeleteConfirm(false), setDeleteError(null))}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.profile.deleteAccount}
             </h3>
@@ -666,7 +424,7 @@ export default function ProfilePage() {
                   await handleDeleteAccount()
                 }}
                 aria-label="Confirm delete"
-                className="flex-1 border-[3px] border-border bg-pink text-bg px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'ELIMINAR' : 'DELETE'}
               </button>
@@ -684,7 +442,7 @@ export default function ProfilePage() {
 
       {showClearCacheConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowClearCacheConfirm(false)}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] space-y-6">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.profile.clearCache}
             </h3>
@@ -716,21 +474,18 @@ export default function ProfilePage() {
 
 /* ── Profile subcomponents ───────────────────────────── */
 
-function ProfileHero({ user, initial, hideEmail, settingsOpen, onToggleSettings, t }: {
+function ProfileHero({ user, initial, hideEmail }: {
   user: ReturnType<typeof useAuth>['user']
   initial: string
   hideEmail: boolean
-  settingsOpen: boolean
-  onToggleSettings: () => void
-  t: ReturnType<typeof useI18n>['t']
 }) {
   return (
-    <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5 animate-fade-in-up">
+    <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5 animate-fade-in-up">
       <div className="shrink-0">
         {user?.photoURL ? (
           <img src={user.photoURL} alt="" className="w-20 h-20 sm:w-24 sm:h-24 border-[3px] border-border object-cover bg-yellow" />
         ) : (
-          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow border-[3px] border-border flex items-center justify-center text-3xl sm:text-4xl font-bold text-bg">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 bg-yellow border-[3px] border-border flex items-center justify-center text-3xl sm:text-4xl font-bold text-text">
             {initial}
           </div>
         )}
@@ -740,21 +495,6 @@ function ProfileHero({ user, initial, hideEmail, settingsOpen, onToggleSettings,
         <h1 className="text-2xl sm:text-3xl font-bold uppercase truncate font-heading leading-none">{(user?.displayName || (!hideEmail && user?.email?.split('@')[0])) ?? 'User'}</h1>
         {!hideEmail && user?.email && <div className="text-xs sm:text-sm text-text-secondary mt-1.5 truncate">{user.email}</div>}
       </div>
-      <button
-        onClick={onToggleSettings}
-        className="sm:hidden border-[3px] border-border px-3 py-2 bg-surface text-text hover:bg-yellow transition-colors cursor-pointer flex items-center gap-2 self-start"
-        aria-label={t.profile.settings}
-        aria-expanded={settingsOpen}
-      >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-          {settingsOpen ? <path d="M18 6L6 18M6 6l12 12" /> : (
-            <>
-              <path d="M3 12h18" /><path d="M3 6h18" /><path d="M3 18h18" />
-            </>
-          )}
-        </svg>
-        <span className="font-bold text-xs uppercase">{t.profile.sections}</span>
-      </button>
     </div>
   )
 }
@@ -840,70 +580,4 @@ function ProfileForm({ displayName, setDisplayName, photoURL, setPhotoURL, email
   )
 }
 
-function TraktSection(props: {
-  connected: boolean
-  clientId: string
-  setClientId: (v: string) => void
-  token: string
-  setToken: (v: string) => void
-  showToken: boolean
-  setShowToken: (v: boolean) => void
-  testing: boolean
-  testMsg: { ok: boolean; text: string } | null
-  importMsg: string | null
-  importing: boolean
-  showInstructions: boolean
-  setShowInstructions: (v: boolean) => void
-  onTest: () => void
-  onSave: () => void
-  onDisconnect: () => void
-  onImportAll: () => void
-  onImportHistory: () => void
-  onImportRatings: () => void
-  onImportWatchlist: () => void
-  t: ReturnType<typeof useI18n>['t']
-}) {
-  const { t } = props
-  return (
-    <SettingsBlock title={t.trakt.title} bordered>
-      <p className="text-xs text-text-secondary leading-tight">{t.trakt.importDesc}</p>
-      {!props.connected ? (
-        <div className="space-y-2">
-          <input type="text" value={props.clientId} onChange={e => props.setClientId(e.target.value)} placeholder={t.trakt.clientIdPlaceholder} className="w-full border-2 border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none focus:bg-yellow/30" />
-          <div className="flex gap-2">
-            <input type={props.showToken ? 'text' : 'password'} value={props.token} onChange={e => props.setToken(e.target.value)} placeholder={t.trakt.tokenPlaceholder} className="flex-1 border-2 border-border bg-surface px-2 py-1.5 text-xs font-bold outline-none focus:bg-yellow/30" />
-            <button type="button" onClick={() => props.setShowToken(!props.showToken)} className="border-2 border-border bg-surface px-2 hover:bg-yellow transition-colors cursor-pointer shrink-0" aria-label={props.showToken ? 'Hide token' : 'Show token'}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-                {props.showToken ? (
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                ) : (
-                  <>
-                    <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </>
-                )}
-              </svg>
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={props.onTest} disabled={props.testing || !props.clientId.trim() || !props.token.trim()} className="flex-1 border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.testing ? t.trakt.testing : t.trakt.test}</button>
-            <button onClick={props.onSave} disabled={!props.clientId.trim() || !props.token.trim()} className="flex-1 border-2 border-border bg-yellow text-text py-1.5 text-xs font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer">{t.trakt.connect}</button>
-          </div>
-          <button onClick={() => props.setShowInstructions(!props.showInstructions)} className="w-full text-xs font-bold uppercase text-text-secondary hover:text-text underline transition-colors cursor-pointer">{t.trakt.getToken}</button>
-          {props.showInstructions && <div className="text-xs text-text-secondary leading-relaxed whitespace-pre-line bg-surface border border-border p-2">{t.trakt.instructions}</div>}
-          {props.testMsg && <ErrorBox message={props.testMsg.text} />}
-        </div>
-      ) : (
-        <div className="space-y-2">
-          <div className="text-xs font-bold uppercase text-yellow">{t.trakt.connected}</div>
-          {props.importMsg && <ErrorBox message={props.importMsg} />}
-          <button onClick={props.onImportAll} disabled={props.importing} className="w-full border-[3px] border-border bg-yellow text-text py-2 text-xs font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importAll}</button>
-          <button onClick={props.onImportHistory} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importHistory}</button>
-          <button onClick={props.onImportRatings} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importRatings}</button>
-          <button onClick={props.onImportWatchlist} disabled={props.importing} className="w-full border-2 border-border bg-surface text-text py-1.5 text-xs font-bold uppercase hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer">{props.importing ? t.trakt.importing : t.trakt.importWatchlist}</button>
-          <button onClick={props.onDisconnect} className="w-full border-2 border-border bg-pink/10 text-pink py-1.5 text-xs font-bold uppercase hover:bg-pink hover:text-bg transition-colors cursor-pointer">{t.trakt.disconnect}</button>
-        </div>
-      )}
-    </SettingsBlock>
-  )
-}
+

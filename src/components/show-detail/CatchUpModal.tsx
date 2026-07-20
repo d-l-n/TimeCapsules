@@ -13,7 +13,7 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t }: CatchUpMod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" aria-label={t.showDetail.catchUpTitle} onClick={onClose}>
-      <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-[12px_12px_0_#111] relative" onClick={e => e.stopPropagation()}>
+      <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl relative" onClick={e => e.stopPropagation()}>
         <button
           onClick={onClose}
           className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm hover:bg-pink transition-colors cursor-pointer"

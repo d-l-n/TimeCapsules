@@ -179,7 +179,7 @@ function GroupProgressPopover({ members, episodeId, groupProgress, userId, membe
         })}
       </div>
       <div className="absolute bottom-full right-0 mb-1 z-50 hidden group-hover:block group-focus-within:block min-w-40">
-        <div className="bg-surface border-2 border-border shadow-[8px_8px_0_#111] p-2 space-y-1">
+        <div className="bg-surface border-2 border-border shadow-brutal p-2 space-y-1">
           <div className="text-[9px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 mb-1">{t.watchParty.groupProgress}</div>
           {watchers.length === 0 && <div className="text-[9px] text-text-secondary">—</div>}
           {watchers.map(m => {

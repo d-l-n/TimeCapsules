@@ -84,8 +84,8 @@ describe('EmotionPicker', () => {
     render(<EmotionPicker {...baseProps} currentEmotion="happy" />)
     fireEvent.click(screen.getByText(/Remove emotion/i))
     await waitFor(() => {
-      expect(setEmotion).toHaveBeenCalledWith('user-1', 123, '')
-      expect(baseProps.onSelect).toHaveBeenCalledWith('')
+      expect(setEmotion).toHaveBeenCalledWith('user-1', 123, null)
+      expect(baseProps.onSelect).toHaveBeenCalledWith(null)
     })
   })
 

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { useLists } from '../hooks'
 import { useI18n } from '../lib/I18nContext'
-import { createList } from '../services/listService'
+import { createList, getListDisplayName } from '../services/listService'
 import { isDefaultList } from '../lib/firebase-queries'
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
@@ -17,7 +17,7 @@ const FILTERS: { key: Filter; labelKey: 'all' | 'collections' }[] = [
 
 const FILTER_LABELS: Record<'all' | 'collections', { en: string; es: string }> = {
   all: { en: 'ALL', es: 'TODO' },
-  collections: { en: 'COLLECTIONS', es: 'COLEC' },
+  collections: { en: 'COLLECTIONS', es: 'COLECCIONES' },
 }
 
 export default function ListsPage() {
@@ -64,7 +64,7 @@ export default function ListsPage() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`border-[3px] border-border px-4 py-2 font-bold text-xs uppercase transition-all shadow-[3px_3px_0_#111] ${filter === f.key ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
+            className={`border-[3px] border-border px-4 py-2 font-bold text-xs uppercase transition-all shadow-brutal-xs ${filter === f.key ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
             aria-pressed={filter === f.key}
           >
             {FILTER_LABELS[f.labelKey][lang === 'es' ? 'es' : 'en']}
@@ -73,7 +73,7 @@ export default function ListsPage() {
       </div>
 
       {creating && (
-        <div className="bg-surface border-[3px] border-border p-4 space-y-3 shadow-[6px_6px_0_#111]">
+        <div className="bg-surface border-[3px] border-border p-4 space-y-3 shadow-brutal-md">
           <input value={name} onChange={e => setName(e.target.value)} placeholder={t.lists.namePlaceholder} className="w-full border-[3px] border-border bg-bg px-3 py-2 text-sm font-bold outline-none focus:bg-yellow/30" />
           <input value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.lists.descPlaceholder} className="w-full border-[3px] border-border bg-bg px-3 py-2 text-sm outline-none focus:bg-yellow/30" />
           <div className="flex gap-2">
@@ -88,10 +88,10 @@ export default function ListsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleLists.map(list => (
-            <Link key={list.id} to={`/lists/${list.id}`} className="group bg-surface border-[3px] border-border px-4 py-4 shadow-[8px_8px_0_#111] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#111] transition-all">
+            <Link key={list.id} to={`/lists/${list.id}`} className="group bg-surface border-[3px] border-border px-4 py-4 shadow-brutal hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg transition-all">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
-                  <h3 className="font-black uppercase text-base truncate">{list.name}</h3>
+                  <h3 className="font-black uppercase text-base truncate">{getListDisplayName(list, lang)}</h3>
                   {list.description && <p className="text-text-secondary text-xs mt-1 line-clamp-2">{list.description}</p>}
                 </div>
                 <span className="text-[10px] font-bold text-text-secondary border-2 border-border bg-surface-light px-1.5 py-0.5 shrink-0 ml-2">{list.show_ids.length} {t.lists.shows}</span>

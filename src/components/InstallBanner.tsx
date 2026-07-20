@@ -122,7 +122,7 @@ export default function InstallBanner() {
         <button
           onClick={handleInstall}
           aria-label={t.install.btn}
-          className="border-[3px] border-border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold bg-yellow text-bg hover:bg-pink hover:text-text transition-colors shrink-0 uppercase"
+          className="border-[3px] border-border px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold bg-yellow text-text hover:bg-pink hover:text-text transition-colors shrink-0 uppercase"
         >
           {t.install.btn}
         </button>

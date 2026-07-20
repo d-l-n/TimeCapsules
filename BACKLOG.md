@@ -12,23 +12,23 @@
 - [x] **Iconografía de estados de visionado** — Añadidos `WatchedIcon` (✓), `RewatchIcon` (↻), `TimerIcon` (⏱) en `Icons.tsx` (SVG consistentes, `stroke` brutalista). Usados en `EpisodeRow` (badge W→ícono, rewatch, resume timer) y `GroupDetail` (✓ miembros).
 
 ### Alta — Bugs que rompen flujo / dejan estado inconsistente
-- [ ] **Dark theme no funciona** — `ThemeContext` setea `data-theme="dark"` en `<html>` pero `index.css` no define `[data-theme="dark"]` overrides para `--color-bg`, `--color-surface`, etc. El toggle en sidebar/profile no cambia ningún color. CSS:314-320 faltantes.
-- [ ] **useNotifications.ts:19 FirebaseError: Missing or insufficient permissions** — `getUnreadCount(uid)` y `getNotifications(uid)` leen colección `notifications` sin permiso en Firestore Rules. Bloquea carga del perfil.
-- [ ] **ProfilePage.tsx:73 FirebaseError: Missing or insufficient permissions** — `getDoc(doc(db, 'trakt_credentials', user.uid))` sin regla de acceso en Firestore. Trakt integration entera debe eliminarse.
+- [x] **Dark theme no funciona** — Añadidos `[data-theme="dark"]` overrides para `--color-*` en `index.css`. Toggle en sidebar/profile ya cambia colores bg/surface/text/border. 
+- [x] **useNotifications.ts:19 FirebaseError: Missing or insufficient permissions** — Causa real: índices compuestos faltantes para `notifications` (user_id+created_at DESC, user_id+read, user_id+type). Las Firestore Rules ya existían correctas. Añadidos 3 índices en `firestore.indexes.json`.
+- [x] **ProfilePage.tsx:73 FirebaseError: Missing or insufficient permissions** — Eliminada integración Trakt entera (`trakt_credentials`, imports, state, handlers, componente `TraktSection`). Ya no hay lectura/escritura a colección sin regla.
 
 ### Media — UX / consistencia visual
-- [ ] **Desktop sidebar: hover sobre item activo lo vuelve ilegible** — `Layout.tsx:152` `.sidebar-link:hover` pisa a `.sidebar-link--active` cuando el item activo está hovereado. Se vuelve gris oscuro (`#222`) con texto negro (`#111`). CSS:152-156.
-- [ ] **Notification popup hereda color blanco del sidebar** — `Layout.tsx:101-102` el `<span>` del título carece de `text-text`, hereda `color: #FFFFFF` del sidebar → texto "Notificaciones (0)" invisible sobre `bg-surface-light` (#ECEAE4).
-- [ ] **Sidebar nav: Stats y Account se marcan ambos como activos** — `Layout.tsx:147-149` la detección `pathname.startsWith('/profile')` es true para `/profile?section=stats` Y `/profile`. Ambos items del sidebar reciben `sidebar-link--active`.
-- [ ] **Dashboard "Finalizados": primera card desproporcionada** — `smallSpans(i)` asigna `2x1` a `i % 5 === 0`, pero `as '1x1'` descarta el span. Se necesita rediseño: últ. finalizado como tile 2x, resto 1x, ordenado por fecha desc.
-- [ ] **EmotionPicker: botón Remove pasa string vacío en vez de null** — `EmotionPicker.tsx:48` `handlePick('')` → `setEmotion(uid, id, '')` en vez de `setEmotion(uid, id, null)`. Backend no interpreta `''` como remove.
-- [ ] **Dashboard: smallSpans cast '1x1' descarta variante '2x1'** — `Dashboard.tsx:261,296` casteo `as '1x1'` en cards con `smallSpans()` que retorna `'2x1'` en `i % 5 === 0`.
-- [ ] **ShowDetail: collapsePref no es reactivo** — `ShowDetail.tsx:408` lee `localStorage.getItem('collapsePreference')` sincrónicamente en render, no estado. Cambios desde ProfilePage no se reflejan hasta re-render.
-- [ ] **ShowDetail: handleResumeKeyDown causa re-render en cadena** — `ShowDetail.tsx:690` depende de `handleResumeSave` que depende de `editValue`. Cada keystroke recrea la callback → `SeasonSection` re-renderiza todo.
-- [ ] **integration.test.ts: errores TS en mocks de Firestore** — `src/services/integration.test.ts:17,18,28,83` tipos incorrectos en `collection()`, `where()`, `mockClear()`.
+- [x] **Desktop sidebar: hover sobre item activo lo vuelve ilegible** — Añadido `.sidebar-link--active:hover` en `index.css` para mantener bg accent + texto oscuro al hoverear item activo.
+- [x] **Notification popup hereda color blanco del sidebar** — `Layout.tsx:101-102` el `<span>` del título carece de `text-text`, hereda `color: #FFFFFF` del sidebar → texto "Notificaciones (0)" invisible sobre `bg-surface-light` (#ECEAE4).
+- [x] **Sidebar nav: Stats y Account se marcan ambos como activos** — `Layout.tsx:147-149` la detección `pathname.startsWith('/profile')` es true para `/profile?section=stats` Y `/profile`. Ambos items del sidebar reciben `sidebar-link--active`.
+- [x] **Dashboard "Finalizados": primera card desproporcionada** — `smallSpans(i)` asigna `2x1` a `i % 5 === 0`, pero `as '1x1'` descarta el span. Se necesita rediseño: últ. finalizado como tile 2x, resto 1x, ordenado por fecha desc.
+- [x] **EmotionPicker: botón Remove pasa string vacío en vez de null** — `EmotionPicker.tsx:48` `handlePick('')` → `setEmotion(uid, id, '')` en vez de `setEmotion(uid, id, null)`. Backend no interpreta `''` como remove.
+- [x] **Dashboard: smallSpans cast '1x1' descarta variante '2x1'** — `Dashboard.tsx:261,296` casteo `as '1x1'` en cards con `smallSpans()` que retorna `'2x1'` en `i % 5 === 0`.
+- [x] **ShowDetail: collapsePref no es reactivo** — `ShowDetail.tsx:408` lee `localStorage.getItem('collapsePreference')` sincrónicamente en render, no estado. Cambios desde ProfilePage no se reflejan hasta re-render.
+- [x] **ShowDetail: handleResumeKeyDown causa re-render en cadena** — `ShowDetail.tsx:690` depende de `handleResumeSave` que depende de `editValue`. Cada keystroke recrea la callback → `SeasonSection` re-renderiza todo.
+- [x] **integration.test.ts: errores TS en mocks de Firestore** — `src/services/integration.test.ts:17,18,28,83` tipos incorrectos en `collection()`, `where()`, `mockClear()`.
 
 ### Baja — Mejoras UX solicitadas (Julio 2026)
-- [ ] **# — ¿Qué significa filtro "COLEC" en Cuenta>Listas?** — Respuesta: es abreviatura de "Colecciones" (collections), muestra las listas personalizadas del usuario. Filtro correcto, solo confusión de label.
+- [x] **# — ¿Qué significa filtro "COLEC" en Cuenta>Listas?** — Renombrado a `COLECCIONES` en español (`ListsPage.tsx:20`). Filtro correcto, solo confusión de label — resuelto.
 - [ ] **Mock Firestore en e2e** — Reemplazar Firebase real por mock en Playwright para evitar dependencia de cuota, latencia y necesidad de cuenta/sembrado. Discutir beneficios vs costo de implementación.
 
 - [x] **GroupDetail: cards idénticas a Dashboard** — Reemplazado el wrapper propio por `ShowCard` (neon hover `card-neon-*-hover` + `card-brutal`); acciones (marca/progress/X) ahora en slot `actions` con `opacity-0 group-hover:opacity-100`.

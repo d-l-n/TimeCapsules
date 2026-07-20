@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { boneyardPlugin } from 'boneyard-js/vite'
 
 export default defineConfig({
   server: {
@@ -27,6 +28,12 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    boneyardPlugin({
+      breakpoints: [375, 768, 1280],
+      out: './src/bones',
+      wait: 1200,
+      routes: ['/'],
+    }),
     VitePWA({
       registerType: 'prompt',
       injectRegister: null,

@@ -49,7 +49,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--color-accent', accentHex)
-    document.documentElement.style.setProperty('--color-accent-border', theme === 'dark' ? accentHex : '#0a0a0a')
+    document.documentElement.style.setProperty('--color-accent-border', theme === 'dark' ? '#f0f0f0' : '#0a0a0a')
     localStorage.setItem('timecapsules-accent', accent)
   }, [accent, accentHex, theme])
 

@@ -9,7 +9,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useGroups, useWatchlistStatus, useSpoilerFree } from '../hooks'
 import { getGroupMembers, getGroupEpisodeProgress, createGroupWatchEvent, listenToGroupWatchEvents } from '../services/groupService'
 import { addToWatchlist, removeFromWatchlist } from '../services/watchlistService'
-import { getUserLists, addShowToList, removeShowFromList } from '../services/listService'
+import { getUserLists, addShowToList, removeShowFromList, getListDisplayName } from '../services/listService'
 import type { CustomListDoc } from '../lib/firebase-queries'
 import type { GroupEpisodeProgress, MemberWithProfile } from '../services/groupService'
 import type { GroupWatchEventDoc } from '../lib/firebase-queries'
@@ -17,6 +17,7 @@ import { doc, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import EmotionPicker from '../components/EmotionPicker'
 import { getEmotionsForShow } from '../services/emotionService'
+import { Skeleton } from 'boneyard-js/react'
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 import MediaGrid from '../components/show-detail/MediaGrid'
@@ -405,7 +406,15 @@ export default function ShowDetail() {
     return { counts, totals }
   }, [selectedGroupId, groupMembers, grouped, groupProgress, mergedEpisodes])
 
-  const collapsePref = localStorage.getItem('collapsePreference') || 'first'
+  const [collapsePref, setCollapsePref] = useState(() => localStorage.getItem('collapsePreference') || 'first')
+
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setCollapsePref(localStorage.getItem('collapsePreference') || 'first')
+    }
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
 
   useEffect(() => {
     if (!hasTmdbData || loading) return
@@ -649,9 +658,12 @@ export default function ShowDetail() {
     requestAnimationFrame(() => editInputRef.current?.focus())
   }, [])
 
+  const editValueRef = useRef(editValue)
+  editValueRef.current = editValue
+
   const handleResumeSave = useCallback(async (contentId: number, contentType: 'episode' | 'movie') => {
     if (!user?.uid || !show) return
-    const trimmed = editValue.trim()
+    const trimmed = editValueRef.current.trim()
     if (!trimmed) { setEditingPosition(null); setEditValue(''); return }
     const seconds = parsePosition(trimmed)
     if (seconds === null) { setEditingPosition(null); setEditValue(''); return }
@@ -663,7 +675,7 @@ export default function ShowDetail() {
       next.set(contentId, seconds)
       return next
     })
-  }, [user?.uid, show, editValue])
+  }, [user?.uid, show])
 
   const handlePresetPosition = useCallback(async (contentId: number, contentType: 'episode' | 'movie', seconds: number) => {
     if (!user?.uid || !show) return
@@ -698,16 +710,17 @@ export default function ShowDetail() {
     }
   }, [handleResumeSave])
 
-  if (loading) return <Loading text={t.showDetail.loading} />
-  if (!show) return <EmptyState title={t.showDetail.notFound}><button onClick={() => navigate(-1)} className="underline font-bold">{t.showDetail.back}</button></EmptyState>
-
-  const backdrop = show.backdrop_url
-  const movieWatched = isMovie && (watchedCounts.get(show.tmdb_id) ?? 0) > 0
+  const backdrop = show?.backdrop_url ?? null
+  const movieWatched = isMovie && show && (watchedCounts.get(show.tmdb_id) ?? 0) > 0
 
   return (
+    <Skeleton name="show-detail" loading={loading} fallback={<Loading text={t.showDetail.loading} />} animate="pulse" transition={300}>
+    {!show ? (
+      <EmptyState title={t.showDetail.notFound}><button onClick={() => navigate(-1)} className="underline font-bold">{t.showDetail.back}</button></EmptyState>
+    ) : (
     <div className="space-y-8">
       {backdrop && <div className="relative h-56 sm:h-72 overflow-hidden sm:border-[3px] sm:border-border -mx-4 sm:-mx-0"><img src={backdrop} alt="" aria-hidden="true" className="w-full h-full object-cover" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)' }} /><div className="absolute inset-0 bg-gradient-to-t from-bg to-transparent" /><div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-bg to-transparent" /></div>}
-      <div className="relative -mt-16 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] space-y-4 z-10">
+      <div className="relative -mt-16 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-[3px] border-border shadow-brutal space-y-4 z-10">
         <button onClick={() => navigate(-1)} className="btn-brutal text-xs sm:text-sm w-full sm:w-auto" aria-label={`${t.showDetail.back}`}>&larr; {t.showDetail.back}</button>
         <div className="flex flex-wrap items-center gap-2">
           <span className="border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase bg-yellow">{isMovie ? t.discover.movie : t.discover.tv}</span>
@@ -755,7 +768,7 @@ export default function ShowDetail() {
               {showListPicker && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowListPicker(false)} />
-                  <div className="absolute top-full left-0 mt-1 bg-surface border-[3px] border-border z-20 min-w-48 max-h-60 overflow-y-auto shadow-[6px_6px_0_#111]">
+                  <div className="absolute top-full left-0 mt-1 bg-surface border-[3px] border-border z-20 min-w-48 max-h-60 overflow-y-auto shadow-brutal-md">
                   {userLists.length === 0 && <div className="px-3 py-2 text-xs text-text-secondary">{t.lists.noLists}</div>}
                       {userLists.map(list => {
                     const inList = showInLists.has(list.id)
@@ -767,9 +780,9 @@ export default function ShowDetail() {
                           else { await addShowToList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.add(list.id); return n }) }
                         }}
                         className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 hover:bg-yellow transition-colors cursor-pointer ${inList ? 'bg-yellow text-text' : ''}`}
-                        aria-label={`${inList ? "Remove from" : "Add to"} list: ${list.name}`}
+                        aria-label={`${inList ? "Remove from" : "Add to"} list: ${getListDisplayName(list, lang)}`}
                       >
-                        {list.name} {inList && 'OK'}
+                        {getListDisplayName(list, lang)} {inList && 'OK'}
                       </button>
                     )
                   })}
@@ -1011,7 +1024,7 @@ export default function ShowDetail() {
       )}
       {groupWatchToast && (
         <div className="fixed bottom-24 right-4 z-50 animate-slide-up">
-          <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-[12px_12px_0_#111] max-w-xs">
+          <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-brutal-xl max-w-xs">
             <div className="text-[10px] font-bold text-text-secondary uppercase">{t.watchParty.watchingTogether}</div>
             <div className="text-xs font-bold mt-1">
               <span className="text-pink">{t.watchParty.aMember}</span>
@@ -1035,6 +1048,8 @@ export default function ShowDetail() {
         </div>
       )}
     </div>
+    )}
+  </Skeleton>
   )
 }
 

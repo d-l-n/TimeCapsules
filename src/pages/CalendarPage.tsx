@@ -95,7 +95,7 @@ export default function CalendarPage() {
           {dayEntries.length === 0 && <p className="text-sm text-text-secondary">{t.calendar.noData}</p>}
           <div className="space-y-2">
             {dayEntries.map(entry => (
-              <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 hover:translate-x-0.5 hover:-translate-y-0.5 hover-shadow-[8px_8px_0_#111] transition-all" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
+              <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 hover:translate-x-0.5 hover:-translate-y-0.5 hover-shadow-brutal transition-all" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-yellow border-2 border-border flex items-center justify-center font-bold text-[10px] sm:text-xs shrink-0" aria-hidden="true">{entry.episode_number}</div>
                 <div className="flex-1 min-w-0">
                   <span className="font-bold text-xs sm:text-sm uppercase truncate block">{entry.show_name}</span>

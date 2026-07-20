@@ -48,7 +48,7 @@ export default function GroupsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="bg-surface border-[3px] border-border shadow-[8px_8px_0_#111] p-5 sm:p-7 animate-fade-in-up">
+      <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.groups.eyebrow}</div>
@@ -113,9 +113,9 @@ export default function GroupsPage() {
               <Link
                 key={g.id}
                 to={`/groups/${g.id}`}
-                className="group bg-surface border-[3px] border-border p-4 shadow-[8px_8px_0_#111] hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#111] transition-all flex items-center gap-4"
+                className="group bg-surface border-[3px] border-border p-4 shadow-brutal hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg transition-all flex items-center gap-4"
               >
-                <div className="w-11 h-11 shrink-0 bg-yellow border-2 border-border flex items-center justify-center text-lg font-bold text-bg">
+                <div className="w-11 h-11 shrink-0 bg-yellow border-2 border-border flex items-center justify-center text-lg font-bold text-text">
                   {initial}
                 </div>
                 <div className="min-w-0 flex-1">

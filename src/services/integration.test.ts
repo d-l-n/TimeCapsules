@@ -6,7 +6,7 @@ import { mementoClear } from '../lib/memento'
 vi.mock('firebase/firestore', () => firestoreMock())
 vi.mock('../lib/firebase', () => ({ db: 'mock-db' }))
 
-const firestore = vi.mocked(await import('firebase/firestore'))
+const firestore = vi.mocked(await import('firebase/firestore')) as any
 const showService = await import('./showService')
 const statsService = await import('./statsService')
 

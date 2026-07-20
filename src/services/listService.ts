@@ -12,6 +12,13 @@ export const DEFAULT_LIST_NAMES: Record<DefaultListId, { en: string; es: string 
   'default-finished': { en: 'Finished', es: 'Finalizados' },
 }
 
+export function getListDisplayName(list: CustomListDoc, lang: 'en' | 'es'): string {
+  if (isDefaultList(list.id) && list.id in DEFAULT_LIST_NAMES) {
+    return DEFAULT_LIST_NAMES[list.id as DefaultListId][lang]
+  }
+  return list.name
+}
+
 export async function createList(uid: string, name: string, description: string): Promise<string> {
   const ref = await addDoc(col, { user_id: uid, name, description, show_ids: [], createdAt: new Date().toISOString() })
   return ref.id

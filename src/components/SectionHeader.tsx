@@ -22,7 +22,7 @@ export default function SectionHeader({ id, title, count, actionLabel, actionTo,
       {actionLabel && (actionTo || onAction) && (
         actionTo ? (
           <Link to={actionTo} className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary hover:text-text transition-colors shrink-0">
-            {actionLabel} <span aria-hidden="true">→</span>
+            {actionLabel} <re-icon icon="arrow-right" decorative></re-icon>
           </Link>
         ) : (
           <button

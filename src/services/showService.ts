@@ -254,7 +254,7 @@ export async function removeFollowedShow(uid: string, showId: number) {
 
 export async function getFinishedContent(uid: string): Promise<DashItem[]> {
   const [watchedItems, epsItems, showsMap] = await Promise.all([
-    findMany<{ show_id: number; episode_id?: number }>('watched_episodes', where('user_id', '==', uid)),
+    findMany<{ show_id: number; episode_id?: number; watched_at?: string }>('watched_episodes', where('user_id', '==', uid)),
     findMany<EpisodeDoc>('episodes'),
     buildShowsMap(),
   ])
@@ -264,11 +264,18 @@ export async function getFinishedContent(uid: string): Promise<DashItem[]> {
     epsCount.set(e.show_id, (epsCount.get(e.show_id) || 0) + 1)
   })
 
+  const latestWatch = new Map<number, string>()
   const watchedUnique = new Map<number, Set<number>>()
   const watchedMovies = new Set<number>()
   watchedItems.forEach(w => {
     const sid = w.show_id
     const s = showsMap.get(sid)
+    const wat = w.watched_at || ''
+    const current = latestWatch.get(sid) || ''
+    if (wat > current) {
+      latestWatch.set(sid, wat)
+    }
+
     if (s?.media_type === 'movie') { watchedMovies.add(sid); return }
     if (w.episode_id) {
       if (!watchedUnique.has(sid)) watchedUnique.set(sid, new Set())
@@ -276,18 +283,43 @@ export async function getFinishedContent(uid: string): Promise<DashItem[]> {
     }
   })
 
-  const finished: DashItem[] = []
+  const finished: (DashItem & { finished_at?: string })[] = []
   for (const [sid, uniqueEps] of watchedUnique) {
     const count = uniqueEps.size
     const total = epsCount.get(sid) || 0
     if (total > 0 && count >= total) {
       const s = showsMap.get(sid)
-      if (s) finished.push({ id: sid, name: s.name, poster_url: s.poster_url, imdb_rating: s.imdb_rating, tmdb_id: s.tmdb_id, media_type: s.media_type })
+      if (s) {
+        finished.push({
+          id: sid,
+          name: s.name,
+          poster_url: s.poster_url,
+          imdb_rating: s.imdb_rating,
+          tmdb_id: s.tmdb_id,
+          media_type: s.media_type,
+          finished_at: latestWatch.get(sid)
+        })
+      }
     }
   }
   for (const mid of watchedMovies) {
     const s = showsMap.get(mid)
-    if (s) finished.push({ id: mid, name: s.name, poster_url: s.poster_url, imdb_rating: s.imdb_rating, tmdb_id: s.tmdb_id, media_type: s.media_type })
+    if (s) {
+      finished.push({
+        id: mid,
+        name: s.name,
+        poster_url: s.poster_url,
+        imdb_rating: s.imdb_rating,
+        tmdb_id: s.tmdb_id,
+        media_type: s.media_type,
+        finished_at: latestWatch.get(mid)
+      })
+    }
   }
-  return finished.sort((a, b) => a.name.localeCompare(b.name))
+  return finished.sort((a, b) => {
+    const da = a.finished_at || ''
+    const db = b.finished_at || ''
+    if (da && db) return db.localeCompare(da)
+    return da ? -1 : db ? 1 : a.name.localeCompare(b.name)
+  })
 }
