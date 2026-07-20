@@ -336,27 +336,24 @@ function EditorialBlocks({ streak, finishedCount, upToDateCount, episodesWatched
   upToDateCount: number
   episodesWatched: number
 }) {
-  const quotes = [
-    'Track every frame. Own your watch history.',
-    'Binge with data. Rewatch with pride.',
-    'Your screen time, finally on display.',
-  ]
+  const { t } = useI18n()
+  const quotes = t.dashboard.quotes
   const quote = quotes[Math.abs(episodesWatched) % quotes.length]
   return (
     <section aria-label="Highlights" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <div className="bg-yellow border-[3px] border-border p-5 shadow-brutal lg:col-span-2">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-text/70 mb-2">Weekly Challenge</div>
-        <div className="text-2xl sm:text-3xl font-black uppercase font-heading leading-tight">Watch 3 episodes a day</div>
-        <div className="text-sm font-bold mt-3">Streak: <span className="bg-text text-bg px-2 py-0.5">{streak > 1 ? `${streak} days` : 'Start now'}</span></div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-text/70 mb-2">{t.dashboard.weeklyChallenge}</div>
+        <div className="text-2xl sm:text-3xl font-black uppercase font-heading leading-tight">{t.dashboard.weeklyChallengeGoal}</div>
+        <div className="text-sm font-bold mt-3">{t.dashboard.streakLabel} <span className="bg-text text-bg px-2 py-0.5">{streak > 1 ? t.dashboard.streakDays.replace('{streak}', String(streak)) : t.dashboard.streakStart}</span></div>
       </div>
       <div className="bg-blue text-text border-[3px] border-border p-5 shadow-brutal">
-        <div className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-2">Achievement</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-2">{t.dashboard.achievement}</div>
         <div className="text-4xl mb-1">◆</div>
-        <div className="text-sm font-black uppercase">{finishedCount > 0 ? 'Collector' : 'Newcomer'}</div>
-        <div className="text-xs font-bold mt-1 opacity-80">{finishedCount} finished · {upToDateCount} up to date</div>
+        <div className="text-sm font-black uppercase">{finishedCount > 0 ? t.dashboard.collector : t.dashboard.newcomer}</div>
+        <div className="text-xs font-bold mt-1 opacity-80">{t.dashboard.achievementCount.replace('{finished}', String(finishedCount)).replace('{upToDate}', String(upToDateCount))}</div>
       </div>
       <div className="bg-pink text-text border-[3px] border-border p-5 shadow-brutal lg:col-span-3">
-        <div className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-2">Quote of the day</div>
+        <div className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-2">{t.dashboard.quoteOfTheDay}</div>
         <div className="text-xl sm:text-2xl font-black uppercase font-heading leading-tight">“{quote}”</div>
       </div>
     </section>

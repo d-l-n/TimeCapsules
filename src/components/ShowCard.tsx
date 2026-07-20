@@ -78,7 +78,7 @@ export default function ShowCard({ id, name, posterUrl, imdbRating, userRating, 
         )}
       </div>
       <div className="p-3 flex flex-col gap-1 flex-1">
-        <h3 className="font-bold text-xs uppercase leading-tight break-words line-clamp-2">{name}</h3>
+        <h3 className={`font-bold uppercase leading-tight break-words line-clamp-2 ${span === '2x2' ? 'text-2xl' : 'text-xs'}`}>{name}</h3>
         <div className="flex items-center gap-2 text-xs">
           {userRating != null && (
             <span className="border-2 border-border px-1.5 py-0.5 font-bold text-pink bg-surface">{userRating}/10</span>
