@@ -241,16 +241,28 @@ a.hover\:bg-highlight:hover,
 [data-theme="dark"] .sidebar-pill:hover { background: #222222; }
 .sidebar-pill--active { background: var(--color-accent); color: #111111; border-color: var(--color-accent); }
 
+/* Light mode: invert pill in header has white bg + dark border like profile avatar */
+header.bg-text .sidebar-pill--invert {
+  background: #FFFFFF;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+header.bg-text .sidebar-pill--invert:hover {
+  background: var(--color-accent);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+[data-theme="dark"] header.bg-text .sidebar-pill--invert {
+  background: #111111;
+  border-color: #111111;
+  color: #FFFFFF;
+}
+
 /* Invert pill in dark mode: white bg + subtle border — matches divider/profile frame */
 [data-theme="dark"] .sidebar-pill--invert {
   background: #FFFFFF;
   border-color: rgba(0,0,0,0.15);
   color: #111111;
-}
-[data-theme="dark"] header.bg-text .sidebar-pill--invert {
-  background: #111111;
-  border-color: rgba(0,0,0,0.15);
-  color: #FFFFFF;
 }
 
 /* ── Sidebar overlay & drawer (tablet/hamburger) ────── */
@@ -545,16 +557,6 @@ h1, h2, h3, h4, h5, h6 {
 [data-theme="dark"] header.bg-text .sidebar-pill:hover {
   background: #333333;
 }
-/* Inverted pills in header: flip to dark so visible on white */
-[data-theme="dark"] header.bg-text .sidebar-pill--invert {
-  background: #111111;
-  border-color: #111111;
-  color: #FFFFFF;
-}
-[data-theme="dark"] header.bg-text .sidebar-pill--invert:hover {
-  background: #222222;
-}
-
 /* ── Dark mode sidebar: fix hardcoded white elements ─── */
 
 /* Logo "TC" label: text-white → black on white sidebar */

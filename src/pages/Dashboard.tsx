@@ -200,7 +200,7 @@ export default function Dashboard() {
         />
 
         {filteredWatchlist.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4 auto-rows-[1fr]">
+            <div className="max-sm:flex max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:w-36 max-sm:*:shrink-0 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr]">
             {filteredWatchlist.slice(0, 12).map((item, i) => (
               <ShowCard
                 key={item.show_id}
@@ -219,7 +219,7 @@ export default function Dashboard() {
             {filteredWatchlist.length > 12 && (
               <Link
                 to="/profile?section=lists"
-                className="bg-surface border-[3px] border-border flex items-center justify-center text-xs font-bold uppercase hover:bg-yellow transition-colors min-h-[120px] shadow-brutal-md tile-2x1"
+                className="bg-surface border-[3px] border-border flex items-center justify-center text-xs font-bold uppercase hover:bg-yellow transition-colors min-h-36 shadow-brutal-md max-sm:w-36 sm:tile-2x1"
               >
                 +{filteredWatchlist.length - 12}
               </Link>
@@ -257,7 +257,7 @@ export default function Dashboard() {
         {upToDate.length > 0 ? (
           <>
             <p className="text-xs text-text-secondary mb-4">{t.dashboard.upToDateDesc}</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 auto-rows-[1fr]">
+            <div className="max-sm:flex max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:w-36 max-sm:*:shrink-0 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
               {upToDate.map((item, i) => (
                 <ShowCard
                   key={item.id}
@@ -292,7 +292,7 @@ export default function Dashboard() {
         />
 
         {finished.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 auto-rows-[1fr]">
+          <div className="max-sm:flex max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:w-36 max-sm:*:shrink-0 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
             {finished.map((item, i) => (
               <ShowCard
                 key={item.id}

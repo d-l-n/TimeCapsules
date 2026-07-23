@@ -185,7 +185,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
         const ok = await addToWatchlist(user.uid, tvTimeId)
         if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, tvTimeId } }))
       }
-    } catch {}
+    } catch (e) { console.error('handleAdd failed:', e) }
     setAddingId(null)
   }
 
@@ -206,7 +206,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
           watchedCount: currentlyWatched ? 0 : (m[item.id]?.watchedCount ?? 0) + 1,
         },
       }))
-    } catch {}
+    } catch (e) { console.error('handleToggleWatched failed:', e) }
     setTogglingId(null)
   }
 
@@ -223,7 +223,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
           watchedCount: (m[item.id]?.watchedCount ?? 1) + 1,
         },
       }))
-    } catch {}
+    } catch (e) { console.error('handleRewatch failed:', e) }
     setTogglingId(null)
   }
 
@@ -237,7 +237,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
         ...m,
         [item.id]: { ...m[item.id], watched: false, watchedCount: 0 },
       }))
-    } catch {}
+    } catch (e) { console.error('handleUnwatch failed:', e) }
     setTogglingId(null)
   }
 

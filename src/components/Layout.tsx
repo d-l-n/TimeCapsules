@@ -41,7 +41,8 @@ export default function Layout() {
     { to: '/profile?section=stats', label: t.profile.statsTab, icon: <StatsIcon /> },
   ]
 
-  useEffect(() => { setShowNotifPanel(false); setSidebarOpen(false) }, [pathname])
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
+  useEffect(() => { setShowNotifPanel(false); setSidebarOpen(false); window.scrollTo(0, 0) }, [pathname])
 
   // Close sidebar on Escape key
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function Layout() {
           setShowNotifPanel={setShowNotifPanel}
           closeNotifs={closeNotifs}
           navHiddenByScroll={navHiddenByScroll}
+          scrollToTop={scrollToTop}
         />
       ) : isSidebarCollapsed ? (
         <TabletLayout
@@ -92,7 +94,7 @@ export default function Layout() {
         />
       ) : (
         <>
-          <DesktopSidebar {...sidebarProps} />
+          <DesktopSidebar {...sidebarProps} scrollToTop={scrollToTop} />
           <main className="flex-1 min-w-0 px-6 pt-6 pb-12 lg:px-8 lg:ml-[224px] lg:w-[calc(100%-224px)] lg:max-w-[1400px]" id="main-content" role="main">
             <Outlet />
           </main>
@@ -145,7 +147,7 @@ function NotificationPanel({ notifications, unreadCount, markAsRead, markAllAsRe
   )
 }
 
-function DesktopSidebar(props: SidebarProps) {
+function DesktopSidebar(props: SidebarProps & { scrollToTop: () => void }) {
   return (
     <aside className="sidebar fixed top-0 left-0 bottom-0 w-[224px] flex flex-col z-30" role="banner">
       <SidebarContent {...props} />
@@ -166,7 +168,7 @@ type SidebarProps = {
  * Shared inner content for both DesktopSidebar and tablet drawer.
  * Accepts optional onNavClick to close the drawer on navigation.
  */
-function SidebarContent({ user, navItems, theme, toggle, t, pathname, notifications, unreadCount, markAsRead, markAllAsRead, showNotifPanel, setShowNotifPanel, closeNotifs, onNavClick, hideBottom }: SidebarProps & { onNavClick?: () => void; hideBottom?: boolean }) {
+function SidebarContent({ user, navItems, theme, toggle, t, pathname, notifications, unreadCount, markAsRead, markAllAsRead, showNotifPanel, setShowNotifPanel, closeNotifs, onNavClick, hideBottom, scrollToTop }: SidebarProps & { onNavClick?: () => void; hideBottom?: boolean; scrollToTop?: () => void }) {
   const { search } = useLocation()
   return (
     <>
@@ -191,7 +193,7 @@ function SidebarContent({ user, navItems, theme, toggle, t, pathname, notificati
               to={to}
               className={`sidebar-link ${isActive ? 'sidebar-link--active' : ''}`}
               aria-label={label}
-              onClick={onNavClick}
+              onClick={() => { onNavClick?.(); scrollToTop?.() }}
             >
               <span className="shrink-0">{icon}</span>
               <span className="truncate">{label}</span>
@@ -322,12 +324,13 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
   )
 }
 
-function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadCount, markAsRead, markAllAsRead, showNotifPanel, setShowNotifPanel, closeNotifs, navHiddenByScroll }: {
+function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadCount, markAsRead, markAllAsRead, showNotifPanel, setShowNotifPanel, closeNotifs, navHiddenByScroll, scrollToTop }: {
   user: ReturnType<typeof useAuth>['user']
   navItems: NavItem[]
   theme: string
   toggle: () => void
   t: ReturnType<typeof useI18n>['t']
+  scrollToTop: () => void
 } & ReturnType<typeof useNotifications> & { showNotifPanel: boolean; setShowNotifPanel: React.Dispatch<React.SetStateAction<boolean>>; closeNotifs: () => void; navHiddenByScroll: boolean }) {
   const location = useLocation()
   return (
@@ -372,7 +375,7 @@ function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadC
             ? location.pathname === '/profile' && location.search.includes('section=stats')
             : location.pathname === to || location.pathname.startsWith(to + '/')
           return (
-            <NavLink key={to} to={to} className={`nav-pill-btn ${isActive ? 'nav-pill-btn--active' : ''}`} aria-label={label} aria-current={isActive ? 'page' : undefined}>
+            <NavLink key={to} to={to} onClick={scrollToTop} className={`nav-pill-btn ${isActive ? 'nav-pill-btn--active' : ''}`} aria-label={label} aria-current={isActive ? 'page' : undefined}>
               <span className="nav-pill-icon">{icon}</span>
               <span className="nav-pill-label">{label}</span>
             </NavLink>
