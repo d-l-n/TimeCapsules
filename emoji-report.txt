@@ -1,6 +1,0 @@
-components\DashboardHero.tsx: U+1F525
-components\EmotionPicker.tsx: U+1F389, U+1F525, U+1F604, U+1F621, U+1F622, U+1F631, U+1F634, U+1F929, U+1F92F
-components\Layout.tsx: U+1F464
-pages\GroupDetail.tsx: U+1F464
-pages\ProfilePage.tsx: U+1F464
-services\emotionService.ts: U+1F389, U+1F525, U+1F604, U+1F621, U+1F622, U+1F631, U+1F634, U+1F929, U+1F92F

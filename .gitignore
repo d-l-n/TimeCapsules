@@ -9,3 +9,4 @@ nul
 e2e/.auth/
 .specify/memory/constitution.md
 data/
+*.zip

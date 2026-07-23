@@ -1,4 +1,0 @@
-components\EmotionPicker.tsx: U+2764 '❤', U+FE0F '️'
-pages\Dashboard.tsx: U+2715 '✕'
-pages\ShowDetail.tsx: U+2605 '★', U+2715 '✕'
-services\emotionService.ts: U+2764 '❤', U+FE0F '️'
