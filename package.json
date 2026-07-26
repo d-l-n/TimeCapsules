@@ -19,10 +19,10 @@
     "delete:anonymous": "tsx scripts/09-delete-anonymous.ts",
     "fix:media-type": "tsx scripts/10-fix-media-type.ts",
     "delete:bad-shows": "tsx scripts/11-delete-bad-shows.ts",
+    "cleanup:migration-fields": "tsx scripts/12-cleanup-migration-fields.ts",
     "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=timecapsules --branch main"
   },
   "dependencies": {
-    "boneyard-js": "^1.9.0",
     "firebase": "^12.15.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
