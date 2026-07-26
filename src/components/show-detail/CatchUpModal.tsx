@@ -18,24 +18,24 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t }: CatchUpMod
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl relative" onClick={e => e.stopPropagation()}>
         <button
           onClick={onClose}
-          className="x-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm sm:hover:bg-pink transition-colors cursor-pointer"
+          className="x-btn absolute top-2 right-2 w-8 h-8 sm:w-7 sm:h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm sm:hover:bg-pink transition-colors cursor-pointer active:translate-x-px active:translate-y-px active:shadow-none"
           aria-label={t.lists.cancel}
         >
           X
         </button>
         <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 mb-4" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.showDetail.catchUpTitle}</h3>
-        <p className="text-sm font-bold mb-6">{message}</p>
-        <div className="flex gap-3">
+        <p className="text-xs sm:text-sm font-bold mb-4 sm:mb-6">{message}</p>
+        <div className="flex gap-2 sm:gap-3">
           <button
             onClick={() => onCatchUp(true)}
-            className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-pink transition-colors"
+            className="flex-1 border-[3px] border-border bg-yellow text-text px-2 sm:px-3 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase active:translate-x-px active:translate-y-px active:shadow-none sm:hover:bg-pink transition-all"
             aria-label={t.showDetail.catchUpYes}
           >
             {t.showDetail.catchUpYes}
           </button>
           <button
             onClick={() => onCatchUp(false)}
-            className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors"
+            className="flex-1 border-[3px] border-border bg-surface text-text px-2 sm:px-3 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase active:translate-x-px active:translate-y-px active:shadow-none sm:hover:bg-yellow transition-all"
             aria-label={t.showDetail.catchUpNo}
           >
             {t.showDetail.catchUpNo}

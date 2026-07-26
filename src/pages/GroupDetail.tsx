@@ -4,8 +4,8 @@ import { useAuth } from '../lib/AuthContext'
 import { WatchedIcon } from '../components/Icons'
 import { useI18n } from '../lib/I18nContext'
 import { useGroupMembers, useGroupShows, useGroupProgress } from '../hooks'
-import { addShowToGroup, removeShowFromGroup, leaveGroup, isUserInGroup, getGroupInviteCode, getGroup } from '../services/groupService'
-import { getShowByTmdbId, createShowFromTmdb, toggleWatchedEpisode } from '../services/showService'
+import { addShowToGroup, removeShowFromGroup, leaveGroup, isUserInGroup, getGroupInviteCode, getGroup, setGroupMovieWatched } from '../services/groupService'
+import { getShowByTmdbId, createShowFromTmdb } from '../services/showService'
 import { searchMulti, getPosterUrl, getTrending, tmdbLang, type TmdbSearchResult } from '../services/tmdb'
 import Loading from '../components/Loading'
 import ShowCard from '../components/ShowCard'
@@ -160,9 +160,9 @@ export default function GroupDetail() {
   }
 
   const handleMarkWatched = async (showId: number) => {
-    if (!user?.uid || markingId !== null) return
+    if (!user?.uid || !groupId || markingId !== null) return
     setMarkingId(showId)
-    await toggleWatchedEpisode(user.uid, showId, showId, true)
+    await setGroupMovieWatched(groupId, showId, user.uid, true)
     setMarkingId(null)
   }
 
@@ -411,7 +411,7 @@ export default function GroupDetail() {
                               onClick={() => handleMarkWatched(s.tmdb_id)}
                               disabled={markingId === s.tmdb_id}
                               aria-label={t.showDetail.markAsWatched}
-                              className="border-2 border-border bg-yellow text-text px-2 py-1 text-[10px] font-bold uppercase sm:hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer"
+                              className="btn-brutal btn-accent text-[9px] px-2 py-1 text-text flex-1"
                             >
                               {markingId === s.tmdb_id ? '...' : t.showDetail.markAsWatched}
                             </button>
@@ -420,7 +420,7 @@ export default function GroupDetail() {
                             <button
                               onClick={() => setSelectedShowId(selected ? null : s.tmdb_id)}
                               aria-label={t.groups.progress}
-                              className={`border-2 border-border px-2 py-1 text-[10px] font-bold transition-colors cursor-pointer ${selected ? 'bg-yellow text-text' : 'bg-surface sm:hover:bg-yellow'}`}
+                              className={`btn-brutal text-[9px] px-2 py-1 flex-1 ${selected ? 'bg-yellow' : 'bg-surface'}`}
                             >
                               {t.groups.progress}
                             </button>
@@ -548,7 +548,7 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
         <div className="flex items-center gap-2 mt-1">
           {year && <span className="text-[10px] font-mono text-text-secondary">{year}</span>}
           <span className={`border px-1 text-[9px] font-bold uppercase leading-none py-[1px] ${
-            isMovie ? 'border-blue text-blue bg-blue/5' : 'border-yellow text-text bg-yellow/5'
+            'border-yellow text-text bg-yellow/5'
           }`}>
             {isMovie ? 'MOVIE' : 'TV'}
           </span>

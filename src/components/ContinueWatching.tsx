@@ -61,7 +61,7 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold uppercase text-text-secondary">{t.dashboard.progress}</span>
-                      <span className="text-[10px] font-bold uppercase bg-blue text-text border-2 border-border px-2 py-0.5">
+                      <span className="text-[10px] font-bold uppercase bg-yellow text-text border-2 border-border px-2 py-0.5">
                         {t.dashboard.continueBtn}
                       </span>
                     </div>

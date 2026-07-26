@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from 'react'
 import { getTmdbImage } from '../../services/tmdb'
 import { getEmoji } from '../../services/emotionService'
 import type { MemberWithProfile, GroupEpisodeProgress } from '../../services/groupService'
@@ -47,7 +48,7 @@ export default function EpisodeRow({
   onToggle, onRewatch, onToggleSynopsis,
   onResumeClick, onResumeSave, onResumePreset, onResumeClear, onResumeKeyDown,
 }: EpisodeRowProps) {
-  const rowBg = isWatched ? 'bg-green' : isCurrent ? 'bg-blue text-text' : 'bg-surface'
+  const rowBg = isWatched ? 'bg-green' : isCurrent ? 'bg-yellow text-text' : 'bg-surface'
   return (
     <div className="border-2 border-border">
       <div className="flex">
@@ -57,8 +58,8 @@ export default function EpisodeRow({
           className={`flex-1 min-w-0 px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-3 transition-all text-left ${rowBg} ${!isWatched && !isCurrent ? 'sm:hover:bg-yellow' : ''}`}
           aria-label={`${t.showDetail.episode} ${ep.episode_number}${ep.title ? ` — ${ep.title}` : ''}${isWatched ? ` — ${t.showDetail.watched}` : ''}`}
         >
-          <span className={`border-2 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs shrink-0 flex items-center gap-1 ${isWatched ? 'border-text bg-green text-text' : isCurrent ? 'border-text bg-blue text-text' : 'border-border bg-surface text-text'}`} aria-hidden="true">
-            {isToggling ? '...' : isWatched ? <><WatchedIcon className="w-3 h-3" />{watchedCounts.get(ep.id)! > 1 && `×${watchedCounts.get(ep.id)}`}</> : `E${ep.episode_number}`}
+          <span className={`border-2 px-1 sm:px-2 py-0.5 text-[9px] sm:text-xs shrink-0 flex items-center gap-1 ${isWatched ? 'border-text bg-green text-text' : isCurrent ? 'border-text bg-yellow text-text' : 'border-border bg-surface text-text'}`} aria-hidden="true">
+            {isToggling ? '...' : isWatched ? <><WatchedIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{watchedCounts.get(ep.id)! > 1 && `×${watchedCounts.get(ep.id)}`}</> : `E${ep.episode_number}`}
           </span>
           <span className={`truncate ${isWatched ? 'line-through opacity-70' : ''}`}>{ep.title}</span>
         </button>
@@ -66,11 +67,11 @@ export default function EpisodeRow({
           <button
             onClick={(e) => { e.stopPropagation(); onRewatch(ep.id) }}
             disabled={isToggling}
-              className={`shrink-0 px-1.5 text-xs font-bold border-2 border-border transition-colors ${isToggling ? 'bg-green/50 text-text/50 cursor-wait' : 'bg-surface text-text sm:hover:bg-green cursor-pointer'}`}
+              className={`shrink-0 px-1 sm:px-1.5 text-[10px] sm:text-xs font-bold border-2 border-border transition-colors ${isToggling ? 'bg-green/50 text-text/50 cursor-wait' : 'bg-surface text-text sm:hover:bg-green cursor-pointer'}`}
             title={isToggling ? 'Toggling...' : 'Rewatch'}
             aria-label="Mark as rewatched"
           >
-            {isToggling ? '...' : <RewatchIcon className="w-3.5 h-3.5" />}
+            {isToggling ? '...' : <RewatchIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
           </button>
         )}
         {emotions.has(ep.id) && (
@@ -105,16 +106,16 @@ export default function EpisodeRow({
         ) : (
           <button
             onClick={() => onResumeClick(ep.id, resumePositions.get(ep.id))}
-            className="shrink-0 border-2 border-border px-1.5 py-1 text-[10px] font-bold bg-surface text-text sm:hover:bg-yellow transition-colors flex items-center gap-1"
+            className="shrink-0 border-2 border-border px-1 sm:px-1.5 py-0.5 sm:py-1 text-[9px] sm:text-[10px] font-bold bg-surface text-text sm:hover:bg-yellow transition-colors flex items-center gap-1"
             aria-label={t.showDetail.resumePosition}
           >
-            <TimerIcon className="w-3 h-3" /> {resumePositions.has(ep.id) ? fmtPos(resumePositions.get(ep.id)!) : t.showDetail.noPosition}
+            <TimerIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {resumePositions.has(ep.id) ? fmtPos(resumePositions.get(ep.id)!) : t.showDetail.noPosition}
           </button>
         )}
         {hasInfo && (
           <button
             onClick={() => onToggleSynopsis(ep.id)}
-            className={`shrink-0 px-3 text-xs font-bold border-l-2 border-border transition-colors ${isExpanded ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
+            className={`shrink-0 px-2 sm:px-3 text-[10px] sm:text-xs font-bold border-l-2 border-border transition-colors ${isExpanded ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
             aria-label={`${t.showDetail.info} — ${ep.title}`}
           >
             {isExpanded ? '▲' : '▼'}
@@ -122,7 +123,7 @@ export default function EpisodeRow({
         )}
       </div>
       {isExpanded && hasInfo && (
-        <div className="border-t-2 border-border px-4 py-3 bg-surface text-sm flex flex-col sm:flex-row gap-4">
+        <div className="border-t-2 border-border px-3 sm:px-4 py-2 sm:py-3 bg-surface text-xs sm:text-sm flex flex-col sm:flex-row gap-3 sm:gap-4">
           {ep.still_path && !(spoilerFree && !isWatched) && (
             <div className="sm:w-48 shrink-0">
               <img src={getTmdbImage(ep.still_path, 'w500')!} alt="" className="w-full border-2 border-border" />
@@ -155,13 +156,30 @@ function GroupProgressPopover({ members, episodeId, groupProgress, userId, membe
   memberColorMap: Map<string, string>
   t: ReturnType<typeof useI18n>['t']
 }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
   const watchedBy = groupProgress.find(p => p.episode_id === episodeId)
   const watchedUserIds = new Set(watchedBy?.user_ids ?? [])
   const watchers = members.filter(m => watchedUserIds.has(m.user_id))
   const nonWatchers = members.filter(m => !watchedUserIds.has(m.user_id))
 
+  useEffect(() => {
+    if (!isOpen) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [isOpen])
+
   return (
-    <div className="relative group cursor-pointer px-2 shrink-0">
+    <div
+      ref={ref}
+      className="relative group cursor-pointer px-2 shrink-0"
+      onClick={() => setIsOpen(prev => !prev)}
+    >
       <div className="flex gap-px items-center" aria-label={t.watchParty.groupProgress}>
         {members.map(m => {
           const isWatched = watchedUserIds.has(m.user_id)
@@ -179,7 +197,7 @@ function GroupProgressPopover({ members, episodeId, groupProgress, userId, membe
           )
         })}
       </div>
-      <div className="absolute bottom-full right-0 mb-1 z-50 hidden sm:group-hover:block group-focus-within:block min-w-40">
+      <div className={`absolute bottom-full right-0 mb-1 z-50 min-w-40 ${isOpen ? 'block' : 'hidden'} sm:group-hover:block`}>
         <div className="bg-surface border-2 border-border shadow-brutal p-2 space-y-1">
           <div className="text-[9px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 mb-1">{t.watchParty.groupProgress}</div>
           {watchers.length === 0 && <div className="text-[9px] text-text-secondary">—</div>}

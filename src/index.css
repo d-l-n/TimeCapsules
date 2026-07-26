@@ -114,9 +114,19 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Accent buttons: always black text on accent bg ── */
+/* ── Colored backgrounds: always dark text for contrast ── */
 .bg-accent { color: #111111 !important; }
 .bg-highlight { color: #111111 !important; }
+.bg-pink,
+.bg-blue,
+.bg-green,
+.bg-red,
+.bg-orange,
+.bg-purple,
+.bg-yellow { color: #111111 !important; }
+
+/* btn-brutal buttons with bg-yellow: keep theme text color (looks wrong with black text in dark mode) */
+.btn-brutal.bg-yellow { color: var(--color-text) !important; }
 
 button.hover\:bg-accent:hover,
 a.hover\:bg-accent:hover,
@@ -125,7 +135,25 @@ a.hover\:bg-accent:hover,
 button.hover\:bg-highlight:hover,
 a.hover\:bg-highlight:hover,
 .hover\:bg-highlight:hover button,
-.hover\:bg-highlight:hover a {
+.hover\:bg-highlight:hover a,
+button.hover\:bg-pink:hover,
+a.hover\:bg-pink:hover,
+.hover\:bg-pink:hover button,
+.hover\:bg-pink:hover a,
+button.hover\:bg-blue:hover,
+a.hover\:bg-blue:hover,
+button.hover\:bg-green:hover,
+a.hover\:bg-green:hover,
+button.hover\:bg-red:hover,
+a.hover\:bg-red:hover,
+button.hover\:bg-orange:hover,
+a.hover\:bg-orange:hover,
+button.hover\:bg-purple:hover,
+a.hover\:bg-purple:hover,
+button.hover\:bg-yellow:hover,
+a.hover\:bg-yellow:hover,
+.hover\:bg-yellow:hover button,
+.hover\:bg-yellow:hover a {
   color: #111111 !important;
 }
 
@@ -683,7 +711,7 @@ header.bg-text .sidebar-pill--invert:active {
 }
 
 /* ── Custom scrollbars (brutalist) ──────────────────── */
-/* Firefox */
+/* Firefox — flat, no rounding */
 html {
   scrollbar-width: auto;
   scrollbar-color: var(--color-accent) var(--color-surface);
@@ -692,14 +720,14 @@ html {
 .sidebar,
 .sidebar-drawer {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.35) transparent;
+  scrollbar-color: rgba(255,255,255,0.5) transparent;
 }
 [data-theme="dark"] .sidebar,
 [data-theme="dark"] .sidebar-drawer {
-  scrollbar-color: rgba(0,0,0,0.35) transparent;
+  scrollbar-color: rgba(0,0,0,0.5) transparent;
 }
 
-/* WebKit (Chrome, Safari, Edge) — global */
+/* WebKit (Chrome, Safari, Edge) — global scrollbar: 12px flat bar */
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;
@@ -707,32 +735,33 @@ html {
 
 ::-webkit-scrollbar-track {
   background: var(--color-surface);
-  border-left: 3px solid var(--color-border);
+  border-left: 2px solid var(--color-border);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-accent);
-  border: 3px solid var(--color-accent-border);
-  border-radius: 4px;
+  border: 2px solid var(--color-accent-border);
+  border-radius: 0;
   min-height: 48px;
+  box-shadow: 2px 2px 0 var(--color-accent-border);
+  transition: box-shadow 0.12s ease, background 0.12s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-highlight);
-  border-color: var(--color-accent-border);
+  box-shadow: 3px 3px 0 var(--color-accent-border);
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: var(--color-highlight);
-  border-color: var(--color-accent-border);
+  box-shadow: none;
+  transition: none;
 }
 
-/* Sidebar scrollbar: inverted, transparent track */
-/* Note: scrollable element is <nav> inside sidebar/drawer, not the container itself */
+/* Sidebar scrollbar: 8px thin flat bar */
 .sidebar > nav::-webkit-scrollbar,
 .sidebar-drawer nav::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 .sidebar > nav::-webkit-scrollbar-track,
@@ -743,27 +772,43 @@ html {
 
 .sidebar > nav::-webkit-scrollbar-thumb,
 .sidebar-drawer nav::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.3);
-  border: 2px solid rgba(255,255,255,0.25);
-  border-radius: 4px;
+  background: rgba(255,255,255,0.4);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 0;
+  min-height: 32px;
+  box-shadow: 1px 1px 0 rgba(255,255,255,0.2);
+  transition: box-shadow 0.12s ease, background 0.12s ease;
 }
 
 .sidebar > nav::-webkit-scrollbar-thumb:hover,
 .sidebar-drawer nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.5);
-  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.6);
+  box-shadow: 2px 2px 0 rgba(255,255,255,0.3);
+}
+
+.sidebar > nav::-webkit-scrollbar-thumb:active,
+.sidebar-drawer nav::-webkit-scrollbar-thumb:active {
+  box-shadow: none;
+  transition: none;
 }
 
 [data-theme="dark"] .sidebar > nav::-webkit-scrollbar-thumb,
 [data-theme="dark"] .sidebar-drawer nav::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.3);
-  border-color: rgba(0,0,0,0.2);
+  background: rgba(0,0,0,0.4);
+  border-color: rgba(0,0,0,0.25);
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.2);
 }
 
 [data-theme="dark"] .sidebar > nav::-webkit-scrollbar-thumb:hover,
 [data-theme="dark"] .sidebar-drawer nav::-webkit-scrollbar-thumb:hover {
-  background: rgba(0,0,0,0.5);
-  border-color: rgba(0,0,0,0.35);
+  background: rgba(0,0,0,0.6);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.3);
+}
+
+[data-theme="dark"] .sidebar > nav::-webkit-scrollbar-thumb:active,
+[data-theme="dark"] .sidebar-drawer nav::-webkit-scrollbar-thumb:active {
+  box-shadow: none;
+  transition: none;
 }
 
 /* Corner between two scrollbars */

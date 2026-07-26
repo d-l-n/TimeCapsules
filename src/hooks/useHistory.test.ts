@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useHistory } from './useHistory'
+import { clearCache } from '../lib/hook-cache'
 
 const mockEntries = [
   { id: 1, watched_at: '2024-01-15T20:00:00Z', episode_number: 1, season_number: 1, show_name: 'Breaking Bad', show_id: 1 },
@@ -14,6 +15,7 @@ const historyService = await import('../services/historyService')
 
 describe('useHistory', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(historyService.getWatchHistory).mockResolvedValue({ entries: [], months: [] })
   })

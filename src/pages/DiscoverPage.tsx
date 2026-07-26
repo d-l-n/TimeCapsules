@@ -1,6 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { searchMulti, getPosterUrl, getTrending, tmdbLang, type TmdbSearchResult } from '../services/tmdb'
+import {
+  searchMulti, getPosterUrl, getTrending, tmdbLang,
+  getOnTheAirTv, getUpcomingMovies,
+  getAllGenres, discoverByGenre,
+  type TmdbSearchResult, type TmdbGenre,
+} from '../services/tmdb'
 import { getShowByTmdbId, createShowFromTmdb, toggleWatchedEpisode, getUserWatchlistTmdbMap, getUserWatchedShowIds } from '../services/showService'
 import { addToWatchlist } from '../services/watchlistService'
 import { useAuth } from '../lib/AuthContext'
@@ -9,8 +14,18 @@ import EmptyState from '../components/EmptyState'
 import SectionHeader from '../components/SectionHeader'
 
 const STORAGE_KEY = 'discover_search'
+type MediaFilter = 'all' | 'tv' | 'movie'
+type DiscoveryTab = 'trending' | 'onAir' | 'upcoming' | 'genre'
 
 interface ItemMeta { added: boolean; showId?: number; watched?: boolean; watchedCount?: number }
+
+const GENRE_IDS = [28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402, 9648, 10749, 878, 10770, 53, 10752, 37]
+const GENRE_NAMES: Record<number, string> = {
+  28: 'Action', 12: 'Adventure', 16: 'Animation', 35: 'Comedy', 80: 'Crime',
+  99: 'Documentary', 18: 'Drama', 10751: 'Family', 14: 'Fantasy', 36: 'History',
+  27: 'Horror', 10402: 'Music', 9648: 'Mystery', 10749: 'Romance', 878: 'Sci-Fi',
+  10770: 'TV Movie', 53: 'Thriller', 10752: 'War', 37: 'Western',
+}
 
 export default function DiscoverPage() {
   const { user } = useAuth()
@@ -21,7 +36,16 @@ export default function DiscoverPage() {
   })
   const [loading, setLoading] = useState(false)
   const [searched, setSearched] = useState(() => sessionStorage.getItem(`${STORAGE_KEY}_searched`) === 'true')
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>('all')
+  const [discoveryTab, setDiscoveryTab] = useState<DiscoveryTab>('trending')
   const [trending, setTrending] = useState<TmdbSearchResult[]>([])
+  const [onAir, setOnAir] = useState<TmdbSearchResult[]>([])
+  const [upcoming, setUpcoming] = useState<TmdbSearchResult[]>([])
+  const [genreResults, setGenreResults] = useState<TmdbSearchResult[]>([])
+  const [genreLoading, setGenreLoading] = useState(false)
+  const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
+  const [genres, setGenres] = useState<TmdbGenre[]>([])
+  const [isFocused, setIsFocused] = useState(false)
   const [metaMap, setMetaMap] = useState<Record<number, ItemMeta>>({})
 
   useEffect(() => {
@@ -30,11 +54,24 @@ export default function DiscoverPage() {
     sessionStorage.setItem(`${STORAGE_KEY}_searched`, String(searched))
   }, [query, results, searched])
 
+  // Load genres for quick filters
   useEffect(() => {
-    if (!searched) {
-      getTrending(tmdbLang(lang)).then(setTrending)
-    }
-  }, [searched, lang])
+    getAllGenres(tmdbLang(lang)).then(setGenres)
+  }, [lang])
+
+  // Load trending/discovery sections
+  const loadDiscovery = useCallback(async () => {
+    const [trend, air, up] = await Promise.all([
+      getTrending(tmdbLang(lang)),
+      getOnTheAirTv(tmdbLang(lang)),
+      getUpcomingMovies(tmdbLang(lang)),
+    ])
+    setTrending(trend)
+    setOnAir(air)
+    setUpcoming(up.map(m => ({ ...m, media_type: 'movie', release_date: m.release_date ?? undefined })))
+  }, [lang])
+
+  useEffect(() => { loadDiscovery() }, [loadDiscovery])
 
   useEffect(() => {
     if (!user?.uid) return
@@ -80,8 +117,46 @@ export default function DiscoverPage() {
     sessionStorage.removeItem(`${STORAGE_KEY}_searched`)
   }, [])
 
+  const handleGenreClick = useCallback(async (genreId: number) => {
+    setQuery('')
+    setResults([])
+    setSearched(false)
+    const isToggling = genreId === selectedGenre
+    setSelectedGenre(isToggling ? null : genreId)
+    if (!isToggling) {
+      setGenreLoading(true)
+      try {
+        const [movieRes, tvRes] = await Promise.all([
+          discoverByGenre(genreId, 'movie', tmdbLang(lang)),
+          discoverByGenre(genreId, 'tv', tmdbLang(lang)),
+        ])
+        const merged = [...movieRes.results, ...tvRes.results]
+          .sort((a, b) => (b.vote_average ?? 0) - (a.vote_average ?? 0))
+          .slice(0, 20)
+        setGenreResults(merged)
+      } catch { setGenreResults([]) }
+      setGenreLoading(false)
+    } else {
+      setGenreResults([])
+    }
+  }, [selectedGenre, lang])
+
+  const handleSuggestionClick = useCallback((term: string) => {
+    setQuery(term)
+    runSearch(term)
+    setIsFocused(false)
+  }, [runSearch])
+
+  const filteredResults = useMemo(() => {
+    if (mediaFilter === 'all') return results
+    return results.filter(r => r.media_type === mediaFilter)
+  }, [results, mediaFilter])
+
+  const hasActiveDiscovery = discoveryTab === 'genre' && selectedGenre
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Search Header */}
       <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 space-y-5 animate-fade-in-up">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.discover.eyebrow}</div>
@@ -95,6 +170,8 @@ export default function DiscoverPage() {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               placeholder={t.discover.searchPlaceholder}
               className="w-full border-[3px] border-border bg-surface px-4 py-3 text-sm font-bold uppercase outline-none focus:bg-yellow/30 pr-12 transition-colors"
             />
@@ -108,6 +185,29 @@ export default function DiscoverPage() {
                 X
               </button>
             )}
+            {/* Search suggestions dropdown */}
+            {isFocused && !query && trending.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-surface border-[3px] border-border z-20 shadow-brutal-md">
+                <div className="px-3 py-1.5 text-[9px] font-bold uppercase text-text-secondary border-b-2 border-border">
+                  {t.discover.trending}
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {trending.slice(0, 6).map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => handleSuggestionClick(item.name || item.title || '')}
+                      className="w-full text-left px-3 py-2 text-xs font-bold uppercase border-b-2 border-border last:border-b-0 sm:hover:bg-yellow transition-colors cursor-pointer flex items-center gap-2"
+                    >
+                      <span className="w-5 h-5 border border-border flex items-center justify-center text-[8px] font-bold shrink-0 bg-surface">
+                        {item.media_type === 'movie' ? 'M' : 'TV'}
+                      </span>
+                      <span className="truncate">{item.name || item.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <button
             type="submit"
@@ -118,26 +218,132 @@ export default function DiscoverPage() {
             {loading ? t.discover.loading : t.discover.searchButton}
           </button>
         </form>
+
+        {/* Media type filter */}
+        {searched && results.length > 0 && (
+          <div className="flex gap-1 sm:gap-2 border-t-2 border-border pt-4">
+            {(['all', 'tv', 'movie'] as MediaFilter[]).map(f => (
+              <button
+                key={f}
+                onClick={() => setMediaFilter(f)}
+                className={`border-2 border-border px-2 sm:px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase transition-colors cursor-pointer ${
+                  mediaFilter === f ? 'bg-yellow text-text' : 'bg-surface sm:hover:bg-yellow'
+                }`}
+                aria-pressed={mediaFilter === f}
+              >
+                {f === 'all' ? t.discover.all : f === 'tv' ? t.discover.tv : t.discover.movie}
+                <span className="ml-1 border-l-2 border-border pl-1 text-text-secondary">
+                  {f === 'all' ? results.length : results.filter(r => r.media_type === f).length}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Genre quick filters */}
+        <div className="border-t-2 border-border pt-3">
+          <div className="text-[9px] font-bold uppercase text-text-secondary mb-2">{t.discover.browseByGenre}</div>
+          <div className="flex flex-wrap gap-1.5">
+            {GENRE_IDS.map(id => {
+              const genreName = genres.find(g => g.id === id)?.name || GENRE_NAMES[id]
+              if (!genreName) return null
+              return (
+                <button
+                  key={id}
+                  onClick={() => handleGenreClick(id)}
+                  className={`border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase transition-colors cursor-pointer ${
+                    selectedGenre === id ? 'bg-yellow text-text' : 'bg-surface sm:hover:bg-yellow'
+                  }`}
+                  aria-label={`${t.discover.browseByGenre}: ${genreName}`}
+                >
+                  {genreName}
+                </button>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
-      {!searched && (
+      {/* Discovery section tabs (when no search active and no genre selected) */}
+      {!searched && !hasActiveDiscovery && (
+        <>
+          {/* Tab navigation */}
+          <div className="flex border-b-[3px] border-border gap-0">
+            {([
+              { key: 'trending' as DiscoveryTab, label: t.discover.trending },
+              { key: 'onAir' as DiscoveryTab, label: t.discover.onTheAir },
+              { key: 'upcoming' as DiscoveryTab, label: t.discover.upcoming },
+            ]).map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setDiscoveryTab(tab.key)}
+                className={`flex-1 sm:flex-none px-4 py-2 text-xs font-bold uppercase border-t-[3px] border-l-[3px] border-r-[3px] border-border -mb-[3px] transition-colors cursor-pointer ${
+                  discoveryTab === tab.key ? 'bg-yellow text-text' : 'bg-surface text-text-secondary sm:hover:bg-yellow'
+                }`}
+                aria-pressed={discoveryTab === tab.key}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {discoveryTab === 'trending' && trending.length > 0 && (
+            <section>
+              <DiscoverGrid items={trending} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
+            </section>
+          )}
+          {discoveryTab === 'onAir' && onAir.length > 0 && (
+            <section>
+              <DiscoverGrid items={onAir} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
+            </section>
+          )}
+          {discoveryTab === 'upcoming' && upcoming.length > 0 && (
+            <section>
+              <DiscoverGrid items={upcoming} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
+            </section>
+          )}
+        </>
+      )}
+
+      {/* Genre discovery results */}
+      {!searched && hasActiveDiscovery && (
+        <section>
+          {genreLoading ? (
+            <div className="text-center py-10">
+              <p className="text-sm font-bold text-text-secondary">{t.discover.loading}</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm sm:text-lg font-black uppercase font-heading">
+                  {genres.find(g => g.id === selectedGenre)?.name || GENRE_NAMES[selectedGenre!] || ''}
+                </h2>
+                <button
+                  onClick={() => { setSelectedGenre(null); setGenreResults([]) }}
+                  className="border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface sm:hover:bg-pink transition-colors cursor-pointer"
+                >
+                  X {t.discover.clear}
+                </button>
+              </div>
+              <DiscoverGrid items={genreResults} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
+            </>
+          )}
+        </section>
+      )}
+
+      {/* Empty search state */}
+      {!searched && !hasActiveDiscovery && trending.length === 0 && onAir.length === 0 && (
         <div className="text-center py-10">
           <p className="text-sm font-bold text-text-secondary">{t.discover.searchHint}</p>
         </div>
       )}
 
-      {!searched && trending.length > 0 && (
-        <section aria-labelledby="trending-heading">
-          <SectionHeader id="trending-heading" title={t.discover.trending} />
-          <DiscoverGrid items={trending} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
-        </section>
-      )}
-
-      {searched && !loading && results.length === 0 && (
+      {/* No search results */}
+      {searched && !loading && filteredResults.length === 0 && (
         <div className="space-y-8">
           <EmptyState title={t.discover.noResults} />
           {trending.length > 0 && (
-            <section aria-labelledby="suggestions-heading">
+            <section>
               <SectionHeader id="suggestions-heading" title={t.discover.suggestions} />
               <DiscoverGrid items={trending} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
             </section>
@@ -145,9 +351,13 @@ export default function DiscoverPage() {
         </div>
       )}
 
-      {results.length > 0 && (
+      {/* Search results */}
+      {filteredResults.length > 0 && (
         <section>
-          <DiscoverGrid items={results} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
+          <div className="text-[10px] font-bold uppercase text-text-secondary mb-3">
+            {filteredResults.length} {t.history.episodes}
+          </div>
+          <DiscoverGrid items={filteredResults} user={user} t={t} metaMap={metaMap} setMetaMap={setMetaMap} />
         </section>
       )}
     </div>
@@ -169,15 +379,11 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
     if (!user?.uid || addingId) return
     setAddingId(item.id)
     try {
-      console.log('[handleAdd] step 1: getShowByTmdbId', item.id)
       const existing = await getShowByTmdbId(item.id)
       if (existing) {
-        console.log('[handleAdd] step 2: addToWatchlist (existing)', existing.data.tmdb_id)
         const ok = await addToWatchlist(user.uid, existing.data.tmdb_id)
         if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, showId: existing.data.tmdb_id } }))
-        console.log('[handleAdd] done (existing)')
       } else {
-        console.log('[handleAdd] step 2: createShowFromTmdb', item.id)
         const showId = await createShowFromTmdb(
           item.id,
           item.name || item.title || t.discover.unknown,
@@ -186,10 +392,8 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
           item.overview,
           item.media_type as 'movie' | 'tv'
         )
-        console.log('[handleAdd] step 3: addToWatchlist (new)', showId)
         const ok = await addToWatchlist(user.uid, showId)
         if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, showId } }))
-        console.log('[handleAdd] done (new)')
       }
     } catch (e) { console.error('[handleAdd] failed:', e) }
     setAddingId(null)
@@ -228,7 +432,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
   }
 
   return (
-    <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch">
+    <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch">
       {items.map(item => {
         const name = item.name || item.title || t.discover.unknown
         const imgSrc = getPosterUrl(item.poster_path)
@@ -236,7 +440,6 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
         const meta = metaMap[item.id]
         const isAdded = meta?.added
         const isWatched = meta?.watched
-        // Use negative TMDB ID to link to detail page even before saving
         const detailPath = meta?.showId ? `/show/${meta.showId}` : `/show/-${item.id}`
         const rating = item.vote_average != null && item.vote_average > 0 ? item.vote_average.toFixed(1) : null
 
@@ -262,7 +465,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
             <div className="p-3 flex flex-col gap-2 flex-1">
               <div className="min-w-0">
                 <h3 className="font-bold text-xs uppercase leading-tight line-clamp-2">{name}</h3>
-                {year && <div className="text-[10px] font-mono text-text-secondary mt-0.5">{year}</div>}
+                {year && <div className="text-[9px] sm:text-[10px] font-mono text-text-secondary mt-0.5">{year}</div>}
               </div>
 
               <div className="mt-auto">
@@ -270,7 +473,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                   <button
                     onClick={() => handleAdd(item)}
                     disabled={addingId === item.id}
-                    className="w-full border-2 border-border bg-yellow text-text py-1.5 text-[10px] font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
+                    className="w-full border-2 border-border bg-yellow text-text py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
                     aria-label={`${t.discover.addToDashboard} ${name}`}
                   >
                     {addingId === item.id ? '...' : t.discover.addToDashboard}
@@ -282,7 +485,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                         <button
                           onClick={() => setMoviePrompt(item.id)}
                           disabled={togglingId === item.id}
-                          className={`w-full border-2 border-border py-1.5 text-[10px] font-bold uppercase transition-colors disabled:opacity-40 cursor-pointer ${isWatched ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
+                          className={`w-full border-2 border-border py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase transition-colors disabled:opacity-40 cursor-pointer ${isWatched ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
                           aria-label={isWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
                         >
                           {togglingId === item.id ? '...' : isWatched ? `${t.showDetail.watched}${meta?.watchedCount && meta.watchedCount > 1 ? ` ×${meta.watchedCount}` : ''}` : t.showDetail.markAsWatched}
@@ -303,7 +506,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                                   <button
                                     onClick={() => handleUnwatch(item)}
                                     disabled={togglingId === item.id}
-                                    className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface sm:hover:bg-pink transition-colors"
+                                    className="w-full border-2 border-border px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase bg-surface sm:hover:bg-pink transition-colors"
                                     aria-label="Mark as unwatched"
                                   >
                                     {t.showDetail.markAsUnwatched}
@@ -311,7 +514,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                                   <button
                                     onClick={() => handleRewatch(item)}
                                     disabled={togglingId === item.id}
-                                    className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors"
+                                    className="w-full border-2 border-border px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors"
                                     aria-label="Rewatch"
                                   >
                                     {t.showDetail.markAsWatched}
@@ -323,7 +526,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                         )}
                       </div>
                     ) : (
-                      <div className="w-full border-2 border-border bg-surface py-1.5 text-[10px] font-bold uppercase text-center text-text-secondary">
+                      <div className="w-full border-2 border-border bg-surface py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase text-center text-text-secondary">
                         {t.watchlist.added}
                       </div>
                     )}

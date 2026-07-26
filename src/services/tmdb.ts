@@ -76,6 +76,11 @@ export interface TmdbDetails {
   number_of_episodes?: number
   seasons?: TmdbSeasonInfo[]
   belongs_to_collection?: TmdbCollectionInfo | null
+  first_air_date?: string
+  release_date?: string
+  genres?: { id: number; name: string }[]
+  status?: string
+  runtime?: number
   external_ids: {
     imdb_id: string | null
     tvdb_id: number | null
@@ -246,6 +251,58 @@ export async function getOnTheAirTv(language = 'en-US'): Promise<TmdbSearchResul
   if (!res.ok) return []
   const data = await res.json() as { results: TmdbSearchResult[] }
   return (data.results || []).slice(0, 20)
+}
+
+export interface TmdbGenre {
+  id: number
+  name: string
+}
+
+const genreCache = new Map<string, TmdbGenre[]>()
+
+export async function getMovieGenres(language = 'en-US'): Promise<TmdbGenre[]> {
+  const key = `movie_${language}`
+  if (genreCache.has(key)) return genreCache.get(key)!
+  const url = `${TMDB_API_BASE}/genre/movie/list?api_key=${TMDB_API_KEY}&language=${language}`
+  const res = await fetch(url)
+  if (!res.ok) return []
+  const data = await res.json() as { genres: TmdbGenre[] }
+  const genres = data.genres || []
+  genreCache.set(key, genres)
+  return genres
+}
+
+export async function getTvGenres(language = 'en-US'): Promise<TmdbGenre[]> {
+  const key = `tv_${language}`
+  if (genreCache.has(key)) return genreCache.get(key)!
+  const url = `${TMDB_API_BASE}/genre/tv/list?api_key=${TMDB_API_KEY}&language=${language}`
+  const res = await fetch(url)
+  if (!res.ok) return []
+  const data = await res.json() as { genres: TmdbGenre[] }
+  const genres = data.genres || []
+  genreCache.set(key, genres)
+  return genres
+}
+
+export async function getAllGenres(language = 'en-US'): Promise<TmdbGenre[]> {
+  const [movie, tv] = await Promise.all([getMovieGenres(language), getTvGenres(language)])
+  const seen = new Set<number>()
+  return [...movie, ...tv].filter(g => {
+    if (seen.has(g.id)) return false
+    seen.add(g.id)
+    return true
+  })
+}
+
+export async function discoverByGenre(genreId: number, mediaType: 'movie' | 'tv', language = 'en-US', page = 1): Promise<SearchMultiResult> {
+  const url = `${TMDB_API_BASE}/discover/${mediaType}?api_key=${TMDB_API_KEY}&language=${language}&sort_by=popularity.desc&with_genres=${genreId}&page=${page}&include_adult=false`
+  const res = await fetch(url)
+  if (!res.ok) return { results: [], total_pages: 0 }
+  const data = await res.json() as { results: TmdbSearchResult[]; total_pages: number }
+  return {
+    results: (data.results || []).map(r => ({ ...r, media_type: mediaType })),
+    total_pages: data.total_pages || 0,
+  }
 }
 
 const PROVIDER_URLS: Record<number, string> = {

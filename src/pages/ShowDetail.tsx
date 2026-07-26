@@ -29,6 +29,7 @@ import SeasonSection from '../components/show-detail/SeasonSection'
 import RatingPicker from '../components/show-detail/RatingPicker'
 import PositionEditor from '../components/show-detail/PositionEditor'
 import { TimerIcon } from '../components/Icons'
+import BrutalDropdown from '../components/BrutalDropdown'
 import { MEMBER_COLORS, fmtPos } from '../components/show-detail/types'
 
 export default function ShowDetail() {
@@ -111,6 +112,9 @@ export default function ShowDetail() {
   const [groupWatchFeed, setGroupWatchFeed] = useState<GroupWatchEventDoc[]>([])
   const [groupWatchToast, setGroupWatchToast] = useState<GroupWatchEventDoc | null>(null)
   const [movieRuntime, setMovieRuntime] = useState<number | null>(null)
+  const [year, setYear] = useState<string | null>(null)
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([])
+  const [status, setStatus] = useState<string | null>(null)
   const [sortByProgress, setSortByProgress] = useState<Set<number>>(new Set())
   const [showsInGroups, setShowsInGroups] = useState<Set<string>>(new Set())
   const [addingToGroup, setAddingToGroup] = useState<string | null>(null)
@@ -222,6 +226,12 @@ export default function ShowDetail() {
         setWatchedCounts(watchedCountsData)
         setResumePositions(resume)
         setEmotions(emo)
+
+        // Reset metadata for new show
+        setYear(null)
+        setGenres([])
+        setStatus(null)
+
         if (user?.uid) {
           const lists = await getUserLists(user.uid)
           setUserLists(lists)
@@ -269,6 +279,10 @@ export default function ShowDetail() {
           const isMovieType = mediaType === 'movie'
           setIsMovie(isMovieType)
           if (details) {
+            const rawDate = isMovieType ? (details as any).release_date : (details as any).first_air_date
+            setYear(rawDate ? String(rawDate).split('-')[0] : null)
+            setGenres((details as any).genres ?? [])
+            setStatus((details as any).status ?? null)
             const [providersData, similarData, recommendedData] = await Promise.all([
               getWatchProviders(sh.tmdb_id, mediaType, streamCountry),
               getSimilar(sh.tmdb_id, mediaType, tmdbLang(lang)),
@@ -752,8 +766,8 @@ export default function ShowDetail() {
       <EmptyState title={t.showDetail.notFound}><button onClick={() => navigate(-1)} className="underline font-bold">{t.showDetail.back}</button></EmptyState>
     ) : (
     <div className="space-y-8">
-      {backdrop && <div className="relative h-56 sm:h-72 overflow-hidden sm:border-[3px] sm:border-border -mx-4 sm:-mx-0"><img src={backdrop} alt="" aria-hidden="true" className="w-full h-full object-cover" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)' }} /><div className="absolute inset-0 bg-gradient-to-t from-bg to-transparent" /><div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-bg to-transparent" /></div>}
-      <div className="relative -mt-16 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-[3px] border-border shadow-brutal space-y-4 z-10">
+      {backdrop && <div className="relative h-48 sm:h-64 overflow-hidden sm:border-[3px] sm:border-border -mx-4 sm:-mx-0"><img src={backdrop} alt="" aria-hidden="true" className="w-full h-full object-cover" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)' }} /><div className="absolute inset-0 bg-gradient-to-t from-bg to-transparent" /><div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-bg to-transparent" /></div>}
+      <div className="relative -mt-12 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-[3px] border-border shadow-brutal space-y-3 sm:space-y-4 z-10">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <button onClick={() => navigate(-1)} className="btn-brutal text-xs sm:text-sm" aria-label={`${t.showDetail.back}`}>&larr; {t.showDetail.back}</button>
           {user?.uid && (
@@ -778,20 +792,59 @@ export default function ShowDetail() {
             </div>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase bg-yellow">{isMovie ? t.discover.movie : t.discover.tv}</span>
+        <div className="border-b-[3px] border-border pb-4 sm:pb-5 mb-1 space-y-2 sm:space-y-3">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+            <span className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase bg-yellow">{isMovie ? t.discover.movie : t.discover.tv}</span>
+            {year && <span className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase bg-surface">{year}</span>}
+            {genres.slice(0, 3).map(g => (
+              <button
+                key={g.id}
+                onClick={() => {
+                  sessionStorage.setItem('discover_search_query', g.name)
+                  sessionStorage.setItem('discover_search_searched', 'true')
+                  navigate('/discover')
+                }}
+                className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors cursor-pointer"
+                aria-label={`Filter by ${g.name}`}
+              >
+                {g.name}
+              </button>
+            ))}
+            {(isMovie ? movieRuntime : avgRuntime > 0) && (
+              <span className="border-[3px] border-border px-1.5 sm:px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase bg-surface shadow-brutal-xs inline-flex items-center gap-1">
+                <TimerIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                {isMovie ? `${movieRuntime}m` : `${avgRuntime}m`}
+              </span>
+            )}
+            {!isMovie && status && (
+              <span className={`border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase ${
+                status === 'Returning Series' || status === 'In Production' ? 'bg-green/30' :
+                status === 'Canceled' ? 'bg-red/30' : 'bg-surface'
+              }`}>
+                {status === 'Returning Series' ? t.showDetail.statusReturning :
+                 status === 'Ended' ? t.showDetail.statusEnded :
+                 status === 'Canceled' ? t.showDetail.statusCanceled :
+                 status === 'In Production' ? t.showDetail.statusInProduction :
+                 status === 'Planned' ? t.showDetail.statusPlanned :
+                 status === 'Pilot' ? t.showDetail.statusPilot :
+                 status}
+              </span>
+            )}
+            {!spoilerFree && show.imdb_rating != null && (
+              <div className="border-[3px] border-border px-1.5 sm:px-2 py-1 sm:py-1.5 bg-surface font-bold text-[9px] sm:text-xs shadow-brutal-xs">{t.showDetail.imdb}: <span className="text-pink">{show.imdb_rating}</span>{show.imdb_votes != null && <span className="font-normal text-text-secondary ml-1">({show.imdb_votes.toLocaleString()} {t.showDetail.votes})</span>}</div>
+            )}
+          </div>
+          <h1 className="text-xl sm:text-4xl md:text-5xl font-black uppercase leading-tight break-words font-heading">{show.name}</h1>
+          {(tmdbOverview ?? show.synopsis) && <p className="text-xs sm:text-sm leading-relaxed max-w-3xl border-l-[3px] border-accent pl-3">{tmdbOverview ?? show.synopsis}</p>}
         </div>
-        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase leading-tight break-words font-heading">{show.name}</h1>
-        {(tmdbOverview ?? show.synopsis) && <p className="text-sm leading-relaxed max-w-3xl">{tmdbOverview ?? show.synopsis}</p>}
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
-          {!spoilerFree && show.imdb_rating != null && <div className="border-[3px] border-border px-2 sm:px-3 py-1.5 sm:py-2 bg-surface font-bold text-xs sm:text-sm">{t.showDetail.imdb}: <span className="text-pink">{show.imdb_rating}</span>{show.imdb_votes != null && <span className="font-normal text-text-secondary ml-1">({show.imdb_votes.toLocaleString()} {t.showDetail.votes})</span>}</div>}
+        <div className="flex flex-row flex-wrap gap-2 sm:gap-3">
           {!wlLoading && user?.uid && show?.tmdb_id && (
             <button
               onClick={async () => {
                 if (inWatchlist) { await removeFromWatchlist(user.uid, show.tmdb_id); setInWatchlist(false) }
                 else { await addToWatchlist(user.uid, show.tmdb_id); setInWatchlist(true) }
               }}
-              className={`btn-brutal text-xs sm:text-sm w-full sm:w-auto ${inWatchlist ? 'bg-yellow' : 'bg-surface'}`}
+              className={`btn-brutal text-xs sm:text-sm ${inWatchlist ? 'bg-yellow' : 'bg-surface'}`}
               aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
             >
               {inWatchlist ? t.watchlist.added : t.watchlist.add}
@@ -799,7 +852,7 @@ export default function ShowDetail() {
           )}
           {user?.uid && show?.tmdb_id && (
             <div className="relative">
-              <button onClick={() => setShowListPicker(prev => !prev)} className="btn-brutal text-xs sm:text-sm w-full sm:w-auto">{t.lists.addToList}</button>
+              <button onClick={() => setShowListPicker(prev => !prev)} className="btn-brutal text-xs sm:text-sm">{t.lists.addToList}</button>
               {showListPicker && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowListPicker(false)} />
@@ -830,7 +883,7 @@ export default function ShowDetail() {
             <>
               <button
                 onClick={handleMovieToggle}
-                className={`btn-brutal text-xs sm:text-sm w-full sm:w-auto ${movieWatched ? 'bg-yellow' : 'bg-surface'}`}
+                className={`btn-brutal text-xs sm:text-sm ${movieWatched ? 'bg-yellow' : 'bg-surface'}`}
                 aria-label={movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               >
                 {movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
@@ -853,7 +906,7 @@ export default function ShowDetail() {
               ) : (
                 <button
                   onClick={() => handleResumeClick(show.tmdb_id, resumePositions.get(show.tmdb_id))}
-                  className="btn-brutal text-xs sm:text-sm w-full sm:w-auto"
+                  className="btn-brutal text-xs sm:text-sm"
                   aria-label={t.showDetail.resumePosition}
                 >
                   <TimerIcon className="w-3.5 h-3.5" />
@@ -876,17 +929,14 @@ export default function ShowDetail() {
       {groups.length > 0 && (
         <div className="bg-surface border-[3px] border-border p-3 flex items-center gap-3 flex-wrap">
           <span className="text-xs font-bold uppercase text-text-secondary">{t.watchParty.watchingTogether}</span>
-          <select
+          <BrutalDropdown
             value={selectedGroupId ?? ''}
-            onChange={e => setSelectedGroupId(e.target.value || null)}
-            className="border-[3px] border-border bg-surface text-xs font-bold px-3 py-2 uppercase cursor-pointer sm:hover:bg-yellow transition-colors shadow-brutal-sm"
-            aria-label={t.watchParty.selectGroup}
-          >
-            <option value="">{t.watchParty.justMe}</option>
-            {groups.map(g => (
-              <option key={g.id} value={g.id}>{g.name}</option>
-            ))}
-          </select>
+            options={groups.map(g => ({ value: g.id, label: g.name }))}
+            onChange={v => setSelectedGroupId(v || null)}
+            placeholder={t.watchParty.justMe}
+            ariaLabel={t.watchParty.selectGroup}
+            buttonClassName="text-xs px-3 py-2 shadow-brutal-sm"
+          />
           {selectedGroupId && (
             <button
               onClick={async () => {

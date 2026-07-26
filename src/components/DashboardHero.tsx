@@ -38,14 +38,9 @@ export default function DashboardHero({ streak, episodesWatched, showsTracked, t
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {streak > 1 && (
-          <StatLink to="/stats" value={`${streak}`} label={t.dashboard.dayStreak} tone="highlight" />
-        )}
+        <StatLink to="/stats" value={streak > 1 ? `${streak}` : '-'} label={t.dashboard.dayStreak} tone="highlight" />
         <StatLink to="/profile?section=history" value={episodesWatched.toLocaleString()} label={t.dashboard.totalWatched} />
-        <div className="bg-surface-light border-[3px] border-border p-4 sm:p-5">
-          <div className="text-3xl sm:text-5xl font-black mb-1 font-heading leading-none">{showsTracked}</div>
-          <div className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary">{t.dashboard.showsTracked}</div>
-        </div>
+        <StatLink to="/profile?section=stats" value={String(showsTracked)} label={t.dashboard.showsTracked} />
         <StatLink to="/profile?section=stats" value={fmtTime(timeSpent, t)} label={t.dashboard.timeSpent} />
       </div>
     </div>
@@ -56,10 +51,10 @@ function StatLink({ to, value, label, tone }: { to: string; value: string; label
   return (
     <Link
       to={to}
-      className={`group bg-surface-light border-[3px] border-border p-4 sm:p-5 relative overflow-hidden transition-all sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md ${tone === 'highlight' ? 'sm:hover:bg-pink/30' : ''}`}
+      className={`group bg-surface-light border-[3px] border-border p-3 sm:p-5 relative overflow-hidden transition-all sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md active:translate-x-0.5 active:translate-y-0.5 active:shadow-none ${tone === 'highlight' ? 'sm:hover:bg-pink/30' : ''}`}
     >
       <div className="text-3xl sm:text-5xl font-black mb-1 font-heading leading-none">{value}</div>
-      <div className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary">{label}</div>
+      <div className="text-[9px] sm:text-xs font-bold uppercase text-text-secondary">{label}</div>
     </Link>
   )
 }

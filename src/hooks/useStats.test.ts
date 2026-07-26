@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useStats } from './useStats'
+import { clearCache } from '../lib/hook-cache'
 
 const mockStats = { time_spent: 3600, nb_episodes_watched: 150, nb_shows_followed: 10, score: 85, user_id: 'user-1' }
 const mockDist = [{ rating: 8, count: 5 }]
@@ -19,6 +20,7 @@ const statsService = await import('../services/statsService')
 
 describe('useStats', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(statsService.getUserStats).mockResolvedValue({} as any)
     vi.mocked(statsService.getRatingDistribution).mockResolvedValue([])

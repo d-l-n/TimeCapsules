@@ -1,6 +1,7 @@
 import { getTmdbImage, getProviderDirectLink } from '../../services/tmdb'
 import type { WatchProvidersResult } from '../../services/tmdb'
 import type { useI18n } from '../../lib/I18nContext'
+import BrutalDropdown from '../BrutalDropdown'
 
 interface StreamProvidersProps {
   providers: WatchProvidersResult
@@ -15,26 +16,27 @@ export default function StreamProviders({ providers, streamCountry, onCountryCha
     <div>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-xs font-bold uppercase text-text-secondary">{t.showDetail.streamOn}</span>
-        <select
+        <BrutalDropdown
           value={streamCountry}
-          onChange={e => onCountryChange(e.target.value)}
-          className="border-2 border-border bg-surface text-xs font-bold px-1.5 py-0.5 uppercase cursor-pointer sm:hover:bg-yellow transition-colors"
-          aria-label={t.showDetail.streamCountry}
-        >
-          <option value="AR">Argentina</option>
-          <option value="US">United States</option>
-          <option value="ES">Spain</option>
-          <option value="MX">Mexico</option>
-          <option value="CO">Colombia</option>
-          <option value="CL">Chile</option>
-          <option value="BR">Brazil</option>
-          <option value="GB">United Kingdom</option>
-          <option value="DE">Germany</option>
-          <option value="FR">France</option>
-          <option value="IT">Italy</option>
-          <option value="JP">Japan</option>
-          <option value="KR">South Korea</option>
-        </select>
+          options={[
+            { value: 'AR', label: 'Argentina' },
+            { value: 'US', label: 'United States' },
+            { value: 'ES', label: 'Spain' },
+            { value: 'MX', label: 'Mexico' },
+            { value: 'CO', label: 'Colombia' },
+            { value: 'CL', label: 'Chile' },
+            { value: 'BR', label: 'Brazil' },
+            { value: 'GB', label: 'United Kingdom' },
+            { value: 'DE', label: 'Germany' },
+            { value: 'FR', label: 'France' },
+            { value: 'IT', label: 'Italy' },
+            { value: 'JP', label: 'Japan' },
+            { value: 'KR', label: 'South Korea' },
+          ]}
+          onChange={onCountryChange}
+          ariaLabel={t.showDetail.streamCountry}
+          buttonClassName="text-[10px] sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 shadow-brutal-xs"
+        />
       </div>
       {providers.providers.length > 0 ? (
         <div className="flex flex-wrap gap-2">

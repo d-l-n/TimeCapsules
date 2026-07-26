@@ -18,6 +18,7 @@ vi.mock('../hooks', () => ({
   useDevice: vi.fn(),
   useNotifications: vi.fn(),
   useNavVisibility: vi.fn(),
+  useSpoilerFree: vi.fn(() => [false, vi.fn()]),
 }))
 
 const { useAuth } = await import('../lib/AuthContext')
@@ -29,6 +30,7 @@ const mockUser = {
   email: 'test@example.com',
   displayName: 'TestUser',
   photoURL: null,
+  providerData: [],
 } as any
 
 function wrapper({ children }: { children: ReactNode }) {
@@ -257,7 +259,7 @@ describe('Layout', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
     render(<Layout />, { wrapper })
     fireEvent.click(screen.getByRole('button', { name: /Notifications/i }))
-    await waitFor(() => expect(screen.getByText(/No notifications yet/i)).toBeInTheDocument())
+    await waitFor(() => expect(screen.getAllByText(/No notifications yet/i).length).toBeGreaterThanOrEqual(1))
   })
 
   // ── User Display Edge Cases ─────────────────────────
@@ -265,18 +267,19 @@ describe('Layout', () => {
   it('shows email username when displayName is null', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
     vi.mocked(useAuth).mockReturnValue({
-      user: { uid: 'user-1', email: 'user@example.com', displayName: null, photoURL: null },
+      user: { uid: 'user-1', email: 'user@example.com', displayName: null, photoURL: null, providerData: [] },
       logout: vi.fn(),
       loading: false,
     } as any)
     render(<Layout />, { wrapper })
-    expect(screen.getByText(/user/i)).toBeInTheDocument()
+    const links = screen.getAllByText(/user/i)
+    expect(links.length).toBeGreaterThanOrEqual(1)
   })
 
   it('shows username from email when displayName is null on desktop', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
     vi.mocked(useAuth).mockReturnValue({
-      user: { uid: 'user-1', email: 'alice@example.com', displayName: null, photoURL: null },
+      user: { uid: 'user-1', email: 'alice@example.com', displayName: null, photoURL: null, providerData: [] },
       logout: vi.fn(),
       loading: false,
     } as any)
@@ -287,7 +290,7 @@ describe('Layout', () => {
   it('renders user photo when photoURL is provided', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
     vi.mocked(useAuth).mockReturnValue({
-      user: { uid: 'user-1', email: 'test@example.com', displayName: 'User', photoURL: 'https://example.com/photo.jpg' },
+      user: { uid: 'user-1', email: 'test@example.com', displayName: 'User', photoURL: 'https://example.com/photo.jpg', providerData: [] },
       logout: vi.fn(),
       loading: false,
     } as any)

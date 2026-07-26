@@ -38,6 +38,44 @@
 
 ---
 
+## 🟢 Completado — Sesión Julio 2026 (Parte 2)
+
+### UI/UX — Mobile responsive
+- [x] **DashboardHero mobile** — Grid KPI 2×2 balanceado (streak siempre visible), padding compacto, tap feedback
+- [x] **Dashboard cards** — Grids alineados con DiscoverPage (9rem→9.5rem, scrollbar-none)
+- [x] **ShowDetail seasons mobile** — Botones temporada responsivos, EpisodeRow compacto (9px, padding reducido)
+- [x] **ShowDetail action buttons** — `flex-row flex-wrap` en mobile (inline si caben, apilados si no)
+- [x] **StatsPage mobile** — KPI padding/text compacto, rating bars más angostas, badges con flex-1
+- [x] **HistoryTimeline mobile** — Tap feedback en cards, empty filter state, sticky header
+- [x] **CatchUpModal responsive** — Botones con `text-[10px]`, padding compacto, tap feedback
+- [x] **GroupProgressPopover mobile** — Click-to-toggle con click-outside-to-close (visible en mobile)
+- [x] **Season batch marking** — Indicador de progreso (barra pulseante, botón con count, dim episodios)
+
+### Dropdowns brutalistas
+- [x] **BrutalDropdown component** — Reemplaza `<select>` nativo con dropdown custom brutalista
+- [x] **Keyboard nav** — ArrowUp/Down, Enter/Space, Escape
+- [x] **ARIA roles** — listbox, option, aria-selected, aria-haspopup, aria-expanded
+- [x] **3 reemplazos** — StreamProviders (país), HistoryTimeline (mes), ShowDetail (grupo)
+
+### DiscoverPage enriquecido
+- [x] **Filtro por tipo** — Tabs ALL/TV/MOVIES con conteo de resultados
+- [x] **Filtros por género** — 19 badges clickeables con discoverByGenre (movie+TV combinados)
+- [x] **Discovery tabs** — Trending / Airing Now / Upcoming Movies
+- [x] **Search suggestions** — Trending items como sugerencias al聚焦
+- [x] **Endpoints TMDB** — getMovieGenres, getTvGenres, getAllGenres, discoverByGenre
+
+### Auditoría visual
+- [x] **bg-blue → bg-yellow** — ContinueWatching badge, ShowCard WATCHING status, GroupDetail movie badge
+- [x] **Contraste amarillo modo oscuro** — Verificado: `.bg-yellow` forza `color: #111111 !important`, no hay texto amarillo sobre amarillo
+
+### Issues cerrados
+- [x] **#11 PWA InstallBanner** — Cerrado
+- [x] **#13 MoonIcon descentrado** — Cerrado
+- [x] **#16 <re-icon> sin registrar** — Cerrado
+- [x] **#17 isAdmin() bloqueaba** — Cerrado
+
+---
+
 ## 🔴 Pendientes abiertos
 
 ### Media — UX / consistencia visual

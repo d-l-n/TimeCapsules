@@ -60,7 +60,7 @@ export default function UpcomingTimeline({ items }: UpcomingTimelineProps) {
                 {getDayLabel(days)}
               </div>
             </div>
-            <div className="flex-1 border-l-[3px] border-border pl-3 sm:pl-4 max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[70vw] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:space-y-2">
+            <div className="flex-1 border-l-[3px] border-border pl-3 sm:pl-4 space-y-2">
               {grouped[days].map(item => (
                 <Link
                   key={item.show_id}

@@ -1,17 +1,22 @@
 import { useEffect, useState } from 'react'
 import { getWatchHistory } from '../services/historyService'
 import { getDevSimState } from '../lib/dev-simulation-types'
+import { getCached, setCached } from '../lib/hook-cache'
 import type { HistoryItem } from '../services/historyService'
 
 export type { HistoryItem }
 
 export function useHistory(uid: string | undefined) {
-  const [entries, setEntries] = useState<HistoryItem[]>([])
-  const [months, setMonths] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+  const cacheKey = `history:${uid}`
+  const cached = getCached<{ entries: HistoryItem[]; months: string[] }>(cacheKey)
+
+  const [entries, setEntries] = useState<HistoryItem[]>(cached?.entries ?? [])
+  const [months, setMonths] = useState<string[]>(cached?.months ?? [])
+  const [loading, setLoading] = useState(!cached)
 
   useEffect(() => {
     if (!uid) return
+    if (cached) { setLoading(false); return }
 
     const sim = getDevSimState()
 
@@ -45,6 +50,7 @@ export function useHistory(uid: string | undefined) {
       mockEntries.sort((a, b) => b.watched_at.localeCompare(a.watched_at))
       setEntries(mockEntries)
       setMonths([...monthSet].sort().reverse())
+      setCached(cacheKey, { entries: mockEntries, months: [...monthSet].sort().reverse() })
       setLoading(false)
       return
     }
@@ -54,9 +60,10 @@ export function useHistory(uid: string | undefined) {
       const result = await getWatchHistory(uid)
       setEntries(result.entries)
       setMonths(result.months)
+      setCached(cacheKey, { entries: result.entries, months: result.months })
       setLoading(false)
     })()
-  }, [uid])
+  }, [uid, cacheKey, cached])
 
   return { entries, months, loading }
 }

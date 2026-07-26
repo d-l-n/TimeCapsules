@@ -88,20 +88,20 @@ export default function SeasonSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkSeasonWatched(seasonNum, eps.map(e => e.id)) }}
                   disabled={markingSeason === seasonNum}
-                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors disabled:opacity-40"
+                  className="border-2 border-border px-2 sm:px-3 py-0.5 text-[10px] sm:text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors disabled:opacity-40 disabled:animate-pulse disabled:cursor-wait"
                   aria-label={t.showDetail.markAllWatched}
                 >
-                  {markingSeason === seasonNum ? '...' : t.showDetail.markAllWatched}
+                  {markingSeason === seasonNum ? `⟳ ${eps.length - watchedCount}` : t.showDetail.markAllWatched}
                 </button>
               )}
               {watchedCount > 0 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkSeasonUnwatched(seasonNum, eps.map(e => e.id)) }}
                   disabled={markingSeason === seasonNum}
-                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors disabled:opacity-40"
+                  className="border-2 border-border px-2 sm:px-3 py-0.5 text-[10px] sm:text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors disabled:opacity-40 disabled:animate-pulse disabled:cursor-wait"
                   aria-label={t.showDetail.markAllUnwatched}
                 >
-                  {markingSeason === seasonNum ? '...' : t.showDetail.markAllUnwatched}
+                  {markingSeason === seasonNum ? `⟳ ${watchedCount}` : t.showDetail.markAllUnwatched}
                 </button>
               )}
               {selectedGroupId && groupMembers.length > 1 && (
@@ -117,6 +117,11 @@ export default function SeasonSection({
             </span>
           )}
         </h2>
+        {markingSeason === seasonNum && (
+          <div className="h-1.5 bg-surface-light border-2 border-border -mx-0.5 mb-3 overflow-hidden" aria-hidden="true">
+            <div className="h-full bg-yellow animate-pulse" style={{ width: '100%' }} />
+          </div>
+        )}
       </div>
       {selectedGroupId && groupMembers.length > 1 && (
         <div className="mb-3 border-2 border-border p-2 bg-surface-light">
@@ -142,7 +147,7 @@ export default function SeasonSection({
         </div>
       )}
       {!collapsed && (
-        <div className="grid grid-cols-1 gap-2">
+        <div className={`grid grid-cols-1 gap-2 transition-all duration-300 ${markingSeason === seasonNum ? 'opacity-40 pointer-events-none' : ''}`}>
           {sortedEps.map((ep, idx) => {
             const isWatched = (watchedCounts.get(ep.id) ?? 0) > 0
             const isToggling = toggling === ep.id

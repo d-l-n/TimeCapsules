@@ -193,7 +193,7 @@ export default function Dashboard() {
         />
 
         {filteredWatchlist.length > 0 ? (
-            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr]">
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr]">
             {filteredWatchlist.slice(0, 12).map((item) => (
               <ShowCard
                 key={item.show_id}
@@ -250,7 +250,7 @@ export default function Dashboard() {
         {upToDate.length > 0 ? (
           <>
             <p className="text-xs text-text-secondary mb-4">{t.dashboard.upToDateDesc}</p>
-            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
               {upToDate.map((item) => (
                 <ShowCard
                   key={item.id}
@@ -285,7 +285,7 @@ export default function Dashboard() {
         />
 
         {finished.length > 0 ? (
-          <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
+          <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
             {finished.map((item) => (
               <ShowCard
                 key={item.id}

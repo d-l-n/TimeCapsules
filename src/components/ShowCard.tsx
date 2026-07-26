@@ -18,7 +18,7 @@ interface ShowCardProps {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  watching: 'bg-blue text-text',
+  watching: 'bg-yellow text-text',
   completed: 'bg-green text-text',
   planned: 'bg-orange text-text',
   dropped: 'bg-red text-text',
