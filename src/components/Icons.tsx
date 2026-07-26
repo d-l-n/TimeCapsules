@@ -27,7 +27,9 @@ export const SunIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
 
 export const MoonIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-    <path fillRule="evenodd" clipRule="evenodd" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.64-.11 2.41-.33C10.57 19.59 8 16.05 8 12s2.57-7.59 6.41-8.67C13.64 3.11 12.83 3 12 3z" />
+    <g transform="translate(3.5, 0)">
+      <path fillRule="evenodd" clipRule="evenodd" d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.64-.11 2.41-.33C10.57 19.59 8 16.05 8 12s2.57-7.59 6.41-8.67C13.64 3.11 12.83 3 12 3z" />
+    </g>
   </svg>
 )
 

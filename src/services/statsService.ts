@@ -31,6 +31,13 @@ export async function getBadges(uid: string) {
   return findMany<BadgeDoc>('badges', where('user_id', '==', uid), orderBy('badge_id'))
 }
 
+export async function getTodayEpisodeCount(uid: string): Promise<number> {
+  const today = new Date()
+  const startStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const items = await findMany<WatchedEpisodeDoc>('watched_episodes', where('user_id', '==', uid))
+  return items.filter(w => w.watched_at?.startsWith(startStr)).length
+}
+
 export async function getStreak(uid: string): Promise<number> {
   const items = await findMany<WatchedEpisodeDoc>('watched_episodes', where('user_id', '==', uid), orderBy('watched_at', 'desc'))
   const dates = new Set<string>()

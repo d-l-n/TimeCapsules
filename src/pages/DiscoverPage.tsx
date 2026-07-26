@@ -10,7 +10,7 @@ import SectionHeader from '../components/SectionHeader'
 
 const STORAGE_KEY = 'discover_search'
 
-interface ItemMeta { added: boolean; tvTimeId?: number; watched?: boolean; watchedCount?: number }
+interface ItemMeta { added: boolean; showId?: number; watched?: boolean; watchedCount?: number }
 
 export default function DiscoverPage() {
   const { user } = useAuth()
@@ -44,8 +44,8 @@ export default function DiscoverPage() {
         getUserWatchedShowIds(user.uid),
       ])
       const initial: Record<number, ItemMeta> = {}
-      tmdbMap.forEach((tvTimeId, tmdbId) => {
-        initial[tmdbId] = { added: true, tvTimeId, watched: watchedShowIds.has(tvTimeId) }
+      tmdbMap.forEach((showId, tmdbId) => {
+        initial[tmdbId] = { added: true, showId, watched: watchedShowIds.has(showId) }
       })
       setMetaMap(initial)
     })()
@@ -102,7 +102,7 @@ export default function DiscoverPage() {
               <button
                 type="button"
                 onClick={handleClear}
-                className="absolute right-2 top-1/2 -translate-y-1/2 border-2 border-border px-2 py-1 text-xs font-bold bg-surface hover:bg-pink transition-colors cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 border-2 border-border px-2 py-1 text-xs font-bold bg-surface sm:hover:bg-pink transition-colors cursor-pointer"
                 aria-label={t.discover.clear}
               >
                 X
@@ -169,12 +169,16 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
     if (!user?.uid || addingId) return
     setAddingId(item.id)
     try {
+      console.log('[handleAdd] step 1: getShowByTmdbId', item.id)
       const existing = await getShowByTmdbId(item.id)
       if (existing) {
+        console.log('[handleAdd] step 2: addToWatchlist (existing)', existing.data.tmdb_id)
         const ok = await addToWatchlist(user.uid, existing.data.tmdb_id)
-        if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, tvTimeId: existing.data.tmdb_id } }))
+        if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, showId: existing.data.tmdb_id } }))
+        console.log('[handleAdd] done (existing)')
       } else {
-        const tvTimeId = await createShowFromTmdb(
+        console.log('[handleAdd] step 2: createShowFromTmdb', item.id)
+        const showId = await createShowFromTmdb(
           item.id,
           item.name || item.title || t.discover.unknown,
           item.poster_path,
@@ -182,39 +186,21 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
           item.overview,
           item.media_type as 'movie' | 'tv'
         )
-        const ok = await addToWatchlist(user.uid, tvTimeId)
-        if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, tvTimeId } }))
+        console.log('[handleAdd] step 3: addToWatchlist (new)', showId)
+        const ok = await addToWatchlist(user.uid, showId)
+        if (ok) setMetaMap(m => ({ ...m, [item.id]: { added: true, showId } }))
+        console.log('[handleAdd] done (new)')
       }
-    } catch (e) { console.error('handleAdd failed:', e) }
+    } catch (e) { console.error('[handleAdd] failed:', e) }
     setAddingId(null)
   }
 
-  const handleToggleWatched = async (item: TmdbSearchResult) => {
-    if (!user?.uid || togglingId) return
-    const meta = metaMap[item.id]
-    if (!meta?.tvTimeId) return
-    setTogglingId(item.id)
-    try {
-      const tvTimeId = meta.tvTimeId
-      const currentlyWatched = !!metaMap[item.id]?.watched
-      await toggleWatchedEpisode(user.uid, tvTimeId, tvTimeId, !currentlyWatched)
-      setMetaMap(m => ({
-        ...m,
-        [item.id]: {
-          ...m[item.id],
-          watched: !currentlyWatched,
-          watchedCount: currentlyWatched ? 0 : (m[item.id]?.watchedCount ?? 0) + 1,
-        },
-      }))
-    } catch (e) { console.error('handleToggleWatched failed:', e) }
-    setTogglingId(null)
-  }
-
   const handleRewatch = async (item: TmdbSearchResult) => {
-    if (!user?.uid || togglingId || !metaMap[item.id]?.tvTimeId) return
+    if (!user?.uid || togglingId || !metaMap[item.id]?.showId) return
     setTogglingId(item.id)
+    setMoviePrompt(null)
     try {
-      await toggleWatchedEpisode(user.uid, metaMap[item.id].tvTimeId!, metaMap[item.id].tvTimeId!, true)
+      await toggleWatchedEpisode(user.uid, metaMap[item.id].showId!, metaMap[item.id].showId!, true)
       setMetaMap(m => ({
         ...m,
         [item.id]: {
@@ -228,11 +214,11 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
   }
 
   const handleUnwatch = async (item: TmdbSearchResult) => {
-    if (!user?.uid || togglingId || !metaMap[item.id]?.tvTimeId) return
+    if (!user?.uid || togglingId || !metaMap[item.id]?.showId) return
     setTogglingId(item.id)
     setMoviePrompt(null)
     try {
-      await toggleWatchedEpisode(user.uid, metaMap[item.id].tvTimeId!, metaMap[item.id].tvTimeId!, false)
+      await toggleWatchedEpisode(user.uid, metaMap[item.id].showId!, metaMap[item.id].showId!, false)
       setMetaMap(m => ({
         ...m,
         [item.id]: { ...m[item.id], watched: false, watchedCount: 0 },
@@ -242,7 +228,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 items-stretch">
+    <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch">
       {items.map(item => {
         const name = item.name || item.title || t.discover.unknown
         const imgSrc = getPosterUrl(item.poster_path)
@@ -251,7 +237,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
         const isAdded = meta?.added
         const isWatched = meta?.watched
         // Use negative TMDB ID to link to detail page even before saving
-        const detailPath = meta?.tvTimeId ? `/show/${meta.tvTimeId}` : `/show/-${item.id}`
+        const detailPath = meta?.showId ? `/show/${meta.showId}` : `/show/-${item.id}`
         const rating = item.vote_average != null && item.vote_average > 0 ? item.vote_average.toFixed(1) : null
 
         return (
@@ -262,7 +248,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
             <Link to={detailPath} className="block relative" aria-label={name}>
               <div className="aspect-[2/3] bg-surface-light border-b-[3px] border-border overflow-hidden">
                 {imgSrc ? (
-                  <img src={imgSrc} alt={`${name} poster`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
+                  <img src={imgSrc} alt={`${name} poster`} className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-200" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center p-3 text-center text-sm font-bold uppercase leading-tight">{name}</div>
                 )}
@@ -284,56 +270,64 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                   <button
                     onClick={() => handleAdd(item)}
                     disabled={addingId === item.id}
-                    className="w-full border-2 border-border bg-yellow text-text py-1.5 text-[10px] font-bold uppercase hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
+                    className="w-full border-2 border-border bg-yellow text-text py-1.5 text-[10px] font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
                     aria-label={`${t.discover.addToDashboard} ${name}`}
                   >
                     {addingId === item.id ? '...' : t.discover.addToDashboard}
                   </button>
                 ) : (
-                  <div className="relative">
-                    <button
-                      onClick={() => isAdded && meta?.tvTimeId && item.media_type === 'movie' ? setMoviePrompt(item.id) : handleToggleWatched(item)}
-                      disabled={togglingId === item.id}
-                      className={`w-full border-2 border-border py-1.5 text-[10px] font-bold uppercase transition-colors disabled:opacity-40 cursor-pointer ${isWatched ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
-                      aria-label={isWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
-                    >
-                      {togglingId === item.id ? '...' : isWatched ? `${t.showDetail.watched}${meta?.watchedCount && meta.watchedCount > 1 ? ` ×${meta.watchedCount}` : ''}` : t.showDetail.markAsWatched}
-                    </button>
-                    {isAdded && meta?.tvTimeId && item.media_type === 'movie' && moviePrompt === item.id && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setMoviePrompt(null)} />
-                        <div className="absolute bottom-full left-0 mb-1 w-full bg-surface border-[3px] border-border z-20 shadow-brutal-md">
-                          <div className="relative">
-                            <button
-                              onClick={() => setMoviePrompt(null)}
-                              className="x-btn absolute top-1 right-1 w-5 h-5 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-[9px] hover:bg-pink transition-colors"
-                              aria-label="Close"
-                            >
-                              X
-                            </button>
-                            <div className="px-3 pt-3 pb-2 space-y-2">
-                              <button
-                                onClick={() => handleUnwatch(item)}
-                                disabled={togglingId === item.id}
-                                className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface hover:bg-pink transition-colors"
-                                aria-label="Mark as unwatched"
-                              >
-                                {t.showDetail.markAsUnwatched}
-                              </button>
-                              <button
-                                onClick={() => handleRewatch(item)}
-                                disabled={togglingId === item.id}
-                                className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface hover:bg-yellow transition-colors"
-                                aria-label="Rewatch"
-                              >
-                                {t.showDetail.markAsWatched}
-                              </button>
+                  <>
+                    {item.media_type === 'movie' ? (
+                      <div className="relative">
+                        <button
+                          onClick={() => setMoviePrompt(item.id)}
+                          disabled={togglingId === item.id}
+                          className={`w-full border-2 border-border py-1.5 text-[10px] font-bold uppercase transition-colors disabled:opacity-40 cursor-pointer ${isWatched ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
+                          aria-label={isWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
+                        >
+                          {togglingId === item.id ? '...' : isWatched ? `${t.showDetail.watched}${meta?.watchedCount && meta.watchedCount > 1 ? ` ×${meta.watchedCount}` : ''}` : t.showDetail.markAsWatched}
+                        </button>
+                        {moviePrompt === item.id && (
+                          <>
+                            <div className="fixed inset-0 z-10" onClick={() => setMoviePrompt(null)} />
+                            <div className="absolute bottom-full left-0 mb-1 w-full bg-surface border-[3px] border-border z-20 shadow-brutal-md">
+                              <div className="relative">
+                                <button
+                                  onClick={() => setMoviePrompt(null)}
+                                  className="x-btn absolute top-1 right-1 w-5 h-5 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-[9px] sm:hover:bg-pink transition-colors"
+                                  aria-label="Close"
+                                >
+                                  X
+                                </button>
+                                <div className="px-3 pt-3 pb-2 space-y-2">
+                                  <button
+                                    onClick={() => handleUnwatch(item)}
+                                    disabled={togglingId === item.id}
+                                    className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface sm:hover:bg-pink transition-colors"
+                                    aria-label="Mark as unwatched"
+                                  >
+                                    {t.showDetail.markAsUnwatched}
+                                  </button>
+                                  <button
+                                    onClick={() => handleRewatch(item)}
+                                    disabled={togglingId === item.id}
+                                    className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors"
+                                    aria-label="Rewatch"
+                                  >
+                                    {t.showDetail.markAsWatched}
+                                  </button>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="w-full border-2 border-border bg-surface py-1.5 text-[10px] font-bold uppercase text-center text-text-secondary">
+                        {t.watchlist.added}
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             </div>

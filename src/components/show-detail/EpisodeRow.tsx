@@ -4,7 +4,8 @@ import type { MemberWithProfile, GroupEpisodeProgress } from '../../services/gro
 import type { MergedEpisode } from './types'
 import { fmtPos } from './types'
 import PositionEditor from './PositionEditor'
-import { WatchedIcon, RewatchIcon, TimerIcon } from '../Icons'
+import { WatchedIcon, RewatchIcon, TimerIcon } from '..'
+import type { useI18n } from '../../lib/I18nContext'
 
 interface EpisodeRowProps {
   ep: MergedEpisode
@@ -27,7 +28,7 @@ interface EpisodeRowProps {
   spoilerFree: boolean
   avgRuntime: number
   userUid: string
-  t: any
+  t: ReturnType<typeof useI18n>['t']
   onToggle: (id: number, watched: boolean, cx?: number, cy?: number) => void
   onRewatch: (id: number) => void
   onToggleSynopsis: (id: number) => void
@@ -53,7 +54,7 @@ export default function EpisodeRow({
         <button
           onClick={(e) => onToggle(ep.id, isWatched, e.clientX, e.clientY)}
           disabled={isToggling}
-          className={`flex-1 min-w-0 px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-3 transition-all text-left ${rowBg} ${!isWatched && !isCurrent ? 'hover:bg-yellow' : ''}`}
+          className={`flex-1 min-w-0 px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-3 transition-all text-left ${rowBg} ${!isWatched && !isCurrent ? 'sm:hover:bg-yellow' : ''}`}
           aria-label={`${t.showDetail.episode} ${ep.episode_number}${ep.title ? ` — ${ep.title}` : ''}${isWatched ? ` — ${t.showDetail.watched}` : ''}`}
         >
           <span className={`border-2 px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs shrink-0 flex items-center gap-1 ${isWatched ? 'border-text bg-green text-text' : isCurrent ? 'border-text bg-blue text-text' : 'border-border bg-surface text-text'}`} aria-hidden="true">
@@ -65,7 +66,7 @@ export default function EpisodeRow({
           <button
             onClick={(e) => { e.stopPropagation(); onRewatch(ep.id) }}
             disabled={isToggling}
-              className={`shrink-0 px-1.5 text-xs font-bold border-2 border-border transition-colors ${isToggling ? 'bg-green/50 text-text/50 cursor-wait' : 'bg-surface text-text hover:bg-green cursor-pointer'}`}
+              className={`shrink-0 px-1.5 text-xs font-bold border-2 border-border transition-colors ${isToggling ? 'bg-green/50 text-text/50 cursor-wait' : 'bg-surface text-text sm:hover:bg-green cursor-pointer'}`}
             title={isToggling ? 'Toggling...' : 'Rewatch'}
             aria-label="Mark as rewatched"
           >
@@ -104,7 +105,7 @@ export default function EpisodeRow({
         ) : (
           <button
             onClick={() => onResumeClick(ep.id, resumePositions.get(ep.id))}
-            className="shrink-0 border-2 border-border px-1.5 py-1 text-[10px] font-bold bg-surface text-text hover:bg-yellow transition-colors flex items-center gap-1"
+            className="shrink-0 border-2 border-border px-1.5 py-1 text-[10px] font-bold bg-surface text-text sm:hover:bg-yellow transition-colors flex items-center gap-1"
             aria-label={t.showDetail.resumePosition}
           >
             <TimerIcon className="w-3 h-3" /> {resumePositions.has(ep.id) ? fmtPos(resumePositions.get(ep.id)!) : t.showDetail.noPosition}
@@ -113,7 +114,7 @@ export default function EpisodeRow({
         {hasInfo && (
           <button
             onClick={() => onToggleSynopsis(ep.id)}
-            className={`shrink-0 px-3 text-xs font-bold border-l-2 border-border transition-colors ${isExpanded ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
+            className={`shrink-0 px-3 text-xs font-bold border-l-2 border-border transition-colors ${isExpanded ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
             aria-label={`${t.showDetail.info} — ${ep.title}`}
           >
             {isExpanded ? '▲' : '▼'}
@@ -152,7 +153,7 @@ function GroupProgressPopover({ members, episodeId, groupProgress, userId, membe
   groupProgress: GroupEpisodeProgress[]
   userId: string
   memberColorMap: Map<string, string>
-  t: any
+  t: ReturnType<typeof useI18n>['t']
 }) {
   const watchedBy = groupProgress.find(p => p.episode_id === episodeId)
   const watchedUserIds = new Set(watchedBy?.user_ids ?? [])
@@ -178,7 +179,7 @@ function GroupProgressPopover({ members, episodeId, groupProgress, userId, membe
           )
         })}
       </div>
-      <div className="absolute bottom-full right-0 mb-1 z-50 hidden group-hover:block group-focus-within:block min-w-40">
+      <div className="absolute bottom-full right-0 mb-1 z-50 hidden sm:group-hover:block group-focus-within:block min-w-40">
         <div className="bg-surface border-2 border-border shadow-brutal p-2 space-y-1">
           <div className="text-[9px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 mb-1">{t.watchParty.groupProgress}</div>
           {watchers.length === 0 && <div className="text-[9px] text-text-secondary">—</div>}

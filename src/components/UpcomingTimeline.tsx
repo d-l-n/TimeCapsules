@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useI18n } from '../lib/I18nContext'
-import { ArrowRightIcon } from './Icons'
+import { ArrowRightIcon } from '.'
 import type { NextEpisodeToAir } from '../services/tmdb'
 
 interface UpcomingShow {

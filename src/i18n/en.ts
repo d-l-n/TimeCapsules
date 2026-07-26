@@ -67,6 +67,7 @@ export default {
     collector: 'Collector',
     newcomer: 'Newcomer',
     achievementCount: '{finished} finished · {upToDate} up to date',
+    viewHistory: 'View history',
     quoteOfTheDay: 'Quote of the day',
     quotes: [
       'Track every frame. Own your watch history.',
@@ -334,6 +335,7 @@ export default {
     noActivity: 'No activity yet',
     watchedEpisode: 'watched {episode}',
     aMember: 'A member',
+    addToGroup: 'Add to Group',
   },
   profile: {
     title: 'Profile',

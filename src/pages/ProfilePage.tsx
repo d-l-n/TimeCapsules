@@ -328,9 +328,8 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     aria-label={t.auth.signOut}
-                    className="w-full border-[3px] border-border border-l-[6px] border-l-pink bg-surface text-text py-2 text-xs font-bold uppercase flex items-center gap-2 sm:hover:bg-pink sm:hover:text-text sm:hover:border-l-pink transition-colors cursor-pointer"
+                    className="w-full border-[3px] border-border border-l-[6px] border-l-yellow bg-surface text-text py-2 text-xs font-bold uppercase flex items-center justify-center gap-2 sm:hover:bg-yellow sm:hover:text-text sm:hover:border-l-yellow transition-colors cursor-pointer"
                   >
-                    <span aria-hidden="true" className="text-pink sm:hover:text-text transition-colors">⤿</span>
                     {t.auth.signOut}
                   </button>
                   <button

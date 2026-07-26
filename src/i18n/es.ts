@@ -67,6 +67,7 @@ export default {
     collector: 'Coleccionista',
     newcomer: 'Novato',
     achievementCount: '{finished} finalizados · {upToDate} al día',
+    viewHistory: 'Ver historial',
     quoteOfTheDay: 'Cita del día',
     quotes: [
       'Captura cada fotograma. Dueño de tu historial.',
@@ -334,6 +335,7 @@ export default {
     noActivity: 'Sin actividad aún',
     watchedEpisode: 'vio {episode}',
     aMember: 'Alguien',
+    addToGroup: 'Añadir al Grupo',
   },
   profile: {
     title: 'Perfil',

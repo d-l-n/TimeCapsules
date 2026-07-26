@@ -49,11 +49,11 @@ export default function ListDetail() {
     setList(prev => prev ? { ...prev, name, description: desc } : prev)
   }
 
-  const handleRemove = async (showTvTimeId: number) => {
+  const handleRemove = async (showId: number) => {
     if (!id) return
-    await removeShowFromList(id, showTvTimeId)
-    setShows(prev => prev.filter(s => s.tmdb_id !== showTvTimeId))
-    setList(prev => prev ? { ...prev, show_ids: prev.show_ids.filter(s => s !== showTvTimeId) } : prev)
+    await removeShowFromList(id, showId)
+    setShows(prev => prev.filter(s => s.tmdb_id !== showId))
+    setList(prev => prev ? { ...prev, show_ids: prev.show_ids.filter(s => s !== showId) } : prev)
   }
 
   const handleEmpty = async () => {
@@ -95,12 +95,12 @@ export default function ListDetail() {
               <span className="border-2 border-border px-2 py-1 text-xs font-bold uppercase text-text-secondary">{t.lists.defaultList}</span>
             ) : (
               <>
-                <button onClick={() => setEditing(true)} aria-label={t.lists.edit} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer hover:bg-yellow transition-colors">{t.lists.edit}</button>
-                <button onClick={() => setShowDeleteConfirm(true)} aria-label={t.lists.delete} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer text-pink hover:bg-pink hover:text-text transition-colors">{t.lists.delete}</button>
+                <button onClick={() => setEditing(true)} aria-label={t.lists.edit} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer sm:hover:bg-yellow transition-colors">{t.lists.edit}</button>
+                <button onClick={() => setShowDeleteConfirm(true)} aria-label={t.lists.delete} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer text-pink sm:hover:bg-pink sm:hover:text-text transition-colors">{t.lists.delete}</button>
               </>
             )}
             {shows.length > 0 && (
-              <button onClick={() => setShowEmptyConfirm(true)} aria-label={t.lists.emptyListBtn} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer hover:bg-pink hover:text-text transition-colors">{t.lists.emptyListBtn}</button>
+              <button onClick={() => setShowEmptyConfirm(true)} aria-label={t.lists.emptyListBtn} className="border-2 border-border px-2 py-1 text-xs font-bold uppercase cursor-pointer sm:hover:bg-pink sm:hover:text-text transition-colors">{t.lists.emptyListBtn}</button>
             )}
           </div>
         )}
@@ -108,7 +108,7 @@ export default function ListDetail() {
       {shows.length === 0 ? (
         <EmptyState title={t.lists.emptyList} description={t.lists.emptyListDesc} />
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 sm:gap-3">
           {shows.map(show => (
             <ShowCard
               key={show.tmdb_id}
@@ -134,14 +134,14 @@ export default function ListDetail() {
               <button
                 onClick={() => { setShowDeleteConfirm(false); handleDelete() }}
                 aria-label="Confirm delete"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'ELIMINAR' : 'DELETE'}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -162,14 +162,14 @@ export default function ListDetail() {
               <button
                 onClick={() => { setShowEmptyConfirm(false); handleEmpty() }}
                 aria-label="Confirm empty"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'VACIAR' : 'EMPTY'}
               </button>
               <button
                 onClick={() => setShowEmptyConfirm(false)}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>

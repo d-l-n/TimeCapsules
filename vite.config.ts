@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
-import { boneyardPlugin } from 'boneyard-js/vite'
 
 export default defineConfig({
   server: {
@@ -28,12 +27,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    boneyardPlugin({
-      breakpoints: [375, 768, 1280],
-      out: './src/bones',
-      wait: 1200,
-      routes: ['/'],
-    }),
     VitePWA({
       registerType: 'prompt',
       injectRegister: null,
@@ -42,8 +35,8 @@ export default defineConfig({
         name: 'Time Capsules',
         short_name: 'Time Capsules',
         description: 'Personal TV show & movie tracking history dashboard — Time Capsules',
-        theme_color: '#0a0a0a',
-        background_color: '#f5f0eb',
+        theme_color: '#111111',
+        background_color: '#F6F6F3',
         display: 'standalone',
         start_url: '/',
         icons: [

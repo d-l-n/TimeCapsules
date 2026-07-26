@@ -43,7 +43,7 @@ export default function HistoryTimeline() {
           <h3 className="text-sm font-bold uppercase mb-3 sticky top-16 bg-bg py-2 border-t-4 border-border -mx-4 px-4">{date}<span className="ml-2 border-2 border-border px-1.5 py-0.5 text-xs">{dayEntries.length}</span></h3>
           <div className="space-y-2">
             {dayEntries.map(entry => (
-              <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 hover:translate-x-0.5 hover:-translate-y-0.5 hover-shadow-brutal transition-all" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
+              <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 sm:hover:translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal transition-all" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-yellow border-2 border-border flex items-center justify-center font-bold text-[10px] sm:text-xs shrink-0" aria-hidden="true">{entry.episode_number}</div>
                 <div className="flex-1 min-w-0"><span className="font-bold text-xs sm:text-sm uppercase truncate block">{entry.show_name}</span><span className="text-text-secondary text-[10px] sm:text-xs">S{entry.season_number} &middot; E{entry.episode_number}</span></div>
                 {emotions.has(entry.id) && <span className="shrink-0 text-lg" title={emotions.get(entry.id)!}>{getEmoji(emotions.get(entry.id)!)}</span>}

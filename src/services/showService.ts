@@ -136,8 +136,10 @@ export async function getShowByTmdbId(tmdbId: number) {
 }
 
 export async function createShowFromTmdb(tmdbId: number, name: string, posterPath: string | null, backdropPath: string | null, overview: string | null, mediaType?: 'movie' | 'tv') {
+  console.log('[createShowFromTmdb] step 2a: exists check', tmdbId)
   const existing = await exists('shows', where('tmdb_id', '==', tmdbId))
-  if (existing) return tmdbId
+  if (existing) { console.log('[createShowFromTmdb] existing, returning'); return tmdbId }
+  console.log('[createShowFromTmdb] step 2b: setDoc to shows/', String(tmdbId))
   await setDoc(doc(db, 'shows', String(tmdbId)), {
     tmdb_id: tmdbId,
     name,
@@ -150,6 +152,7 @@ export async function createShowFromTmdb(tmdbId: number, name: string, posterPat
     media_type: mediaType ?? 'tv',
   })
   clearShowsMapCache()
+  console.log('[createShowFromTmdb] done')
   return tmdbId
 }
 
@@ -160,13 +163,14 @@ export async function getWatchedEpisodesForShow(uid: string, showId: number): Pr
   return counts
 }
 
-export async function toggleWatchedEpisode(uid: string, episodeId: number, showId: number, watched: boolean) {
+export async function toggleWatchedEpisode(uid: string, episodeId: number, showId: number, watched: boolean, skipIfExists = false) {
   const snap = await getDocs(query(
     collection(db, 'watched_episodes'),
     where('user_id', '==', uid),
     where('episode_id', '==', episodeId),
   ))
   if (watched) {
+    if (skipIfExists && !snap.empty) return
     await addDoc(collection(db, 'watched_episodes'), {
       user_id: uid,
       episode_id: episodeId,

@@ -1,5 +1,6 @@
 import { setRating as setRatingService } from '../../services/showService'
 import type { RatingDoc } from '../../lib/firebase-queries'
+import type { useI18n } from '../../lib/I18nContext'
 
 interface RatingPickerProps {
   rating: RatingDoc | null
@@ -7,7 +8,7 @@ interface RatingPickerProps {
   userUid: string
   setRating: (r: RatingDoc | null) => void
   onClose: () => void
-  t: any
+  t: ReturnType<typeof useI18n>['t']
 }
 
 export default function RatingPicker({ rating, showTmdbId, userUid, setRating, onClose, t }: RatingPickerProps) {
@@ -25,7 +26,7 @@ export default function RatingPicker({ rating, showTmdbId, userUid, setRating, o
                 setRating(rating ? { ...rating, rating: n } : { user_id: userUid, show_id: showTmdbId, rating: n, rated_at: new Date().toISOString() })
                 onClose()
               }}
-              className={`w-8 h-8 border-2 border-border text-xs font-bold hover:bg-yellow transition-colors cursor-pointer ${rating?.rating === n ? 'bg-yellow text-text' : 'bg-surface'}`}
+              className={`btn-square w-8 h-8 border-2 border-border text-xs font-bold sm:hover:bg-yellow transition-colors cursor-pointer ${rating?.rating === n ? 'bg-yellow text-text' : 'bg-surface'}`}
             >
               {n}
             </button>
@@ -38,7 +39,7 @@ export default function RatingPicker({ rating, showTmdbId, userUid, setRating, o
               setRating(null)
               onClose()
             }}
-            className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold bg-surface text-pink hover:bg-pink hover:text-text transition-colors cursor-pointer"
+            className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold bg-surface text-pink sm:hover:bg-pink sm:hover:text-text transition-colors cursor-pointer"
             aria-label="Clear rating"
           >
             {t.showDetail.clearRating ?? 'CLEAR'}

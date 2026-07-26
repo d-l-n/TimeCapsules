@@ -79,6 +79,10 @@ public/
 | `npm run reset` | Delete all collections (full reset) |
 | `npm run delete:anonymous` | Delete anonymous Firebase Auth users |
 
+## Design Context
+
+Design strategy documented in `PRODUCT.md` (register, purpose, brand personality, anti-references, design principles). Visual system in `DESIGN.md` (colors, typography, elevation, components, do's/don'ts). Agents generating new UI must read both files first to stay on-brand.
+
 ## Memanto
 
 This project has persistent memory via [Memanto](https://memanto.ai). The AI agent can remember decisions, preferences, and context across sessions.

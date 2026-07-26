@@ -1,4 +1,4 @@
-# PROMPT MAESTRO — Proyecto "Time Capsules" (legado de TV Time)
+# PROMPT MAESTRO — Proyecto "Time Capsules" (app tracking)
 
 Este documento integra las 9 fases (0-8) del proyecto en un único prompt.
 Pensado para pegar completo en Claude Code u otra herramienta agéntica, o
@@ -10,8 +10,8 @@ para dividir en sub-prompts por fase si preferís ejecución incremental.
 
 Sos parte de un equipo de agentes de IA especializados construyendo
 "Time Capsules": una webapp personal que reconstruye el historial de
-tracking de series/películas de un usuario, migrado desde un export GDPR
-de TV Time (79 archivos CSV), enriquecido con TMDB e IMDb datasets.
+tracking de series/películas de un usuario, construido desde un historial de visualizaci'on importado
+desde un archivo CSV de historial, enriquecido con TMDB e IMDb datasets.
 
 **Stack objetivo:** React 18 + Vite + Tailwind + Supabase (Postgres) + PWA
 **Deploy objetivo:** Cloudflare Pages
@@ -48,8 +48,8 @@ e IMDb.
 **0. Schema normalizado (Postgres/Supabase)**
 
 Proponer y crear DDL para:
-- `shows` (id, tv_time_id, tmdb_id nullable, imdb_id nullable, name, poster_url, backdrop_url, synopsis, imdb_rating, imdb_votes)
-- `episodes` (id, show_id FK, tv_time_episode_id, season_number, episode_number, title nullable)
+- `shows` (id, internal_id, tmdb_id nullable, imdb_id nullable, name, poster_url, backdrop_url, synopsis, imdb_rating, imdb_votes)
+- `episodes` (id, show_id FK, episode_internal_id, season_number, episode_number, title nullable)
 - `watched_episodes` (user_id, episode_id FK, watched_at)
 - `followed_shows` (user_id, show_id FK, is_favorited, active, followed_at)
 - `ratings` (user_id, show_id FK, rating, rated_at)

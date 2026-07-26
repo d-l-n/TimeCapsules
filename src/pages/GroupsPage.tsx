@@ -73,7 +73,7 @@ export default function GroupsPage() {
             onClick={handleCreate}
             disabled={busy || !createName.trim()}
             aria-label={t.groups.createBtn}
-            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
+            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
           >
             {busy ? '...' : t.groups.createBtn}
           </button>
@@ -93,7 +93,7 @@ export default function GroupsPage() {
             onClick={handleJoin}
             disabled={busy || joinCode.trim().length < 4}
             aria-label={t.groups.joinBtn}
-            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
+            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
           >
             {busy ? '...' : t.groups.joinBtn}
           </button>
@@ -106,14 +106,14 @@ export default function GroupsPage() {
       {groups.length === 0 ? (
         <EmptyState title={t.groups.noGroups} description={t.groups.noGroupsDesc} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4">
           {groups.map(g => {
             const initial = g.name.charAt(0).toUpperCase()
             return (
               <Link
                 key={g.id}
                 to={`/groups/${g.id}`}
-                className="group bg-surface border-[3px] border-border p-4 shadow-brutal hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg transition-all flex items-center gap-4"
+                className="group bg-surface border-[3px] border-border p-4 shadow-brutal sm:hover:-translate-x-1 sm:hover:-translate-y-1 sm:hover:shadow-brutal-lg transition-all flex items-center gap-4"
               >
                 <div className="w-11 h-11 shrink-0 bg-yellow border-2 border-border flex items-center justify-center text-lg font-bold text-text">
                   {initial}
@@ -122,7 +122,7 @@ export default function GroupsPage() {
                   <div className="font-bold uppercase text-sm truncate">{g.name}</div>
                   <div className="text-[10px] font-mono text-text-secondary mt-1">{t.groups.code}: <span className="border border-border px-1 bg-surface-light">{g.invite_code}</span></div>
                 </div>
-                <div className="border-2 border-border px-2 py-1 text-xs font-bold shrink-0 group-hover:bg-yellow transition-colors">{g.member_count}</div>
+                <div className="border-2 border-border px-2 py-1 text-xs font-bold shrink-0 sm:group-hover:bg-yellow transition-colors">{g.member_count}</div>
               </Link>
             )
           })}

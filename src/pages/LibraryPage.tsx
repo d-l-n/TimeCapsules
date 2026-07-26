@@ -7,7 +7,7 @@ import { findMany } from '../lib/firestore-utils'
 import { where } from 'firebase/firestore'
 import type { DashItem } from '../services/showService'
 import ShowCard from '../components/ShowCard'
-import { Skeleton } from 'boneyard-js/react'
+
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 
@@ -77,8 +77,7 @@ export default function LibraryPage() {
     return items.filter(i => i.status === filter)
   }, [items, filter])
 
-  return (
-    <Skeleton name="library" loading={followedLoading && wlLoading && items.length === 0} fallback={<Loading text={t.library.title} />} animate="pulse" transition={300}>
+  return followedLoading && wlLoading && items.length === 0 ? <Loading text={t.library.title} /> : (
     <div className="space-y-6">
       <div>
         <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.library.subtitle}</div>
@@ -90,7 +89,7 @@ export default function LibraryPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`shrink-0 border-2 border-border px-3 py-1.5 text-[10px] font-bold uppercase transition-colors cursor-pointer ${filter === f ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
+            className={`shrink-0 border-2 border-border px-3 py-1.5 text-[10px] font-bold uppercase transition-colors cursor-pointer ${filter === f ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
             aria-pressed={filter === f}
           >
             {t.library[f]}
@@ -122,6 +121,5 @@ export default function LibraryPage() {
         </div>
       )}
     </div>
-    </Skeleton>
   )
 }

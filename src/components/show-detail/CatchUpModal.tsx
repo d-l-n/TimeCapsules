@@ -1,8 +1,10 @@
+import type { useI18n } from '../../lib/I18nContext'
+
 interface CatchUpModalProps {
   data: { episodeId: number; prevIds: number[]; hasPrevSeasons: boolean; seasonEpisodeIds?: number[] }
   onCatchUp: (markAll: boolean) => void
   onClose: () => void
-  t: any
+  t: ReturnType<typeof useI18n>['t']
 }
 
 export default function CatchUpModal({ data, onCatchUp, onClose, t }: CatchUpModalProps) {
@@ -16,7 +18,7 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t }: CatchUpMod
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl relative" onClick={e => e.stopPropagation()}>
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm hover:bg-pink transition-colors cursor-pointer"
+          className="x-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm sm:hover:bg-pink transition-colors cursor-pointer"
           aria-label={t.lists.cancel}
         >
           X
@@ -26,14 +28,14 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t }: CatchUpMod
         <div className="flex gap-3">
           <button
             onClick={() => onCatchUp(true)}
-            className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase hover:bg-pink transition-colors"
+            className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-pink transition-colors"
             aria-label={t.showDetail.catchUpYes}
           >
             {t.showDetail.catchUpYes}
           </button>
           <button
             onClick={() => onCatchUp(false)}
-            className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors"
+            className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors"
             aria-label={t.showDetail.catchUpNo}
           >
             {t.showDetail.catchUpNo}

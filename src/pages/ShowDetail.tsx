@@ -7,7 +7,7 @@ import type { WatchProvidersResult, TmdbSeasonEpisode, TmdbCollectionPart, TmdbC
 import { useI18n } from '../lib/I18nContext'
 import { useAuth } from '../lib/AuthContext'
 import { useGroups, useWatchlistStatus, useSpoilerFree } from '../hooks'
-import { getGroupMembers, getGroupEpisodeProgress, createGroupWatchEvent, listenToGroupWatchEvents } from '../services/groupService'
+import { getGroupMembers, getGroupEpisodeProgress, createGroupWatchEvent, listenToGroupWatchEvents, addShowToGroup, getGroupShows } from '../services/groupService'
 import { addToWatchlist, removeFromWatchlist } from '../services/watchlistService'
 import { getUserLists, addShowToList, removeShowFromList, getListDisplayName } from '../services/listService'
 import type { CustomListDoc } from '../lib/firebase-queries'
@@ -17,7 +17,7 @@ import { doc, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
 import EmotionPicker from '../components/EmotionPicker'
 import { getEmotionsForShow } from '../services/emotionService'
-import { Skeleton } from 'boneyard-js/react'
+
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 import MediaGrid from '../components/show-detail/MediaGrid'
@@ -28,6 +28,7 @@ import CollectionGrid from '../components/show-detail/CollectionGrid'
 import SeasonSection from '../components/show-detail/SeasonSection'
 import RatingPicker from '../components/show-detail/RatingPicker'
 import PositionEditor from '../components/show-detail/PositionEditor'
+import { TimerIcon } from '../components/Icons'
 import { MEMBER_COLORS, fmtPos } from '../components/show-detail/types'
 
 export default function ShowDetail() {
@@ -69,8 +70,24 @@ export default function ShowDetail() {
   const [simAdding, setSimAdding] = useState<number | null>(null)
   const [streamCountry, setStreamCountry] = useState(() => localStorage.getItem('streamCountry') || 'AR')
   const [catchUpPrompt, setCatchUpPrompt] = useState<{ episodeId: number; prevIds: number[]; hasPrevSeasons: boolean; seasonEpisodeIds?: number[] } | null>(null)
-  const [showSimilar, setShowSimilar] = useState(false)
+  const [showSimilar, setShowSimilar] = useState(true)
   const [showRecommended, setShowRecommended] = useState(false)
+  const autoCollapsedSim = useRef(false)
+
+  // Reset Similar state on navigation (component doesn't remount in React Router)
+  useEffect(() => {
+    setShowSimilar(true)
+    setShowRecommended(false)
+    autoCollapsedSim.current = false
+  }, [id])
+
+  // Collapse Similar by default when a collection is present (user can still re-expand)
+  useEffect(() => {
+    if (collection && !autoCollapsedSim.current) {
+      setShowSimilar(false)
+      autoCollapsedSim.current = true
+    }
+  }, [collection])
   const [showGroupFeed, setShowGroupFeed] = useState(false)
   const [resumePositions, setResumePositions] = useState<Map<number, number>>(new Map())
   const [editingPosition, setEditingPosition] = useState<number | null>(null)
@@ -95,6 +112,8 @@ export default function ShowDetail() {
   const [groupWatchToast, setGroupWatchToast] = useState<GroupWatchEventDoc | null>(null)
   const [movieRuntime, setMovieRuntime] = useState<number | null>(null)
   const [sortByProgress, setSortByProgress] = useState<Set<number>>(new Set())
+  const [showsInGroups, setShowsInGroups] = useState<Set<string>>(new Set())
+  const [addingToGroup, setAddingToGroup] = useState<string | null>(null)
   const watchedCountsRef = useRef(watchedCounts)
   useEffect(() => { watchedCountsRef.current = watchedCounts }, [watchedCounts])
 
@@ -108,12 +127,12 @@ export default function ShowDetail() {
     setSimAdding(item.id)
     try {
       const existing = await getShowByTmdbId(item.id)
-      const tvTimeId = existing ? existing.data.tmdb_id : await createShowFromTmdb(
+      const showId = existing ? existing.data.tmdb_id : await createShowFromTmdb(
         item.id, item.name || item.title || 'Unknown',
         item.poster_path, item.backdrop_path, item.overview,
         item.media_type as 'movie' | 'tv' | undefined
       )
-      await addFollowedShow(user.uid, tvTimeId)
+      await addFollowedShow(user.uid, showId)
       setSimAdded(m => new Map(m).set(item.id, true))
     } catch {}
     setSimAdding(null)
@@ -124,12 +143,12 @@ export default function ShowDetail() {
     setSimAdding(item.id)
     try {
       const existing = await getShowByTmdbId(item.id)
-      const tvTimeId = existing ? existing.data.tmdb_id : await createShowFromTmdb(
+      const showId = existing ? existing.data.tmdb_id : await createShowFromTmdb(
         item.id, item.name || item.title || 'Unknown',
         item.poster_path, item.backdrop_path, item.overview,
         'movie'
       )
-      await toggleWatchedEpisode(user.uid, tvTimeId, tvTimeId, true)
+      await toggleWatchedEpisode(user.uid, showId, showId, true, true)
       setSimAdded(m => new Map(m).set(item.id, true))
     } catch {}
     setSimAdding(null)
@@ -141,18 +160,18 @@ export default function ShowDetail() {
 
   useEffect(() => {
     if (!id || !user?.uid) return
-    const tvTimeId = parseInt(id)
+    const showId = parseInt(id)
     let cancelled = false
     ;(async () => {
       try {
-        let sh = await getShowById(tvTimeId)
+        let sh = await getShowById(showId)
         if (cancelled) return
 
-        if (!sh && tvTimeId < 0) {
-          const tmdbId = -tvTimeId
+        if (!sh && showId < 0) {
+          const tmdbId = -showId
           const existing = await getShowByTmdbId(tmdbId)
           if (existing) {
-            if (existing.data.tmdb_id !== tvTimeId) {
+            if (existing.data.tmdb_id !== showId) {
               if (!cancelled) {
                 navigate(`/show/${existing.data.tmdb_id}`, { replace: true })
               }
@@ -176,7 +195,7 @@ export default function ShowDetail() {
                 details.overview,
                 mediaType
               )
-              sh = await getShowById(tvTimeId)
+              sh = await getShowById(showId)
             }
           }
         }
@@ -288,6 +307,21 @@ export default function ShowDetail() {
     setSortByProgress(new Set())
   }, [selectedGroupId])
 
+  // Check which groups already have this show
+  useEffect(() => {
+    if (!show?.tmdb_id || groups.length === 0) { setShowsInGroups(new Set()); return }
+    ;(async () => {
+      const results = await Promise.allSettled(groups.map(g => getGroupShows(g.id)))
+      const inGroups = new Set<string>()
+      results.forEach((res, i) => {
+        if (res.status === 'fulfilled' && res.value.some(s => s.show_id === show.tmdb_id)) {
+          inGroups.add(groups[i].id)
+        }
+      })
+      setShowsInGroups(inGroups)
+    })()
+  }, [show?.tmdb_id, groups])
+
   useEffect(() => {
     if (!selectedGroupId || !show?.tmdb_id) { setGroupProgress([]); return }
     ;(async () => {
@@ -316,7 +350,7 @@ export default function ShowDetail() {
 
       // Auto-mark as watched if not already watched
       if (watchedCountsRef.current.has(event.episode_id)) return
-      await toggleWatchedEpisode(user.uid, event.episode_id, showId, true)
+      await toggleWatchedEpisode(user.uid, event.episode_id, showId, true, true)
       setWatchedCounts(prev => {
         if (prev.has(event.episode_id)) return prev
         const next = new Map(prev)
@@ -429,19 +463,19 @@ export default function ShowDetail() {
     setCollapsedSeasons(collapsed)
   }, [hasTmdbData, loading, grouped, watchedCountsBySeason, collapsePref])
 
-  const resolveEpisodeId = useCallback(async (episodeTvTimeId: number): Promise<number> => {
-    if (episodeTvTimeId >= 0 || !show?.tmdb_id) return episodeTvTimeId
-    const ep = mergedEpisodes.find(e => e.id === episodeTvTimeId)
-    if (!ep) return Math.abs(episodeTvTimeId)
-    await ensureEpisode(Math.abs(episodeTvTimeId), show.tmdb_id, ep.season_number, ep.episode_number, ep.title === `${t.showDetail.episode} ${ep.episode_number}` ? null : ep.title)
-    return Math.abs(episodeTvTimeId)
+  const resolveEpisodeId = useCallback(async (episodeId: number): Promise<number> => {
+    if (episodeId >= 0 || !show?.tmdb_id) return episodeId
+    const ep = mergedEpisodes.find(e => e.id === episodeId)
+    if (!ep) return Math.abs(episodeId)
+    await ensureEpisode(Math.abs(episodeId), show.tmdb_id, ep.season_number, ep.episode_number, ep.title === `${t.showDetail.episode} ${ep.episode_number}` ? null : ep.title)
+    return Math.abs(episodeId)
   }, [show?.tmdb_id, mergedEpisodes, t.showDetail.episode])
 
-  const handleToggle = useCallback(async (episodeTvTimeId: number, currentlyWatched: boolean, clientX?: number, clientY?: number) => {
+  const handleToggle = useCallback(async (episodeId: number, currentlyWatched: boolean, clientX?: number, clientY?: number) => {
     if (!user?.uid || !id || toggling !== null || togglingRef.current) return
 
     if (!currentlyWatched) {
-      const ep = mergedEpisodes.find(e => e.id === episodeTvTimeId)
+      const ep = mergedEpisodes.find(e => e.id === episodeId)
       if (ep) {
         const prevUnwatched = [...mergedEpisodes]
           .sort((a, b) => a.season_number - b.season_number || a.episode_number - b.episode_number)
@@ -455,7 +489,7 @@ export default function ShowDetail() {
           const prevSeasons = new Set(prevUnwatched.map(e => e.season_number))
           const hasPrevSeasons = [...prevSeasons].some(s => s < ep.season_number)
           setCatchUpPrompt({
-            episodeId: episodeTvTimeId,
+            episodeId: episodeId,
             prevIds: prevUnwatched.map(e => e.id),
             hasPrevSeasons,
           })
@@ -464,28 +498,28 @@ export default function ShowDetail() {
       }
     }
 
-    setToggling(episodeTvTimeId)
+    setToggling(episodeId)
     togglingRef.current = true
     try {
-      const realId = await resolveEpisodeId(episodeTvTimeId)
-      await toggleWatchedEpisode(user.uid, realId, parseInt(id), !currentlyWatched)
+      const realId = await resolveEpisodeId(episodeId)
+      await toggleWatchedEpisode(user.uid, realId, parseInt(id), !currentlyWatched, true)
       if (!currentlyWatched && selectedGroupId) {
         await createGroupWatchEvent(selectedGroupId, realId, parseInt(id), user.uid)
       }
       setWatchedCounts(prev => {
         const next = new Map(prev)
         if (currentlyWatched) {
-          next.delete(episodeTvTimeId)
+          next.delete(episodeId)
         } else {
-          next.set(episodeTvTimeId, 1)
+          next.set(episodeId, 1)
         }
         return next
       })
       if (clientX !== undefined && clientY !== undefined) {
-        setFeedbackEp({ id: episodeTvTimeId, watched: !currentlyWatched, x: clientX, y: clientY })
+        setFeedbackEp({ id: episodeId, watched: !currentlyWatched, x: clientX, y: clientY })
         setTimeout(() => setFeedbackEp(null), 800)
       }
-      if (!currentlyWatched) setEmotionPickerFor(episodeTvTimeId)
+      if (!currentlyWatched) setEmotionPickerFor(episodeId)
     } catch {}
     setToggling(null)
     togglingRef.current = false
@@ -502,7 +536,7 @@ export default function ShowDetail() {
     try {
       const showId = parseInt(id)
       const realIds = await Promise.all(idsToWatch.map(eid => resolveEpisodeId(eid)))
-      await Promise.all(realIds.map(eid => toggleWatchedEpisode(user.uid, eid, showId, true)))
+      await Promise.all(realIds.map(eid => toggleWatchedEpisode(user.uid, eid, showId, true, true)))
       if (selectedGroupId) {
         await Promise.all(realIds.map(eid => createGroupWatchEvent(selectedGroupId, eid, showId, user.uid)))
       }
@@ -587,7 +621,7 @@ export default function ShowDetail() {
       const watched = cs.action === 'watch'
       const showId = parseInt(id)
       const realIds = await Promise.all(cs.episodeIds.map(eid => resolveEpisodeId(eid)))
-      await Promise.all(realIds.map(eid => toggleWatchedEpisode(user.uid, eid, showId, watched)))
+      await Promise.all(realIds.map(eid => toggleWatchedEpisode(user.uid, eid, showId, watched, watched)))
       if (watched && selectedGroupId) {
         await Promise.all(realIds.map(eid => createGroupWatchEvent(selectedGroupId, eid, showId, user.uid)))
       }
@@ -616,7 +650,7 @@ export default function ShowDetail() {
     const showId = show?.tmdb_id
     if (!showId) return
     const isCurrentlyWatched = isMovie && (watchedCounts.get(showId) ?? 0) > 0
-    await toggleWatchedEpisode(user.uid, showId, showId, !isCurrentlyWatched)
+    await toggleWatchedEpisode(user.uid, showId, showId, !isCurrentlyWatched, true)
     if (!isCurrentlyWatched && selectedGroupId) {
       await createGroupWatchEvent(selectedGroupId, showId, showId, user.uid)
     }
@@ -713,23 +747,17 @@ export default function ShowDetail() {
   const backdrop = show?.backdrop_url ?? null
   const movieWatched = isMovie && show && (watchedCounts.get(show.tmdb_id) ?? 0) > 0
 
-  return (
-    <Skeleton name="show-detail" loading={loading} fallback={<Loading text={t.showDetail.loading} />} animate="pulse" transition={300}>
-    {!show ? (
+  return loading ? <Loading text={t.showDetail.loading} /> : (
+    <>{!show ? (
       <EmptyState title={t.showDetail.notFound}><button onClick={() => navigate(-1)} className="underline font-bold">{t.showDetail.back}</button></EmptyState>
     ) : (
     <div className="space-y-8">
       {backdrop && <div className="relative h-56 sm:h-72 overflow-hidden sm:border-[3px] sm:border-border -mx-4 sm:-mx-0"><img src={backdrop} alt="" aria-hidden="true" className="w-full h-full object-cover" style={{ maskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, #000 20%, #000 80%, transparent 100%)' }} /><div className="absolute inset-0 bg-gradient-to-t from-bg to-transparent" /><div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-bg to-transparent" /></div>}
       <div className="relative -mt-16 sm:-mt-24 mx-4 sm:mx-0 p-4 sm:p-6 bg-surface border-[3px] border-border shadow-brutal space-y-4 z-10">
-        <button onClick={() => navigate(-1)} className="btn-brutal text-xs sm:text-sm w-full sm:w-auto" aria-label={`${t.showDetail.back}`}>&larr; {t.showDetail.back}</button>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase bg-yellow">{isMovie ? t.discover.movie : t.discover.tv}</span>
-        </div>
-        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase leading-tight break-words font-heading">{show.name}</h1>
-        {(tmdbOverview ?? show.synopsis) && <p className="text-sm leading-relaxed max-w-3xl">{tmdbOverview ?? show.synopsis}</p>}
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <button onClick={() => navigate(-1)} className="btn-brutal text-xs sm:text-sm" aria-label={`${t.showDetail.back}`}>&larr; {t.showDetail.back}</button>
           {user?.uid && (
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setShowRatingPicker(prev => !prev)}
                 className="btn-brutal text-xs sm:text-sm w-full sm:w-auto"
@@ -749,6 +777,13 @@ export default function ShowDetail() {
               )}
             </div>
           )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="border-2 border-border px-2 py-0.5 text-[10px] font-bold uppercase bg-yellow">{isMovie ? t.discover.movie : t.discover.tv}</span>
+        </div>
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-black uppercase leading-tight break-words font-heading">{show.name}</h1>
+        {(tmdbOverview ?? show.synopsis) && <p className="text-sm leading-relaxed max-w-3xl">{tmdbOverview ?? show.synopsis}</p>}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:gap-3">
           {!spoilerFree && show.imdb_rating != null && <div className="border-[3px] border-border px-2 sm:px-3 py-1.5 sm:py-2 bg-surface font-bold text-xs sm:text-sm">{t.showDetail.imdb}: <span className="text-pink">{show.imdb_rating}</span>{show.imdb_votes != null && <span className="font-normal text-text-secondary ml-1">({show.imdb_votes.toLocaleString()} {t.showDetail.votes})</span>}</div>}
           {!wlLoading && user?.uid && show?.tmdb_id && (
             <button
@@ -779,7 +814,7 @@ export default function ShowDetail() {
                           if (inList) { await removeShowFromList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.delete(list.id); return n }) }
                           else { await addShowToList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.add(list.id); return n }) }
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 hover:bg-yellow transition-colors cursor-pointer ${inList ? 'bg-yellow text-text' : ''}`}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 sm:hover:bg-yellow transition-colors cursor-pointer ${inList ? 'bg-yellow text-text' : ''}`}
                         aria-label={`${inList ? "Remove from" : "Add to"} list: ${getListDisplayName(list, lang)}`}
                       >
                         {getListDisplayName(list, lang)} {inList && 'OK'}
@@ -818,10 +853,11 @@ export default function ShowDetail() {
               ) : (
                 <button
                   onClick={() => handleResumeClick(show.tmdb_id, resumePositions.get(show.tmdb_id))}
-                  className="border-2 border-border px-1.5 py-1 text-[10px] font-bold bg-surface text-text hover:bg-yellow transition-colors"
+                  className="btn-brutal text-xs sm:text-sm w-full sm:w-auto"
                   aria-label={t.showDetail.resumePosition}
                 >
-                  @ {resumePositions.has(show.tmdb_id) ? fmtPos(resumePositions.get(show.tmdb_id)!) : t.showDetail.noPosition}
+                  <TimerIcon className="w-3.5 h-3.5" />
+                  {resumePositions.has(show.tmdb_id) ? fmtPos(resumePositions.get(show.tmdb_id)!) : t.showDetail.noPosition}
                 </button>
               )}
             </>
@@ -843,7 +879,7 @@ export default function ShowDetail() {
           <select
             value={selectedGroupId ?? ''}
             onChange={e => setSelectedGroupId(e.target.value || null)}
-            className="border-2 border-border bg-surface text-xs font-bold px-2 py-1 uppercase cursor-pointer hover:bg-yellow transition-colors"
+            className="border-[3px] border-border bg-surface text-xs font-bold px-3 py-2 uppercase cursor-pointer sm:hover:bg-yellow transition-colors shadow-brutal-sm"
             aria-label={t.watchParty.selectGroup}
           >
             <option value="">{t.watchParty.justMe}</option>
@@ -851,6 +887,32 @@ export default function ShowDetail() {
               <option key={g.id} value={g.id}>{g.name}</option>
             ))}
           </select>
+          {selectedGroupId && (
+            <button
+              onClick={async () => {
+                if (!user?.uid || !show?.tmdb_id || addingToGroup) return
+                setAddingToGroup(selectedGroupId)
+                try {
+                  await addShowToGroup(selectedGroupId, show.tmdb_id, user.uid)
+                  setShowsInGroups(prev => new Set(prev).add(selectedGroupId))
+                } catch {}
+                setAddingToGroup(null)
+              }}
+              disabled={!show?.tmdb_id || showsInGroups.has(selectedGroupId) || addingToGroup !== null}
+              className={`border-2 border-border px-2 py-1 text-[10px] font-bold uppercase transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                showsInGroups.has(selectedGroupId)
+                  ? 'bg-green/30 text-text border-green'
+                  : 'bg-surface text-text sm:hover:bg-yellow'
+              }`}
+              aria-label={showsInGroups.has(selectedGroupId) ? 'Already in group' : 'Add show to group'}
+            >
+              {addingToGroup === selectedGroupId
+                ? '...'
+                : showsInGroups.has(selectedGroupId)
+                  ? `✓ ${t.groups.alreadyInGroup}`
+                  : `+ ${t.watchParty.addToGroup}`}
+            </button>
+          )}
           {groupMembers.length > 1 && (
             <div className="flex gap-1">
               {groupMembers.map(m => {
@@ -877,7 +939,7 @@ export default function ShowDetail() {
             aria-expanded={showGroupFeed}
             aria-label={t.watchParty.activity}
           >
-            <h3 className="text-[10px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 flex items-center gap-1.5 hover:text-orange transition-colors">
+            <h3 className="text-[10px] font-bold uppercase text-text-secondary border-b-2 border-border pb-1 flex items-center gap-1.5 sm:hover:text-orange transition-colors">
               <span>{showGroupFeed ? '▼' : '▶'}</span>
               <span>{t.watchParty.activity}</span>
               {groupWatchFeed.length > 0 && <span className="border border-border px-1 text-[9px]">{groupWatchFeed.length}</span>}
@@ -1014,7 +1076,7 @@ export default function ShowDetail() {
       {emotionPickerFor && user?.uid && (
         <EmotionPicker
           uid={user.uid}
-          episodeTvTimeId={emotionPickerFor}
+          episodeId={emotionPickerFor}
           currentEmotion={emotions.get(emotionPickerFor) ?? null}
           onSelect={(emotionId) => {
             setEmotions(prev => { const next = new Map(prev); if (emotionId) next.set(emotionPickerFor, emotionId); else next.delete(emotionPickerFor); return next })
@@ -1049,7 +1111,7 @@ export default function ShowDetail() {
       )}
     </div>
     )}
-  </Skeleton>
+    </>
   )
 }
 

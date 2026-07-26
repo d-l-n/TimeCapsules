@@ -16,21 +16,21 @@ service cloud.firestore {
 
     function allowFields(fields) {
       return request.resource.data.keys().hasAll(fields)
-        && request.resource.data.keys().minus(fields).size() == 0
+        && request.resource.data.keys().size() == fields.size()
     }
 
     match /shows/{docId} {
       allow read: if isAuth()
       allow create: if isAuth()
       allow update: if isAuth()
-      allow delete: if isAdmin()
+      allow delete: if isAuth()
     }
 
     match /episodes/{docId} {
       allow read: if isAuth()
       allow create: if isAuth()
       allow update: if isAuth()
-      allow delete: if isAdmin()
+      allow delete: if isAuth()
     }
 
     match /followed_shows/{docId} {
@@ -40,7 +40,7 @@ service cloud.firestore {
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'active', 'followed_at'])
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /watched_episodes/{docId} {
@@ -50,7 +50,7 @@ service cloud.firestore {
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'episode_id', 'show_id', 'watched_at'])
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /ratings/{docId} {
@@ -60,7 +60,7 @@ service cloud.firestore {
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'rating', 'rated_at'])
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /badges/{docId} {
@@ -77,7 +77,7 @@ service cloud.firestore {
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'episode_id', 'emotion_id', 'created_at'])
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /user_stats/{docId} {
@@ -85,7 +85,7 @@ service cloud.firestore {
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /groups/{docId} {
@@ -93,7 +93,7 @@ service cloud.firestore {
       allow create: if isAuth()
         && allowFields(['name', 'invite_code', 'created_by', 'created_at'])
       allow update: if false
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.created_by == request.auth.uid
     }
 
     match /group_members/{docId} {
@@ -127,7 +127,7 @@ service cloud.firestore {
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'type', 'title', 'body', 'show_id', 'read', 'created_at'])
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /watchlist/{docId} {
@@ -137,26 +137,24 @@ service cloud.firestore {
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'added_at'])
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /user_profiles/{docId} {
       allow read: if isAuth()
       allow create: if isAuth() && request.auth.uid == docId
-        && allowFields(['display_name', 'photo_url', 'updated_at'])
         && request.resource.data.display_name is string
         && request.resource.data.display_name.size() <= 100
         && request.resource.data.photo_url is string
         && request.resource.data.photo_url.size() <= 500
         && request.resource.data.updated_at is string
       allow update: if isAuth() && request.auth.uid == docId
-        && allowFields(['display_name', 'photo_url', 'updated_at'])
         && request.resource.data.display_name is string
         && request.resource.data.display_name.size() <= 100
         && request.resource.data.photo_url is string
         && request.resource.data.photo_url.size() <= 500
         && request.resource.data.updated_at is string
-      allow delete: if isAdmin()
+      allow delete: if isAuth() && request.auth.uid == docId
     }
 
     match /resume_positions/{docId} {
@@ -169,6 +167,7 @@ service cloud.firestore {
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
+    // v2 — fixed create/delete for user-owned collections
     match /custom_lists/{docId} {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid

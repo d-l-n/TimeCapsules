@@ -10,3 +10,6 @@ e2e/.auth/
 .specify/memory/constitution.md
 data/
 *.zip
+server.log
+test-results/
+.impeccable/

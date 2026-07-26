@@ -22,8 +22,8 @@ export default function GroupDetail() {
   const { members, loading: membersLoading } = useGroupMembers(groupId)
   const { shows, loading: showsLoading, refresh: refreshShows } = useGroupShows(groupId)
 
-  const [showTvTimeId, setShowTvTimeId] = useState<number | undefined>()
-  useGroupProgress(groupId, showTvTimeId)
+  const [showId, setShowId] = useState<number | undefined>()
+  useGroupProgress(groupId, showId)
 
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<TmdbSearchResult[]>([])
@@ -63,7 +63,7 @@ export default function GroupDetail() {
 
   useEffect(() => {
     if (selectedShowId) {
-      setShowTvTimeId(selectedShowId)
+      setShowId(selectedShowId)
     }
   }, [selectedShowId])
 
@@ -225,7 +225,7 @@ export default function GroupDetail() {
     <div className="space-y-8">
       <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate(-1)} className="border-[3px] border-border px-3 py-1.5 bg-surface text-xs font-bold hover:bg-yellow transition-colors shrink-0">&larr;</button>
+          <button onClick={() => navigate(-1)} className="border-[3px] border-border px-3 py-1.5 bg-surface text-xs font-bold sm:hover:bg-yellow transition-colors shrink-0">&larr;</button>
           <div className="w-14 h-14 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-2xl font-bold text-text">
             {(groupName || t.groups.groupDetail).charAt(0).toUpperCase()}
           </div>
@@ -262,7 +262,7 @@ export default function GroupDetail() {
               <button
                 onClick={() => setConfirmLeave(true)}
                 aria-label={t.groups.leaveGroup}
-                className="w-full border-2 border-border bg-pink/10 text-pink py-2 text-xs font-bold uppercase hover:bg-pink hover:text-text transition-colors cursor-pointer"
+                className="w-full border-2 border-border bg-pink/10 text-pink py-2 text-xs font-bold uppercase sm:hover:bg-pink sm:hover:text-text transition-colors cursor-pointer"
               >
                 {t.groups.leaveGroup}
               </button>
@@ -278,13 +278,13 @@ export default function GroupDetail() {
               <div className="flex gap-2">
                 <button
                   onClick={handleCopyCode}
-                  className="flex-1 border-[3px] border-border bg-yellow text-text py-2 text-xs font-bold uppercase hover:bg-orange hover:text-text transition-colors cursor-pointer"
+                  className="flex-1 border-[3px] border-border bg-yellow text-text py-2 text-xs font-bold uppercase sm:hover:bg-orange sm:hover:text-text transition-colors cursor-pointer"
                 >
                   {copied ? t.groups.copied : t.groups.copyCode}
                 </button>
                 <button
                   onClick={handleShareCode}
-                  className="flex-1 border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                  className="flex-1 border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
                 >
                   {t.groups.shareCode}
                 </button>
@@ -308,7 +308,7 @@ export default function GroupDetail() {
                   <button
                     type="button"
                     onClick={() => { setSearchQuery(''); setSearchResults([]); setShowDropdown(false) }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 border border-border px-1.5 py-0.5 text-[10px] font-bold bg-surface hover:bg-pink transition-colors"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 border border-border px-1.5 py-0.5 text-[10px] font-bold bg-surface sm:hover:bg-pink transition-colors"
                     aria-label="Clear search"
                   >
                     X
@@ -360,7 +360,7 @@ export default function GroupDetail() {
                       <button
                         onClick={handleLoadMore}
                         disabled={searching}
-                        className="w-full border-t-2 border-border px-3 py-3 text-[10px] font-bold uppercase bg-surface hover:bg-yellow/30 transition-colors disabled:opacity-40 cursor-pointer text-center"
+                        className="w-full border-t-2 border-border px-3 py-3 text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow/30 transition-colors disabled:opacity-40 cursor-pointer text-center"
                       >
                         {searching ? '...' : t.groups.seeMore}
                       </button>
@@ -391,7 +391,7 @@ export default function GroupDetail() {
           {shows.length === 0 ? (
             <div className="border-[3px] border-border bg-surface p-6 text-center text-xs font-bold text-text-secondary">{t.groups.noShows}</div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 items-start">
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start">
               {shows.map(s => {
                 const selected = selectedShowId === s.tmdb_id
                 return (
@@ -406,19 +406,21 @@ export default function GroupDetail() {
                       onRemove={isMember ? () => setConfirmRemove(s.tmdb_id) : undefined}
                       actions={(
                         <>
-                          <button
-                            onClick={() => handleMarkWatched(s.tmdb_id)}
-                            disabled={markingId === s.tmdb_id}
-                            aria-label={t.showDetail.markAsWatched}
-                            className="border-2 border-border bg-yellow text-text px-2 py-1 text-[10px] font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer"
-                          >
-                            {markingId === s.tmdb_id ? '...' : t.showDetail.markAsWatched}
-                          </button>
+                          {s.media_type === 'movie' && (
+                            <button
+                              onClick={() => handleMarkWatched(s.tmdb_id)}
+                              disabled={markingId === s.tmdb_id}
+                              aria-label={t.showDetail.markAsWatched}
+                              className="border-2 border-border bg-yellow text-text px-2 py-1 text-[10px] font-bold uppercase sm:hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer"
+                            >
+                              {markingId === s.tmdb_id ? '...' : t.showDetail.markAsWatched}
+                            </button>
+                          )}
                           {s.media_type !== 'movie' && (
                             <button
                               onClick={() => setSelectedShowId(selected ? null : s.tmdb_id)}
                               aria-label={t.groups.progress}
-                              className={`border-2 border-border px-2 py-1 text-[10px] font-bold transition-colors cursor-pointer ${selected ? 'bg-yellow text-text' : 'bg-surface hover:bg-yellow'}`}
+                              className={`border-2 border-border px-2 py-1 text-[10px] font-bold transition-colors cursor-pointer ${selected ? 'bg-yellow text-text' : 'bg-surface sm:hover:bg-yellow'}`}
                             >
                               {t.groups.progress}
                             </button>
@@ -430,7 +432,7 @@ export default function GroupDetail() {
                       <div className="mt-4">
                         <GroupProgressSection
                           groupId={groupId!}
-                          showTvTimeId={s.tmdb_id}
+                          showId={s.tmdb_id}
                           mediaType={s.media_type}
                           members={members}
               userId={user?.uid}
@@ -456,14 +458,14 @@ export default function GroupDetail() {
               <button
                 onClick={handleLeave}
                 aria-label="Confirm leave group"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'SALIR' : 'LEAVE'}
               </button>
               <button
                 onClick={() => setConfirmLeave(false)}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -480,14 +482,14 @@ export default function GroupDetail() {
               <button
                 onClick={confirmRemoveShow}
                 aria-label="Confirm remove"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'QUITAR' : 'REMOVE'}
               </button>
               <button
                 onClick={() => setConfirmRemove(null)}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -521,7 +523,7 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
       className={`w-full flex items-center gap-3 px-3 py-2.5 border-b-2 border-border text-left disabled:opacity-50 cursor-pointer transition-colors ${
         alreadyInGroup
           ? 'bg-surface-light cursor-not-allowed'
-          : 'hover:bg-yellow/30'
+          : 'sm:hover:bg-yellow/30'
       }`}
     >
       {/* Poster thumbnail */}
@@ -570,15 +572,15 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
   )
 }
 
-function GroupProgressSection({ groupId, showTvTimeId, mediaType, members, userId, t }: {
+function GroupProgressSection({ groupId, showId, mediaType, members, userId, t }: {
   groupId: string
-  showTvTimeId: number
+  showId: number
   mediaType?: 'movie' | 'tv' | null
   members: { user_id: string; role: string; joined_at: string }[]
   userId: string | undefined
   t: any
 }) {
-  const { progress, loading } = useGroupProgress(groupId, showTvTimeId)
+  const { progress, loading } = useGroupProgress(groupId, showId)
   if (loading) return <Loading text={t.groups.loading} />
 
   const isMovie = mediaType === 'movie'

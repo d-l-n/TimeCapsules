@@ -98,14 +98,14 @@ export default function UpcomingPage() {
           <button
             onClick={() => setMode('followed')}
             aria-label={t.upcoming.followed}
-            className={`border-[3px] border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'followed' ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow'}`}
+            className={`border-[3px] border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'followed' ? 'bg-yellow text-text border-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
           >
             {t.upcoming.followed}
           </button>
           <button
             onClick={() => setMode('all')}
             aria-label={t.upcoming.all}
-            className={`border-[3px] border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'all' ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow'}`}
+            className={`border-[3px] border-border px-3 py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${mode === 'all' ? 'bg-yellow text-text border-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
           >
             {t.upcoming.all}
           </button>
@@ -125,12 +125,12 @@ export default function UpcomingPage() {
           {tvUpcoming.length > 0 && (
             <section>
               <h2 className="text-base sm:text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4">{t.upcoming.tvEpisodes} ({tvUpcoming.length})</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3">
                 {tvUpcoming.map(item => (
                   <Link
                     key={item.show_id}
                     to={`/show/${item.show_id}`}
-                    className={`bg-surface border-2 border-border hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.show_id) % 5]}-hover`}
+                    className={`bg-surface border-2 border-border sm:hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(item.show_id) % 5]}-hover`}
                   >
                     {item.poster_url ? (
                       <img src={item.poster_url} alt={item.name} className="w-full" loading="lazy" />
@@ -157,7 +157,7 @@ export default function UpcomingPage() {
           {movieUpcoming.length > 0 && (
             <section>
               <h2 className="text-base sm:text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4">{t.upcoming.movies} ({movieUpcoming.length})</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3">
                 {movieUpcoming.map(m => {
                   const imgSrc = getTmdbImage(m.poster_path, 'w500')
                   const releaseDate = m.release_date ? new Date(m.release_date) : null
@@ -166,7 +166,7 @@ export default function UpcomingPage() {
                     <Link
                       key={m.id}
                       to={`/show/-${m.id}`}
-                      className={`bg-surface border-2 border-border hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(m.id) % 5]}-hover`}
+                      className={`bg-surface border-2 border-border sm:hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(m.id) % 5]}-hover`}
                     >
                       {imgSrc ? (
                         <img src={imgSrc} alt={m.title} className="w-full" loading="lazy" />
@@ -194,7 +194,7 @@ export default function UpcomingPage() {
           {mode === 'all' && allOnTheAir.length > 0 && (
             <section>
               <h2 className="text-base sm:text-lg font-bold uppercase border-b-4 border-border pb-2 mb-4">{t.upcoming.onTheAir} ({allOnTheAir.length})</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-3">
                 {allOnTheAir.map(show => {
                   const name = show.name || show.title || 'Unknown'
                   const imgSrc = getTmdbImage(show.poster_path, 'w500')
@@ -202,7 +202,7 @@ export default function UpcomingPage() {
                     <Link
                       key={show.id}
                       to={`/show/-${show.id}`}
-                      className={`bg-surface border-2 border-border hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(show.id) % 5]}-hover`}
+                      className={`bg-surface border-2 border-border sm:hover:bg-yellow transition-colors block card-neon-${['accent', 'highlight', 'cyan', 'orange', 'purple'][Math.abs(show.id) % 5]}-hover`}
                     >
                       {imgSrc ? (
                         <img src={imgSrc} alt={name} className="w-full" loading="lazy" />

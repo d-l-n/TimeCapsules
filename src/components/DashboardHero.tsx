@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { fmtTime } from '../lib/formatting'
-import { ArrowRightIcon } from './Icons'
+import { ArrowRightIcon } from '.'
 
 interface DashboardHeroProps {
   streak: number
@@ -20,12 +20,12 @@ export default function DashboardHero({ streak, episodesWatched, showsTracked, t
   const greeting = hour < 12 ? t.dashboard.goodMorning : hour < 19 ? t.dashboard.goodAfternoon : t.dashboard.goodEvening
 
   return (
-    <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 animate-fade-in-up">
+    <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7">
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.dashboard.overview}</div>
           <h1 className="text-3xl sm:text-5xl font-black uppercase leading-none font-heading">
-            {greeting}, <span className="text-orange">{name}</span>
+            {greeting}, <span className="text-text">{name}</span>
           </h1>
         </div>
         <Link

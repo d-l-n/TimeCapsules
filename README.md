@@ -1,6 +1,6 @@
 # Time Capsules
 
-Personal TV show & movie tracking history dashboard. Migrates data from a TV Time GDPR export, enriches it with TMDB metadata and IMDb ratings.
+Personal TV show & movie tracking history dashboard. Built from an imported viewing history, enriches it with TMDB metadata and IMDb ratings.
 
 ## Stack
 

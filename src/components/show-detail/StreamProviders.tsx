@@ -1,12 +1,13 @@
 import { getTmdbImage, getProviderDirectLink } from '../../services/tmdb'
 import type { WatchProvidersResult } from '../../services/tmdb'
+import type { useI18n } from '../../lib/I18nContext'
 
 interface StreamProvidersProps {
   providers: WatchProvidersResult
   streamCountry: string
   onCountryChange: (country: string) => void
   showName: string
-  t: any
+  t: ReturnType<typeof useI18n>['t']
 }
 
 export default function StreamProviders({ providers, streamCountry, onCountryChange, showName, t }: StreamProvidersProps) {
@@ -17,7 +18,7 @@ export default function StreamProviders({ providers, streamCountry, onCountryCha
         <select
           value={streamCountry}
           onChange={e => onCountryChange(e.target.value)}
-          className="border-2 border-border bg-surface text-xs font-bold px-1.5 py-0.5 uppercase cursor-pointer hover:bg-yellow transition-colors"
+          className="border-2 border-border bg-surface text-xs font-bold px-1.5 py-0.5 uppercase cursor-pointer sm:hover:bg-yellow transition-colors"
           aria-label={t.showDetail.streamCountry}
         >
           <option value="AR">Argentina</option>
@@ -45,7 +46,7 @@ export default function StreamProviders({ providers, streamCountry, onCountryCha
                 href={providerUrl || providers.link || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="border-2 border-border px-2 py-1 text-xs font-bold bg-surface flex items-center gap-1.5 hover:bg-yellow transition-colors"
+                className="border-2 border-border px-2 py-1 text-xs font-bold bg-surface flex items-center gap-1.5 sm:hover:bg-yellow transition-colors"
               >
                 {p.logo_path && <img src={getTmdbImage(p.logo_path, 'w500')!} alt="" className="w-4 h-4 rounded" />}
                 {p.provider_name}

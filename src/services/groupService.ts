@@ -1,6 +1,7 @@
 import { collection, query, where, getDocs, addDoc, doc, getDoc, writeBatch, onSnapshot, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { findOneWithId, findMany, exists, deleteOne, deleteMany, buildShowsMap } from '../lib/firestore-utils'
+import { findOneWithId, findMany, exists, deleteOne, buildShowsMap } from '../lib/firestore-utils'
+import { toggleWatchedEpisode } from './showService'
 import type { GroupDoc, GroupMemberDoc, GroupShowDoc, ShowDoc, WatchedEpisodeDoc, GroupWatchEventDoc } from '../lib/firebase-queries'
 
 export interface GroupWithMeta {
@@ -175,34 +176,31 @@ export async function createGroupWatchEvent(groupId: string, episodeId: number, 
 export async function getGroupMoviesWatched(uid: string, showIds: number[]): Promise<Set<number>> {
   const watched = new Set<number>()
   if (showIds.length === 0) return watched
-  const items = await findMany<WatchedEpisodeDoc>(
-    'watched_episodes',
-    where('user_id', '==', uid),
-    where('show_id', 'in', showIds),
-  )
-  items.forEach(w => {
-    if (w.episode_id === w.show_id) watched.add(w.show_id)
+  // Firestore 'in' supports at most 10 values, so chunk into batches
+  const chunkSize = 10
+  const batches: Promise<WatchedEpisodeDoc[]>[] = []
+  for (let i = 0; i < showIds.length; i += chunkSize) {
+    const chunk = showIds.slice(i, i + chunkSize)
+    batches.push(findMany<WatchedEpisodeDoc>(
+      'watched_episodes',
+      where('user_id', '==', uid),
+      where('show_id', 'in', chunk),
+    ))
+  }
+  const results = await Promise.all(batches)
+  results.forEach(items => {
+    items.forEach(w => {
+      if (w.episode_id === w.show_id) watched.add(w.show_id)
+    })
   })
   return watched
 }
 
 /** Mark/unmark a movie as watched by the current user in the group */
 export async function setGroupMovieWatched(groupId: string, showId: number, uid: string, watched: boolean): Promise<void> {
+  await toggleWatchedEpisode(uid, showId, showId, watched, true)
   if (watched) {
-    await addDoc(collection(db, 'watched_episodes'), {
-      user_id: uid,
-      episode_id: showId,
-      show_id: showId,
-      watched_at: new Date().toISOString(),
-    })
     await createGroupWatchEvent(groupId, showId, showId, uid)
-  } else {
-    await deleteMany(
-      'watched_episodes',
-      where('user_id', '==', uid),
-      where('show_id', '==', showId),
-      where('episode_id', '==', showId),
-    )
   }
 }
 

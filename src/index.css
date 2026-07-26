@@ -12,9 +12,8 @@ html.theme-transitioning,
 html.theme-transitioning *,
 html.theme-transitioning *::before,
 html.theme-transitioning *::after {
-  transition: background-color 0.35s ease,
-              color 0.35s ease,
-              border-color 0.35s ease !important;
+  transition: background-color 0.2s ease-out,
+              border-color 0.2s ease-out !important;
 }
 :root {
   --color-bg: #F6F6F3;
@@ -22,7 +21,7 @@ html.theme-transitioning *::after {
   --color-surface-light: #ECEAE4;
   --color-border: #111111;
   --color-text: #111111;
-  --color-text-secondary: #555555;
+  --color-text-secondary: #4a4a4a;
 
   --color-blue: #4D7CFE;
   --color-green: #76E56F;
@@ -50,7 +49,7 @@ html.theme-transitioning *::after {
   --color-surface-light: #282828;
   --color-border: #f0f0f0;
   --color-text: #f0f0f0;
-  --color-text-secondary: #999999;
+  --color-text-secondary: #aaaaaa;
 
   --shadow-brutal-xs: 3px 3px 0 var(--color-border);
   --shadow-brutal-sm: 4px 4px 0 var(--color-border);
@@ -115,9 +114,9 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Accent buttons: dark text on accent bg ─────────── */
-.bg-accent { color: var(--color-text) !important; }
-.bg-highlight { color: var(--color-text) !important; }
+/* ── Accent buttons: always black text on accent bg ── */
+.bg-accent { color: #111111 !important; }
+.bg-highlight { color: #111111 !important; }
 
 button.hover\:bg-accent:hover,
 a.hover\:bg-accent:hover,
@@ -127,7 +126,7 @@ button.hover\:bg-highlight:hover,
 a.hover\:bg-highlight:hover,
 .hover\:bg-highlight:hover button,
 .hover\:bg-highlight:hover a {
-  color: var(--color-text) !important;
+  color: #111111 !important;
 }
 
 /* ── Brutalist buttons ──────────────────────────────── */
@@ -159,10 +158,10 @@ a.hover\:bg-highlight:hover,
 }
 .btn-brutal:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn-accent { background: var(--color-accent); }
-.btn-accent:hover:not(:disabled) { background: var(--color-accent); filter: brightness(1.1); }
-.btn-highlight { background: var(--color-highlight); }
-.btn-highlight:hover:not(:disabled) { background: var(--color-pink); }
+.btn-accent { background: var(--color-accent); color: #111111; }
+.btn-accent:hover:not(:disabled) { background: var(--color-accent); color: #111111; filter: brightness(1.1); }
+.btn-highlight { background: var(--color-highlight); color: #111111; }
+.btn-highlight:hover:not(:disabled) { background: var(--color-pink); color: #111111; }
 
 /* Giant CTA variant */
 .btn-xl { padding: 1rem 1.75rem; font-size: 1rem; box-shadow: var(--shadow-brutal-md); }
@@ -215,22 +214,63 @@ a.hover\:bg-highlight:hover,
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1rem;
+  border-radius: 4px;
   color: #FFFFFF;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   font-size: 0.8rem;
-  transition: background 0.12s ease, color 0.12s ease;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.15);
+  transition: background 0.12s ease, color 0.12s ease,
+              translate 0.12s ease, box-shadow 0.12s ease;
 }
-.sidebar-link:hover { background: rgba(255,255,255,0.1); }
-[data-theme="dark"] .sidebar-link { color: #111111; }
-[data-theme="dark"] .sidebar-link:hover { background: rgba(0,0,0,0.06); }
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.1);
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(255,255,255,0.25);
+}
+.sidebar-link:active {
+  translate: 1px 1px;
+  box-shadow: none !important;
+  transition: none;
+}
+
+/* Dark mode sidebar nav links */
+[data-theme="dark"] .sidebar-link {
+  color: #111111;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+}
+[data-theme="dark"] .sidebar-link:hover {
+  background: rgba(0,0,0,0.06);
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+
 .sidebar-link--active,
 .sidebar-link--active:hover {
   background: var(--color-accent);
   color: #111111;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.25);
+}
+[data-theme="dark"] .sidebar-link--active,
+[data-theme="dark"] .sidebar-link--active:hover {
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
 }
 .sidebar-link--active svg { color: #111111; }
+
+/* Drawer nav items: stagger entrance uses transform, so override transform/box-shadow */
+.sidebar-drawer .sidebar-link {
+  box-shadow: none;
+}
+.sidebar-drawer .sidebar-link:hover {
+  translate: none;
+  box-shadow: none;
+}
+.sidebar-drawer .sidebar-link:active {
+  translate: none;
+  box-shadow: none;
+  transition: none;
+}
 
 .sidebar-pill {
   display: flex;
@@ -258,7 +298,8 @@ a.hover\:bg-highlight:hover,
   background: #FFFFFF;
   border-color: var(--color-border);
   color: var(--color-text);
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease,
+              translate 0.12s ease, box-shadow 0.12s ease;
 }
 .sidebar-pill--invert:hover {
   background: var(--color-accent);
@@ -266,16 +307,74 @@ a.hover\:bg-highlight:hover,
   color: var(--color-text);
 }
 
-/* Dark mode: invert pill inside sidebar uses dark bg (inverted from light sidebar bg) */
-[data-theme="dark"] .sidebar .sidebar-pill--invert {
-  background: #222222;
-  border-color: rgba(255,255,255,0.15);
+/* ── Sidebar pills (notif + theme): match profile button color ── */
+.sidebar .sidebar-pill--invert {
+  background: transparent;
+  border-color: rgba(255,255,255,0.25);
   color: #FFFFFF;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.15);
+}
+.sidebar .sidebar-pill--invert:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.4);
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(255,255,255,0.25);
+}
+.sidebar .sidebar-pill--invert:active {
+  translate: 1px 1px;
+  box-shadow: none !important;
+  transition: none;
+}
+
+/* Dark mode: sidebar pills match profile button */
+[data-theme="dark"] .sidebar .sidebar-pill--invert {
+  background: transparent;
+  border-color: rgba(0,0,0,0.2);
+  color: #111111;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
 }
 [data-theme="dark"] .sidebar .sidebar-pill--invert:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent-border);
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.3);
   color: #111111;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+
+/* ── Drawer pills + profile: inherit desktop sidebar styles ── */
+.sidebar-drawer .sidebar-pill--invert {
+  background: transparent;
+  border-color: rgba(255,255,255,0.25);
+  color: #FFFFFF;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.15);
+}
+.sidebar-drawer .sidebar-pill--invert:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.4);
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(255,255,255,0.25);
+}
+.sidebar-drawer .sidebar-pill--invert:active {
+  translate: 1px 1px;
+  box-shadow: none !important;
+  transition: none;
+}
+[data-theme="dark"] .sidebar-drawer .sidebar-pill--invert {
+  background: transparent;
+  border-color: rgba(0,0,0,0.2);
+  color: #111111;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+}
+[data-theme="dark"] .sidebar-drawer .sidebar-pill--invert:hover {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.3);
+  color: #111111;
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+[data-theme="dark"] .sidebar-drawer .sidebar-pill--invert:active {
+  translate: 1px 1px;
+  box-shadow: none !important;
+  transition: none;
 }
 /* Dark mode: non-sidebar invert pills (mobile/tablet header) keep light bg on dark header */
 [data-theme="dark"] .sidebar-pill--invert {
@@ -289,26 +388,105 @@ a.hover\:bg-highlight:hover,
   color: #111111;
 }
 
-/* Light mode: invert pill in header has white bg + dark border like profile avatar */
+/* ── Header pills (tablet/mobile): brutalist micro-interactions ── */
 header.bg-text .sidebar-pill--invert {
   background: #FFFFFF;
   border-color: var(--color-border);
   color: var(--color-text);
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.08);
+  cursor: pointer;
 }
 header.bg-text .sidebar-pill--invert:hover {
   background: var(--color-accent);
   color: var(--color-text);
   border-color: var(--color-border);
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.12);
+}
+header.bg-text .sidebar-pill--invert:active {
+  translate: 1px 1px;
+  box-shadow: none;
+  transition: none;
 }
 [data-theme="dark"] header.bg-text .sidebar-pill--invert {
   background: #111111;
   border-color: #111111;
   color: #FFFFFF;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.1);
 }
 [data-theme="dark"] header.bg-text .sidebar-pill--invert:hover {
   background: var(--color-accent);
   border-color: var(--color-accent-border);
   color: #111111;
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(255,255,255,0.15);
+}
+[data-theme="dark"] header.bg-text .sidebar-pill--invert:active {
+  translate: 1px 1px;
+  box-shadow: none;
+  transition: none;
+}
+
+/* ── Sidebar profile button (brutalist card-style) ───────── */
+.sidebar-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border: 3px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
+  background: transparent;
+  color: #FFFFFF;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.15);
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease,
+              translate 0.12s ease, box-shadow 0.12s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+.sidebar-profile-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.4);
+  translate: -1px -1px;
+  box-shadow: 4px 4px 0 rgba(255,255,255,0.25);
+}
+.sidebar-profile-btn:active {
+  translate: 1px 1px;
+  box-shadow: none;
+  transition: none;
+}
+.sidebar-profile-btn--active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #111111;
+  box-shadow: 3px 3px 0 rgba(255,255,255,0.25);
+}
+.sidebar-profile-btn--active:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #111111;
+  box-shadow: 4px 4px 0 rgba(255,255,255,0.35);
+}
+/* Dark mode: sidebar profile button */
+[data-theme="dark"] .sidebar-profile-btn {
+  border-color: rgba(0,0,0,0.2);
+  color: #111111;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+}
+[data-theme="dark"] .sidebar-profile-btn:hover {
+  background: rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.3);
+  color: #111111;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+[data-theme="dark"] .sidebar-profile-btn--active,
+[data-theme="dark"] .sidebar-profile-btn--active:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #111111;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+}
+[data-theme="dark"] .sidebar-profile-btn--active:hover {
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.3);
 }
 
 /* ── Sidebar overlay & drawer (tablet/hamburger) ────── */
@@ -400,14 +578,7 @@ header.bg-text .sidebar-pill--invert:hover {
   border-color: rgba(0,0,0,0.15) !important;
 }
 
-[data-theme="dark"] .sidebar-drawer a[href*="/profile"]:not([class*="bg-yellow"]) {
-  color: #111111;
-}
 
-[data-theme="dark"] .sidebar-drawer img,
-[data-theme="dark"] .sidebar-drawer .w-9 {
-  border-color: #111111 !important;
-}
 
 /* ── Hide scrollbar (ribbon nav) ──────────────────────── */
 .scrollbar-none {
@@ -415,6 +586,88 @@ header.bg-text .sidebar-pill--invert:hover {
   -ms-overflow-style: none;
 }
 .scrollbar-none::-webkit-scrollbar { display: none; }
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: none;
+  opacity: 0.3;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
+
+/* ── DevTools decorative diagonal cut ──── */
+.clip-diagonal {
+  clip-path: polygon(100% 0, 0 0, 100% 100%);
+}
+
+/* ── Brutalist CSS tooltip — pure CSS via data-tooltip attr ── */
+.tooltip-brutal {
+  position: relative;
+}
+.tooltip-brutal::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 5px 10px;
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 100;
+  line-height: 1.2;
+}
+.tooltip-brutal:hover::after {
+  opacity: 1;
+}
+
+/* Variant: tooltip below element (for fixed top header buttons) */
+.tooltip-brutal--down::after {
+  bottom: auto;
+  top: calc(100% + 10px);
+}
+
+/* ── Notification panel buttons (brutalist micro-buttons) ── */
+.notif-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 0.625rem;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--color-border);
+  transition: translate 0.12s ease, box-shadow 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+.notif-btn:hover {
+  translate: -1px -1px;
+  box-shadow: 3px 3px 0 var(--color-border);
+  background: var(--color-accent);
+  color: #111111;
+}
+.notif-btn:active {
+  translate: 1px 1px;
+  box-shadow: none;
+  transition: none;
+}
 
 /* ── Status badges ───────────────────────────────────── */
 .badge-brutal {
@@ -429,62 +682,94 @@ header.bg-text .sidebar-pill--invert:hover {
   letter-spacing: 0.04em;
 }
 
-/* ── Custom scrollbars (brutalist square corners) ────── */
-/* Firefox — thin accent thumb on surface track */
+/* ── Custom scrollbars (brutalist) ──────────────────── */
+/* Firefox */
 html {
-  scrollbar-width: thin;
+  scrollbar-width: auto;
   scrollbar-color: var(--color-accent) var(--color-surface);
 }
 
 .sidebar,
 .sidebar-drawer {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.3) transparent;
+  scrollbar-color: rgba(255,255,255,0.35) transparent;
 }
 [data-theme="dark"] .sidebar,
 [data-theme="dark"] .sidebar-drawer {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(0,0,0,0.3) transparent;
+  scrollbar-color: rgba(0,0,0,0.35) transparent;
 }
 
-/* WebKit (Chrome, Safari, Edge) */
+/* WebKit (Chrome, Safari, Edge) — global */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
   background: var(--color-surface);
+  border-left: 3px solid var(--color-border);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-accent);
-  border: 2px solid var(--color-accent-border);
+  border: 3px solid var(--color-accent-border);
+  border-radius: 4px;
+  min-height: 48px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-highlight);
+  border-color: var(--color-accent-border);
 }
 
-/* Sidebar scrollbar: transparent track, semi-transparent thumb */
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-highlight);
+  border-color: var(--color-accent-border);
+}
+
+/* Sidebar scrollbar: inverted, transparent track */
+/* Note: scrollable element is <nav> inside sidebar/drawer, not the container itself */
+.sidebar > nav::-webkit-scrollbar,
+.sidebar-drawer nav::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
 .sidebar > nav::-webkit-scrollbar-track,
 .sidebar-drawer nav::-webkit-scrollbar-track {
   background: transparent;
+  border-left: none;
 }
+
 .sidebar > nav::-webkit-scrollbar-thumb,
 .sidebar-drawer nav::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.3);
-  border-color: transparent;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 4px;
 }
+
+.sidebar > nav::-webkit-scrollbar-thumb:hover,
+.sidebar-drawer nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.5);
+  border-color: rgba(255,255,255,0.4);
+}
+
 [data-theme="dark"] .sidebar > nav::-webkit-scrollbar-thumb,
 [data-theme="dark"] .sidebar-drawer nav::-webkit-scrollbar-thumb {
   background: rgba(0,0,0,0.3);
-  border-color: transparent;
+  border-color: rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .sidebar > nav::-webkit-scrollbar-thumb:hover,
+[data-theme="dark"] .sidebar-drawer nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.5);
+  border-color: rgba(0,0,0,0.35);
 }
 
 /* Corner between two scrollbars */
 ::-webkit-scrollbar-corner {
   background: var(--color-surface);
+  border: 2px solid var(--color-border);
 }
 
 /* ── Focus & selection ──────────────────────────────── */
@@ -504,6 +789,14 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 640px) {
   button, a, select, input, textarea { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ── Progress bar shimmer (kept, flat) ──────────────── */
@@ -595,6 +888,30 @@ h1, h2, h3, h4, h5, h6 {
   .nav-pill { padding-bottom: env(safe-area-inset-bottom); }
 }
 
+/* ── DevTools entrance animations ──────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in { animation: fade-in 0.15s ease-out both; }
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.animate-fade-out { animation: fade-out 0.1s ease-out both; }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow { animation: spin-slow 4s linear infinite; }
+
 /* ── Entrance animations (no bounce) ────────────────── */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
@@ -613,6 +930,30 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: scale(1); }
 }
 .animate-scale-in { animation: scale-in 0.14s ease-out both; }
+
+@keyframes slide-in-corner {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translate(8px, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translate(0, 0);
+  }
+}
+.animate-slide-in-corner { animation: slide-in-corner 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes slide-out-corner {
+  from {
+    opacity: 1;
+    transform: scale(1) translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translate(8px, -8px);
+  }
+}
+.animate-slide-out-corner { animation: slide-out-corner 0.15s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @keyframes float-up {
   0% { opacity: 0; transform: translate(-50%, -40%); }
@@ -688,17 +1029,13 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(0,0,0,0.15) !important;
 }
 
-/* Profile link: inactive state text-white + hover:bg-[#222] → dark */
-[data-theme="dark"] .sidebar a[href*="/profile"]:not([class*="bg-yellow"]),
-[data-theme="dark"] .sidebar a[href="/profile"]:not([class*="bg-yellow"]) {
-  color: #111111;
-}
-[data-theme="dark"] .sidebar a[href*="/profile"]:hover:not([class*="bg-yellow"]) {
-  background: rgba(0,0,0,0.06) !important;
+/* Avatar border in sidebar (for the TC logo link avatar, not profile btn) */
+[data-theme="dark"] .sidebar img {
+  border-color: rgba(0,0,0,0.15) !important;
 }
 
-/* Avatar border: border-white → dark border on white sidebar */
-[data-theme="dark"] .sidebar img,
-[data-theme="dark"] .sidebar .w-9 {
-  border-color: rgba(0,0,0,0.15) !important;
+/* Profile button avatar border in dark mode — handled by .sidebar-profile-btn */
+[data-theme="dark"] .sidebar-profile-btn img,
+[data-theme="dark"] .sidebar-profile-btn .w-10 {
+  border-color: rgba(0,0,0,0.2) !important;
 }

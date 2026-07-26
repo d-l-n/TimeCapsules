@@ -64,7 +64,7 @@ export default function ListsPage() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`border-[3px] border-border px-4 py-2 font-bold text-xs uppercase transition-all shadow-brutal-xs ${filter === f.key ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
+            className={`border-[3px] border-border px-4 py-2 font-bold text-xs uppercase transition-all shadow-brutal-xs ${filter === f.key ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
             aria-pressed={filter === f.key}
           >
             {FILTER_LABELS[f.labelKey][lang === 'es' ? 'es' : 'en']}
@@ -88,7 +88,7 @@ export default function ListsPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleLists.map(list => (
-            <Link key={list.id} to={`/lists/${list.id}`} className="group bg-surface border-[3px] border-border px-4 py-4 shadow-brutal hover:-translate-x-1 hover:-translate-y-1 hover:shadow-brutal-lg transition-all">
+            <Link key={list.id} to={`/lists/${list.id}`} className="group bg-surface border-[3px] border-border px-4 py-4 shadow-brutal sm:hover:-translate-x-1 sm:hover:-translate-y-1 sm:hover:shadow-brutal-lg transition-all">
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
                   <h3 className="font-black uppercase text-base truncate">{getListDisplayName(list, lang)}</h3>

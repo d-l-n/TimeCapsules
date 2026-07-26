@@ -6,11 +6,12 @@ import { useI18n } from '../lib/I18nContext'
 import { NavContext } from '../lib/NavContext'
 import { useDevice, useNotifications, useNavVisibility } from '../hooks'
 import type { NotificationDoc } from '../lib/firebase-queries'
-import { MenuIcon, CloseIcon } from './Icons'
+import { MenuIcon, CloseIcon, SunIcon, MoonIcon } from '.'
 import InstallBanner from './InstallBanner'
 import OfflineBanner from './OfflineBanner'
 import ScrollToTop from './ScrollToTop'
 import ReloadButton from './ReloadButton'
+import DevTools from './DevTools'
 
 const DashboardIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
 const GroupIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3 3 0 0 1 0 5.8M21 20c0-2.6-1.6-4.8-4-5.6"/></svg>
@@ -104,28 +105,30 @@ export default function Layout() {
       <InstallBanner />
       <ScrollToTop />
       <ReloadButton />
+      {import.meta.env.DEV && <DevTools />}
     </div>
   )
 }
 
 interface NavItem { to: string; label: string; icon: ReactNode }
 
-function NotificationPanel({ notifications, unreadCount, markAsRead, markAllAsRead, closeNotifs, t }: {
+function NotificationPanel({ notifications, unreadCount, markAsRead, markAllAsRead, closeNotifs, t, positionTop }: {
   notifications: NotificationDoc[]
   unreadCount: number
   markAsRead: (id: string) => void
   markAllAsRead: () => void
   closeNotifs: () => void
   t: ReturnType<typeof useI18n>['t']
+  positionTop?: boolean
 }) {
   return (
     <>
       <div className="fixed inset-0 z-20" onClick={closeNotifs} />
-      <div className="absolute bottom-full left-0 mb-2 w-80 max-h-96 overflow-y-auto bg-surface text-text border-3 border-border shadow-brutal z-30">
+      <div className={`${positionTop ? 'absolute top-full right-0 mt-2' : 'absolute bottom-full left-0 mb-2'} w-80 max-h-96 overflow-y-auto bg-surface text-text border-3 border-border shadow-brutal z-30`}>
         <div className="flex items-center justify-between border-b-[3px] border-border px-3 py-2 bg-surface-light">
           <span className="text-xs font-bold uppercase">{t.notifications.title} ({unreadCount})</span>
           {unreadCount > 0 && (
-            <button onClick={markAllAsRead} aria-label={t.notifications.markAllRead} className="text-[10px] font-bold uppercase border-2 border-border px-1.5 py-0.5 hover:bg-yellow cursor-pointer transition-colors bg-surface">{t.notifications.markAllRead}</button>
+            <button onClick={markAllAsRead} aria-label={t.notifications.markAllRead} className="notif-btn">{t.notifications.markAllRead}</button>
           )}
         </div>
         {notifications.length === 0 && (
@@ -138,7 +141,7 @@ function NotificationPanel({ notifications, unreadCount, markAsRead, markAllAsRe
               <div className="text-[10px] text-text-secondary mt-0.5">{n.body}</div>
             </Link>
             {!n.read && (
-              <button onClick={() => markAsRead(n.id)} className="shrink-0 border-2 border-border px-1 py-0.5 text-[9px] font-bold uppercase hover:bg-yellow cursor-pointer transition-colors bg-surface" aria-label={t.notifications.markRead}>{t.notifications.markRead}</button>
+              <button onClick={() => markAsRead(n.id)} className="notif-btn shrink-0" aria-label={t.notifications.markRead}>{t.notifications.markRead}</button>
             )}
           </div>
         ))}
@@ -174,7 +177,7 @@ function SidebarContent({ user, navItems, theme, toggle, t, pathname, notificati
     <>
       <Link
         to="/dashboard"
-        className="flex items-center gap-2 px-4 h-[68px] border-b-[3px] border-white/20 shrink-0 hover:bg-[#222] transition-colors"
+        className="flex items-center gap-2 px-4 h-[68px] border-b-[3px] border-white/20 shrink-0 sm:hover:bg-white/10 transition-colors"
         aria-label={`${t.app.name} — ${t.nav.dashboard}`}
         onClick={onNavClick}
       >
@@ -202,38 +205,40 @@ function SidebarContent({ user, navItems, theme, toggle, t, pathname, notificati
         })}
       </nav>
 
-      {!hideBottom && <div className="px-3 py-3 border-t-[3px] border-white/20 flex flex-col gap-2 shrink-0">
-        <div className="flex gap-2">
-          <div className="relative">
+      {!hideBottom && <div className="px-3 py-3 border-t-[3px] border-white/20 flex flex-col gap-2 shrink-0">          <div className="flex gap-2">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifPanel(prev => !prev)}
+                className="sidebar-pill sidebar-pill--invert tooltip-brutal"
+                aria-label={t.notifications.title}
+                data-tooltip={t.notifications.title}
+              >
+                <BellIcon />
+                {unreadCount > 0 && <span className="absolute -top-2 -right-2 bg-pink text-text border-2 border-border text-[9px] font-bold min-w-[20px] h-5 flex items-center justify-center px-1 leading-none">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+              </button>
+              {showNotifPanel && <NotificationPanel notifications={notifications} unreadCount={unreadCount} markAsRead={markAsRead} markAllAsRead={markAllAsRead} closeNotifs={closeNotifs} t={t} />}
+            </div>
             <button
-              onClick={() => setShowNotifPanel(prev => !prev)}
-              className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111] relative"
-              aria-label={t.notifications.title}
+              onClick={toggle}
+              className="sidebar-pill sidebar-pill--invert tooltip-brutal"
+              aria-label={theme === 'light' ? t.settings.dark : t.settings.light}
+              data-tooltip={theme === 'light' ? t.settings.dark : t.settings.light}
             >
-              <BellIcon />
-              {unreadCount > 0 && <span className="absolute -top-2 -right-2 bg-pink text-text border-2 border-border text-[9px] font-bold min-w-[20px] h-5 flex items-center justify-center px-1 leading-none">{unreadCount > 9 ? '9+' : unreadCount}</span>}
+              {theme === 'light' ? <MoonIcon className="w-6 h-6" /> : <SunIcon className="w-6 h-6" />}
             </button>
-            {showNotifPanel && <NotificationPanel notifications={notifications} unreadCount={unreadCount} markAsRead={markAsRead} markAllAsRead={markAllAsRead} closeNotifs={closeNotifs} t={t} />}
           </div>
-          <button
-            onClick={toggle}
-            className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111]"
-            aria-label={theme === 'light' ? t.settings.dark : t.settings.light}
-          >
-            {theme === 'light' ? <re-icon icon="moon" className="w-6 h-6"></re-icon> : <re-icon icon="sun" className="w-6 h-6"></re-icon>}
-          </button>
-        </div>
 
         <NavLink
           to="/profile"
-          className={`flex items-center gap-3 px-2 py-2 border-3 border-white/30 transition-colors ${pathname.startsWith('/profile') ? 'bg-yellow text-text border-yellow' : 'hover:bg-[#222] text-white'}`}
+          className={`sidebar-profile-btn tooltip-brutal ${pathname.startsWith('/profile') ? 'sidebar-profile-btn--active' : ''}`}
           aria-label={t.profile.title}
-          onClick={onNavClick}
+          data-tooltip={t.profile.title}
+          onClick={() => { onNavClick?.(); scrollToTop?.() }}
         >
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="" className="w-9 h-9 border-2 border-white/30 object-cover shrink-0" />
+            <img src={user.photoURL} alt="" className="w-10 h-10 border-2 border-white/30 object-cover shrink-0" />
           ) : (
-            <div className="w-9 h-9 bg-yellow border-2 border-white/30 flex items-center justify-center text-sm font-black text-text shrink-0">U</div>
+            <div className="w-10 h-10 bg-yellow border-2 border-white/30 flex items-center justify-center text-sm font-black text-text shrink-0">U</div>
           )}
           <span className="text-xs font-bold uppercase truncate leading-tight text-left">{user?.displayName || user?.email?.split('@')[0] || 'User'}</span>
         </NavLink>
@@ -250,36 +255,38 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
   return (
     <>
       {/* Top header bar with hamburger */}
-      <header className="fixed top-0 z-30 bg-text border-b-[3px] border-border w-full" role="banner">
+      <header className="fixed top-0 z-30 bg-bg border-b-[3px] border-border w-full" role="banner">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(prev => !prev)}
-              className="sidebar-pill"
+              className="sidebar-pill tooltip-brutal tooltip-brutal--down"
               aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+              data-tooltip={sidebarOpen ? 'Close menu' : 'Menu'}
             >
               {sidebarOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
             </button>
             <Link to="/dashboard" className="flex items-center gap-2" aria-label={`${t.app.name} — ${t.nav.dashboard}`}>
               <span className="bg-yellow text-text border-3 border-border px-2 py-1 text-base font-black leading-none font-heading">TC</span>
-              <span className="text-white font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
+              <span className="text-text font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <button onClick={() => setShowNotifPanel(prev => !prev)} className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111]" aria-label={t.notifications.title}>
+              <button onClick={() => setShowNotifPanel(prev => !prev)} className="sidebar-pill sidebar-pill--invert tooltip-brutal tooltip-brutal--down" aria-label={t.notifications.title} data-tooltip={t.notifications.title}>
                 <BellIcon />
                 {unreadCount > 0 && <span className="absolute -top-2 -right-2 bg-pink text-text border-2 border-border text-[9px] font-bold min-w-[18px] h-4 flex items-center justify-center px-0.5 leading-none">{unreadCount > 9 ? '9+' : unreadCount}</span>}
               </button>
-              {showNotifPanel && <NotificationPanel notifications={notifications} unreadCount={unreadCount} markAsRead={markAsRead} markAllAsRead={markAllAsRead} closeNotifs={closeNotifs} t={t} />}
+              {showNotifPanel && <NotificationPanel notifications={notifications} unreadCount={unreadCount} markAsRead={markAsRead} markAllAsRead={markAllAsRead} closeNotifs={closeNotifs} t={t} positionTop />}
             </div>
-            <button onClick={toggle} className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111]" aria-label={theme === 'light' ? t.settings.dark : t.settings.light}>
-              {theme === 'light' ? <re-icon icon="moon" className="w-6 h-6"></re-icon> : <re-icon icon="sun" className="w-6 h-6"></re-icon>}
+            <button onClick={toggle} className="sidebar-pill sidebar-pill--invert tooltip-brutal tooltip-brutal--down" aria-label={theme === 'light' ? t.settings.dark : t.settings.light} data-tooltip={theme === 'light' ? t.settings.dark : t.settings.light}>
+              {theme === 'light' ? <MoonIcon className="w-6 h-6" /> : <SunIcon className="w-6 h-6" />}
             </button>
             <Link
               to="/profile"
-              className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111] overflow-hidden"
+              className="sidebar-pill sidebar-pill--invert overflow-hidden tooltip-brutal tooltip-brutal--down"
               aria-label={t.profile.title}
+              data-tooltip={t.profile.title}
             >
               {user?.photoURL ? (
                 <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
@@ -313,7 +320,6 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
           setShowNotifPanel={setShowNotifPanel}
           closeNotifs={closeNotifs}
           onNavClick={closeSidebar}
-          hideBottom
         />
       </aside>
 
@@ -335,27 +341,28 @@ function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadC
   const location = useLocation()
   return (
     <>
-      <header className="fixed top-0 z-30 bg-text border-b-[3px] border-border w-full" role="banner">
+<header className="fixed top-0 z-30 bg-bg border-b-[3px] border-border w-full" role="banner">
         <div className="flex items-center justify-between px-4 h-14">
           <Link to="/dashboard" className="flex items-center gap-2" aria-label={`${t.app.name} — ${t.nav.dashboard}`}>
             <span className="bg-yellow text-text border-3 border-border px-2 py-1 text-base font-black leading-none font-heading">TC</span>
-            <span className="text-white font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
+            <span className="text-text font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
           </Link>
           <div className="flex items-center gap-2">
             <div className="relative">
-              <button onClick={() => setShowNotifPanel(prev => !prev)} className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111]" aria-label={t.notifications.title}>
+              <button onClick={() => setShowNotifPanel(prev => !prev)} className="sidebar-pill sidebar-pill--invert tooltip-brutal tooltip-brutal--down" aria-label={t.notifications.title} data-tooltip={t.notifications.title}>
                 <BellIcon />
                 {unreadCount > 0 && <span className="absolute -top-2 -right-2 bg-pink text-text border-2 border-border text-[9px] font-bold min-w-[18px] h-4 flex items-center justify-center px-0.5 leading-none">{unreadCount > 9 ? '9+' : unreadCount}</span>}
               </button>
-              {showNotifPanel && <NotificationPanel notifications={notifications} unreadCount={unreadCount} markAsRead={markAsRead} markAllAsRead={markAllAsRead} closeNotifs={closeNotifs} t={t} />}
+              {showNotifPanel && <NotificationPanel notifications={notifications} unreadCount={unreadCount} markAsRead={markAsRead} markAllAsRead={markAllAsRead} closeNotifs={closeNotifs} t={t} positionTop />}
             </div>
-            <button onClick={toggle} className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111]" aria-label={theme === 'light' ? t.settings.dark : t.settings.light}>
-                  {theme === 'light' ? <re-icon icon="moon" className="w-6 h-6"></re-icon> : <re-icon icon="sun" className="w-6 h-6"></re-icon>}
+            <button onClick={toggle} className="sidebar-pill sidebar-pill--invert tooltip-brutal tooltip-brutal--down" aria-label={theme === 'light' ? t.settings.dark : t.settings.light} data-tooltip={theme === 'light' ? t.settings.dark : t.settings.light}>
+              {theme === 'light' ? <MoonIcon className="w-6 h-6" /> : <SunIcon className="w-6 h-6" />}
             </button>
             <Link
               to="/profile"
-              className="sidebar-pill sidebar-pill--invert hover:!bg-yellow hover:!text-[#111111] overflow-hidden"
+              className="sidebar-pill sidebar-pill--invert overflow-hidden tooltip-brutal tooltip-brutal--down"
               aria-label={t.profile.title}
+              data-tooltip={t.profile.title}
             >
               {user?.photoURL ? (
                 <img src={user.photoURL} alt="" className="w-full h-full object-cover" />

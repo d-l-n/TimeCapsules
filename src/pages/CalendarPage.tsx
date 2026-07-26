@@ -48,14 +48,14 @@ export default function CalendarPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between bg-surface border-[3px] border-border p-4">
-        <button onClick={prevMonth} className="border-[3px] border-border px-3 py-2 text-sm font-bold bg-surface text-text hover:bg-yellow transition-colors" aria-label={t.calendar.prevMonth}>&larr;</button>
+        <button onClick={prevMonth} className="border-[3px] border-border px-3 py-2 text-sm font-bold bg-surface text-text sm:hover:bg-yellow transition-colors focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2" aria-label={t.calendar.prevMonth}>&larr;</button>
         <div className="text-center">
           <div className="text-lg font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }} id="calendar-heading">
             {t.calendar.months[viewMonth]} {viewYear}
           </div>
           <div className="text-xs font-bold text-text-secondary mt-1" aria-live="polite">{monthCount} {t.calendar.episodesWatched}</div>
         </div>
-        <button onClick={nextMonth} className="border-[3px] border-border px-3 py-2 text-sm font-bold bg-surface text-text hover:bg-yellow transition-colors" aria-label={t.calendar.nextMonth}>&rarr;</button>
+        <button onClick={nextMonth} className="border-[3px] border-border px-3 py-2 text-sm font-bold bg-surface text-text sm:hover:bg-yellow transition-colors focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2" aria-label={t.calendar.nextMonth}>&rarr;</button>
       </div>
 
       <div className="grid grid-cols-7 gap-0.5 sm:gap-1" role="grid" aria-labelledby="calendar-heading">
@@ -77,7 +77,7 @@ export default function CalendarPage() {
             <button
               key={day}
               onClick={() => setSelectedDate(isSelected ? null : dateStr)}
-              className={`aspect-square border-2 transition-all flex flex-col items-center justify-center text-[11px] sm:text-sm font-bold ${isSelected ? 'bg-text text-bg border-border' : isToday ? 'bg-yellow text-text border-border' : hasEntries ? 'bg-surface text-text border-border hover:bg-yellow' : 'bg-surface text-text-secondary border-transparent hover:border-border'}`}
+              className={`aspect-square border-2 transition-all flex flex-col items-center justify-center text-[11px] sm:text-sm font-bold cursor-pointer focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2 ${isSelected ? 'bg-text text-bg border-border' : isToday ? 'bg-yellow text-text border-border' : hasEntries ? 'bg-surface text-text border-border sm:hover:bg-yellow' : 'bg-surface text-text-secondary border-border/40 sm:hover:border-border sm:hover:bg-yellow'}`}
               aria-label={`${t.calendar.months[viewMonth]} ${day}, ${viewYear}${hasEntries ? ` — ${watchedMap.get(dateStr)!.length} ${t.calendar.episodesWatched}` : ''}${isToday ? ` — ${t.calendar.today}` : ''}`}
             >
               <span>{day}</span>
@@ -95,7 +95,7 @@ export default function CalendarPage() {
           {dayEntries.length === 0 && <p className="text-sm text-text-secondary">{t.calendar.noData}</p>}
           <div className="space-y-2">
             {dayEntries.map(entry => (
-              <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 hover:translate-x-0.5 hover:-translate-y-0.5 hover-shadow-brutal transition-all" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
+              <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 sm:hover:translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal transition-all focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-yellow border-2 border-border flex items-center justify-center font-bold text-[10px] sm:text-xs shrink-0" aria-hidden="true">{entry.episode_number}</div>
                 <div className="flex-1 min-w-0">
                   <span className="font-bold text-xs sm:text-sm uppercase truncate block">{entry.show_name}</span>

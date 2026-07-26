@@ -20,7 +20,7 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
         <div className="h-2.5 w-2.5 bg-red animate-pulse" />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[80vw] max-sm:overflow-x-auto max-sm:gap-4 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
         {items.map(item => {
           const episodesWatched = item.episodesWatched ?? 0
           const totalEpisodes = item.totalEpisodes ?? 1
@@ -30,13 +30,13 @@ export default function ContinueWatching({ items }: ContinueWatchingProps) {
             <Link
               key={item.id}
               to={`/show/${item.id}`}
-              className="group block bg-surface border-[3px] border-border shadow-brutal overflow-hidden hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-lg transition-all"
+              className="group block bg-surface border-[3px] border-border shadow-brutal overflow-hidden sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-lg transition-all"
               aria-label={`${item.name} — ${progress}%`}
             >
               <div className="flex">
                 <div className="w-24 sm:w-28 shrink-0 aspect-[2/3] bg-surface-light border-r-[3px] border-border overflow-hidden">
                   {item.poster_url ? (
-                    <img src={item.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
+                    <img src={item.poster_url} alt="" className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-200" loading="lazy" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center p-2 text-center text-xs font-bold uppercase leading-tight">{item.name}</div>
                   )}

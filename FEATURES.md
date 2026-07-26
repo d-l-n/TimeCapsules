@@ -10,11 +10,11 @@ Features priorizadas para implementar, ordenadas por criticidad.
 
 Permitir al usuario guardar en qué minuto/segundo quedó de un episodio o película.
 
-**Data:** Nueva colección Firestore `resume_positions` con campos `user_id`, `content_id`, `content_type` ('episode'|'movie'), `show_tv_time_id`, `position_seconds`, `updated_at`.
+**Data:** Nueva colección Firestore `resume_positions` con campos `user_id`, `content_id`, `content_type` ('episode'|'movie'), `show_id`, `position_seconds`, `updated_at`.
 
 **Nuevas funciones en `showService.ts`:**
-- `getResumePositions(uid, showTvTimeId) → Map<contentId, seconds>`
-- `setResumePosition(uid, contentId, showTvTimeId, contentType, seconds | null)` (upsert, null = delete)
+- `getResumePositions(uid, showId) → Map<contentId, seconds>`
+- `setResumePosition(uid, contentId, showId, contentType, seconds | null)` (upsert, null = delete)
 
 **UI ShowDetail.tsx:**
 - Cada fila de episodio: botón ⏱ al lado del watch toggle. Muestra "MM:SS" o "H:MM:SS". Click → input inline. Enter/blur → guarda.

@@ -1,4 +1,5 @@
 import { PRESET_TIMES, fmtPos } from './types'
+import type { useI18n } from '../../lib/I18nContext'
 
 interface PositionEditorProps {
   contentId: number
@@ -12,7 +13,7 @@ interface PositionEditorProps {
   onPreset: (id: number, type: 'episode' | 'movie', seconds: number) => void
   onClear: (id: number, type: 'episode' | 'movie') => void
   onKeyDown: (e: React.KeyboardEvent, id: number, type: 'episode' | 'movie') => void
-  t: any
+  t: ReturnType<typeof useI18n>['t']
   compact?: boolean
 }
 
@@ -61,7 +62,7 @@ export default function PositionEditor({ contentId, contentType, maxSeconds, edi
             key={pt.seconds}
             onMouseDown={e => e.preventDefault()}
             onClick={() => onPreset(contentId, contentType, pt.seconds)}
-            className={`border-2 border-border font-bold bg-surface hover:bg-yellow transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
+            className={`border-2 border-border font-bold bg-surface sm:hover:bg-yellow transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
             aria-label={`${t.showDetail.setPosition} ${pt.label}`}
           >
             {pt.label}
@@ -91,7 +92,7 @@ export default function PositionEditor({ contentId, contentType, maxSeconds, edi
         <button
           onMouseDown={e => e.preventDefault()}
           onClick={() => onClear(contentId, contentType)}
-          className={`border-2 border-border font-bold bg-surface text-pink hover:bg-pink hover:text-text transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
+          className={`border-2 border-border font-bold bg-surface text-pink sm:hover:bg-pink sm:hover:text-text transition-colors cursor-pointer ${compact ? 'px-1 py-0.5 text-[9px]' : 'px-1.5 py-1 text-[10px]'}`}
           aria-label={`${t.showDetail.setPosition} — clear`}
         >
           ✕

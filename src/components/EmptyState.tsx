@@ -34,10 +34,10 @@ export default function EmptyState({
             {action.to ? (
               <Link
                 to={action.to}
-                className={`inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md ${
+                className={`inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md ${
                   action.variant === 'secondary'
-                    ? 'bg-surface text-text hover:bg-yellow'
-                    : 'bg-yellow text-text hover:bg-orange'
+                    ? 'bg-surface text-text sm:hover:bg-yellow'
+                    : 'bg-yellow text-text sm:hover:bg-orange'
                 }`}
                 onClick={action.onClick}
               >
@@ -46,10 +46,10 @@ export default function EmptyState({
             ) : (
               <button
                 onClick={action.onClick}
-                className={`inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md cursor-pointer ${
+                className={`inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md cursor-pointer ${
                   action.variant === 'secondary'
-                    ? 'bg-surface text-text hover:bg-yellow'
-                    : 'bg-yellow text-text hover:bg-orange'
+                    ? 'bg-surface text-text sm:hover:bg-yellow'
+                    : 'bg-yellow text-text sm:hover:bg-orange'
                 }`}
               >
                 {action.label}
@@ -59,7 +59,7 @@ export default function EmptyState({
               secondaryAction.to ? (
                 <Link
                   to={secondaryAction.to}
-                  className="inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase bg-surface text-text hover:bg-yellow transition-all shadow-brutal-sm hover:-translate-x-0.5 hover:-translate-y-0.5"
+                  className="inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase bg-surface text-text sm:hover:bg-yellow transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5"
                   onClick={secondaryAction.onClick}
                 >
                   {secondaryAction.label}
@@ -67,7 +67,7 @@ export default function EmptyState({
               ) : (
                 <button
                   onClick={secondaryAction.onClick}
-                  className="inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase bg-surface text-text hover:bg-yellow transition-all shadow-brutal-sm hover:-translate-x-0.5 hover:-translate-y-0.5 cursor-pointer"
+                  className="inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase bg-surface text-text sm:hover:bg-yellow transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 cursor-pointer"
                 >
                   {secondaryAction.label}
                 </button>

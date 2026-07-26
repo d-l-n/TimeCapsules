@@ -1,6 +1,7 @@
 import type { MergedEpisode } from './types'
 import EpisodeRow from './EpisodeRow'
 import type { MemberWithProfile, GroupEpisodeProgress } from '../../services/groupService'
+import type { useI18n } from '../../lib/I18nContext'
 
 interface SeasonSectionProps {
   season: string
@@ -29,7 +30,7 @@ interface SeasonSectionProps {
   spoilerFree: boolean
   avgRuntime: number
   userUid: string
-  t: any
+  t: ReturnType<typeof useI18n>['t']
   onToggleSeason: (n: number) => void
   onMarkSeasonWatched: (n: number, ids: number[]) => void
   onMarkSeasonUnwatched: (n: number, ids: number[]) => void
@@ -75,7 +76,7 @@ export default function SeasonSection({
         aria-label={`${t.showDetail.season} ${seasonNum}`}
       >
         <h2 className="text-base sm:text-lg font-black uppercase border-b-[3px] border-border pb-2 mb-4 flex items-center gap-2 sm:gap-3 flex-wrap font-heading">
-          <span className="hover:text-orange transition-colors">{collapsed ? '▶' : '▼'}</span>
+          <span className="sm:hover:text-orange transition-colors">{collapsed ? '▶' : '▼'}</span>
           <span>{t.showDetail.season} {season}</span>
           <span className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-xs sm:text-sm">{hasTmdbData ? `${watchedCount} / ${eps.length}` : eps.length}</span>
           {hasTmdbData && eps.length - watchedCount > 0 && (
@@ -87,7 +88,7 @@ export default function SeasonSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkSeasonWatched(seasonNum, eps.map(e => e.id)) }}
                   disabled={markingSeason === seasonNum}
-                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface hover:bg-yellow transition-colors disabled:opacity-40"
+                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors disabled:opacity-40"
                   aria-label={t.showDetail.markAllWatched}
                 >
                   {markingSeason === seasonNum ? '...' : t.showDetail.markAllWatched}
@@ -97,7 +98,7 @@ export default function SeasonSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onMarkSeasonUnwatched(seasonNum, eps.map(e => e.id)) }}
                   disabled={markingSeason === seasonNum}
-                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface hover:bg-yellow transition-colors disabled:opacity-40"
+                  className="border-2 border-border px-3 py-0.5 text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors disabled:opacity-40"
                   aria-label={t.showDetail.markAllUnwatched}
                 >
                   {markingSeason === seasonNum ? '...' : t.showDetail.markAllUnwatched}
@@ -106,7 +107,7 @@ export default function SeasonSection({
               {selectedGroupId && groupMembers.length > 1 && (
                 <button
                   onClick={(e) => { e.stopPropagation(); onSortByProgressToggle(seasonNum) }}
-                  className={`border-2 border-border px-2 py-0.5 text-[10px] font-bold transition-colors ${sortByProgress.has(seasonNum) ? 'bg-yellow text-text' : 'bg-surface text-text hover:bg-yellow'}`}
+                  className={`border-2 border-border px-2 py-0.5 text-[10px] font-bold transition-colors ${sortByProgress.has(seasonNum) ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
                   title="Sort by most group members watched"
                   aria-label="Sort by group progress"
                 >

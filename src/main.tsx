@@ -4,9 +4,9 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './lib/AuthContext'
 import { ThemeProvider } from './lib/ThemeContext'
 import { I18nProvider } from './lib/I18nContext'
+import { DevSimulationProvider } from './lib/dev-simulation'
 import App from './App'
 import './index.css'
-import './bones/registry'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -14,7 +14,9 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <I18nProvider>
           <AuthProvider>
-            <App />
+            <DevSimulationProvider>
+              <App />
+            </DevSimulationProvider>
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>
@@ -30,7 +32,9 @@ declare global {
   }
 }
 
-if ('serviceWorker' in navigator && !import.meta.env.DEV) {
+if (import.meta.env.DEV) {
+  ;(window as any).__simulateSwUpdate = () => window.dispatchEvent(new CustomEvent('sw-update-available'))
+} else if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing

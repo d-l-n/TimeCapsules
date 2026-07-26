@@ -14,19 +14,19 @@ const EMOTIONS = [
   { id: 'star', label: 'Amazing' },
 ]
 
-export default function EmotionPicker({ uid, episodeTvTimeId, currentEmotion, onSelect, onClose }: {
+export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect, onClose }: {
   uid: string
-  episodeTvTimeId: number
+  episodeId: number
   currentEmotion: string | null
   onSelect: (emotionId: string | null) => void
   onClose: () => void
 }) {
   const handlePick = useCallback(async (emotionId: string | null) => {
     const val = !emotionId || emotionId === currentEmotion ? null : emotionId
-    await setEmotion(uid, episodeTvTimeId, val)
+    await setEmotion(uid, episodeId, val)
     onSelect(val)
     onClose()
-  }, [uid, episodeTvTimeId, currentEmotion, onSelect, onClose])
+  }, [uid, episodeId, currentEmotion, onSelect, onClose])
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onClick={onClose}>
@@ -38,7 +38,7 @@ export default function EmotionPicker({ uid, episodeTvTimeId, currentEmotion, on
               key={em.id}
               onClick={() => handlePick(em.id)}
               aria-label={em.label}
-              className={`text-[10px] font-bold uppercase p-2 border-2 transition-colors cursor-pointer hover:bg-yellow ${currentEmotion === em.id ? 'border-border bg-yellow' : 'border-transparent bg-surface'}`}
+              className={`text-[10px] font-bold uppercase p-2.5 border-2 transition-all duration-150 cursor-pointer sm:hover:bg-yellow sm:hover:border-border focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2 ${currentEmotion === em.id ? 'border-border bg-yellow shadow-brutal-sm' : 'border-border/30 bg-surface-light sm:hover:border-border/70'}`}
               title={em.label}
             >
               {em.label.split(' ').map(w => w[0]).join('')}
@@ -49,7 +49,7 @@ export default function EmotionPicker({ uid, episodeTvTimeId, currentEmotion, on
           <button
             onClick={() => handlePick(null)}
             aria-label="Remove emotion"
-            className="w-full mt-3 border-2 border-border py-1 text-[10px] font-bold uppercase text-text-secondary hover:bg-pink/10 transition-colors cursor-pointer"
+            className="w-full mt-3 border-2 border-border py-1 text-[10px] font-bold uppercase text-text-secondary sm:hover:bg-pink/10 transition-colors cursor-pointer"
           >
             Remove emotion
           </button>

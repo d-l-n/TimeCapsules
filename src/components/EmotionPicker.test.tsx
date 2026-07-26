@@ -11,7 +11,7 @@ const { setEmotion } = await import('../services/emotionService')
 describe('EmotionPicker', () => {
   const baseProps = {
     uid: 'user-1',
-    episodeTvTimeId: 123,
+    episodeId: 123,
     currentEmotion: null,
     onSelect: vi.fn(),
     onClose: vi.fn(),

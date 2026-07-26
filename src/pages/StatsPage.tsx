@@ -3,7 +3,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { useStats } from '../hooks'
 import { fmtTime } from '../lib/formatting'
-import { Skeleton } from 'boneyard-js/react'
+
 import Loading from '../components/Loading'
 import { triggerConfetti } from '../lib/confetti'
 
@@ -32,8 +32,7 @@ export default function StatsPage() {
     { label: t.stats.avgRating, value: ratingDist.length ? (ratingDist.reduce((s, r) => s + r.rating * r.count, 0) / ratingDist.reduce((s, r) => s + r.count, 0)).toFixed(1) : '—' },
   ]
 
-  return (
-    <Skeleton name="stats" loading={loading} fallback={<Loading text={t.stats.loading} />} animate="pulse" transition={300}>
+  return loading ? <Loading text={t.stats.loading} /> : (
     <div className="space-y-10">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
         {kpis.map((kpi, i) => (
@@ -69,7 +68,7 @@ export default function StatsPage() {
           <h3 className="text-xl sm:text-2xl font-black uppercase border-b-[3px] border-border pb-3 mb-5 font-heading">{t.stats.badges}<span className="ml-2 border-2 border-border bg-yellow px-2 py-0.5 text-sm">{badges.length}</span></h3>
           <div className="flex flex-wrap gap-3">
             {badges.map(badge => (
-              <div key={badge.badge_id} className="bg-surface-light border-[3px] border-border px-4 py-3 text-center min-w-[120px] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md transition-all" role="img" aria-label={`${t.stats.badgeLabel} ${BADGE_NAMES[parseInt(badge.badge_id)] || `${t.stats.badgeFallback} #${badge.badge_id}`}${badge.earned_at ? `, ${t.stats.earned} ${new Date(badge.earned_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US')}` : ''}`}>
+              <div key={badge.badge_id} className="bg-surface-light border-[3px] border-border px-4 py-3 text-center min-w-[120px] sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md transition-all" role="img" aria-label={`${t.stats.badgeLabel} ${BADGE_NAMES[parseInt(badge.badge_id)] || `${t.stats.badgeFallback} #${badge.badge_id}`}${badge.earned_at ? `, ${t.stats.earned} ${new Date(badge.earned_at).toLocaleDateString(lang === 'es' ? 'es-ES' : 'en-US')}` : ''}`}>
                 <div className="text-3xl mb-1" aria-hidden="true">◆</div>
                 <div className="text-xs font-bold uppercase">{BADGE_NAMES[parseInt(badge.badge_id)] || `${t.stats.badgeFallback} #${badge.badge_id}`}</div>
                 {badge.earned_at && <div className="text-[10px] text-text-secondary mt-1 border-t-2 border-border pt-1">{new Date(badge.earned_at).toLocaleDateString()}</div>}
@@ -79,6 +78,5 @@ export default function StatsPage() {
         </section>
       )}
     </div>
-    </Skeleton>
   )
 }

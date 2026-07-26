@@ -7,12 +7,13 @@ import { toggleWatchedEpisode } from '../services/showService'
 import type { DashItem } from '../services/showService'
 import { getWatchlist, removeFromWatchlist } from '../services/watchlistService'
 import { ensureDefaultLists, syncDefaultLists } from '../services/listService'
+import { getTodayEpisodeCount } from '../services/statsService'
 import { splitFinishedByAiringStatus, gatherSeedData } from '../services/dashboardData'
 import { getTvNextEpisode, tmdbLang } from '../services/tmdb'
 import { buildShowsMap } from '../lib/firestore-utils'
 import type { NextEpisodeToAir } from '../services/tmdb'
 import { memento } from '../lib/memento'
-import { Skeleton } from 'boneyard-js/react'
+
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 import ShowCard from '../components/ShowCard'
@@ -20,6 +21,7 @@ import DashboardHero from '../components/DashboardHero'
 import ContinueWatching from '../components/ContinueWatching'
 import UpcomingTimeline from '../components/UpcomingTimeline'
 import SectionHeader from '../components/SectionHeader'
+import EditorialBlocks from '../components/EditorialBlocks'
 
 interface UpcomingShow {
   show_id: number
@@ -43,6 +45,7 @@ export default function Dashboard() {
   const [upToDate, setUpToDate] = useState<DashItem[]>([])
   const [actionLoading, setActionLoading] = useState<number | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [todayCount, setTodayCount] = useState(0)
   const bingingIds = new Set(binging.map(b => b.id))
   const finishedIds = new Set(finished.map(f => f.id))
   const upToDateIds = new Set(upToDate.map(u => u.id))
@@ -107,6 +110,11 @@ export default function Dashboard() {
     gatherSeedData(user.uid, lang).then(seed => syncDefaultLists(user.uid, seed))
   }, [user?.uid, lang])
 
+  useEffect(() => {
+    if (!user?.uid) return
+    getTodayEpisodeCount(user.uid).then(setTodayCount)
+  }, [user?.uid, stats])
+
   const handleRemoveFromTracking = async (showId: number) => {
     if (!user?.uid || actionLoading !== null) return
     setActionLoading(showId)
@@ -133,13 +141,13 @@ export default function Dashboard() {
     setActionLoading(null)
   }
 
-  const cardActions = (id: number, showWatched: boolean) => (
+  const cardActions = (id: number, showWatched: boolean, mediaType?: string | null) => (
     <div className="flex gap-1 w-full">
-      {!showWatched && (
+      {!showWatched && mediaType === 'movie' && (
         <button
           onClick={(e) => { e.preventDefault(); handleMarkWatched(id) }}
           disabled={actionLoading === id}
-          className="flex-1 border-2 border-border bg-yellow text-text px-2 py-1 text-[9px] font-bold uppercase hover:bg-pink transition-colors disabled:opacity-40 cursor-pointer"
+          className="btn-brutal btn-accent text-[9px] px-2 py-1 text-text flex-1"
           aria-label={t.showDetail.markAsWatched}
         >
           {actionLoading === id ? '...' : t.showDetail.markAsWatched}
@@ -150,23 +158,8 @@ export default function Dashboard() {
 
   const watchesEmpty = binging.length === 0 && filteredWatchlist.length === 0 && finished.length === 0 && upToDate.length === 0
 
-  const watchlistSpans = (i: number): '1x1' | '2x2' => (i === 0 ? '2x2' : '1x1')
-  const smallSpans = (i: number): '1x1' | '2x2' => (i === 0 ? '2x2' : '1x1')
-  const finishedSpans = (i: number): '1x1' | '2x2' => (i === 0 ? '2x2' : '1x1')
-
-  return (
-    <Skeleton name="dashboard" loading={loading && watchesEmpty} fallback={<Loading text={t.dashboard.loading} />} animate="pulse" transition={300}
-      fixture={
-        <div className="space-y-10 sm:space-y-12">
-          <div className="h-32 bg-surface-light border-[3px] border-border" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {Array.from({length: 6}).map((_, i) => (
-              <div key={i} className="aspect-[2/3] bg-surface-light border-[3px] border-border" />
-            ))}
-          </div>
-        </div>
-      }
-    >
+  return loading && watchesEmpty ? <Loading text={t.dashboard.loading} /> : (
+    <>
     {watchesEmpty ? (
       <EmptyState
         title={t.dashboard.welcome}
@@ -200,8 +193,8 @@ export default function Dashboard() {
         />
 
         {filteredWatchlist.length > 0 ? (
-            <div className="max-sm:flex max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:w-36 max-sm:*:shrink-0 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr]">
-            {filteredWatchlist.slice(0, 12).map((item, i) => (
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr]">
+            {filteredWatchlist.slice(0, 12).map((item) => (
               <ShowCard
                 key={item.show_id}
                 id={item.show_id}
@@ -210,16 +203,16 @@ export default function Dashboard() {
                 imdbRating={item.imdb_rating}
                 mediaType={item.media_type}
                 status={item.media_type === 'tv' ? 'watching' : 'planned'}
-                span={watchlistSpans(i)}
+                span="1x1"
                 onRemove={() => handleRemoveFromTracking(item.show_id)}
                 removing={actionLoading === item.show_id}
-                actions={cardActions(item.show_id, false)}
+                actions={cardActions(item.show_id, false, item.media_type)}
               />
             ))}
             {filteredWatchlist.length > 12 && (
               <Link
                 to="/profile?section=lists"
-                className="bg-surface border-[3px] border-border flex items-center justify-center text-xs font-bold uppercase hover:bg-yellow transition-colors min-h-36 shadow-brutal-md max-sm:w-36 sm:tile-2x1"
+                className="bg-surface border-[3px] border-border flex items-center justify-center text-xs font-bold uppercase sm:hover:bg-yellow transition-colors min-h-36 shadow-brutal-md max-sm:w-36 sm:tile-2x1"
               >
                 +{filteredWatchlist.length - 12}
               </Link>
@@ -257,8 +250,8 @@ export default function Dashboard() {
         {upToDate.length > 0 ? (
           <>
             <p className="text-xs text-text-secondary mb-4">{t.dashboard.upToDateDesc}</p>
-            <div className="max-sm:flex max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:w-36 max-sm:*:shrink-0 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
-              {upToDate.map((item, i) => (
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
+              {upToDate.map((item) => (
                 <ShowCard
                   key={item.id}
                   id={item.id}
@@ -267,10 +260,10 @@ export default function Dashboard() {
                   imdbRating={item.imdb_rating}
                   mediaType={item.media_type}
                   status="completed"
-                  span={smallSpans(i)}
+                  span="1x1"
                   onRemove={() => handleRemoveFromTracking(item.id)}
                   removing={actionLoading === item.id}
-                  actions={cardActions(item.id, true)}
+                  actions={cardActions(item.id, true, item.media_type)}
                 />
               ))}
             </div>
@@ -292,8 +285,8 @@ export default function Dashboard() {
         />
 
         {finished.length > 0 ? (
-          <div className="max-sm:flex max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:w-36 max-sm:*:shrink-0 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
-            {finished.map((item, i) => (
+          <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
+            {finished.map((item) => (
               <ShowCard
                 key={item.id}
                 id={item.id}
@@ -302,10 +295,10 @@ export default function Dashboard() {
                 imdbRating={item.imdb_rating}
                 mediaType={item.media_type}
                 status="completed"
-                span={finishedSpans(i)}
+                span="1x1"
                 onRemove={() => handleRemoveFromTracking(item.id)}
                 removing={actionLoading === item.id}
-                actions={cardActions(item.id, false)}
+                actions={cardActions(item.id, false, item.media_type)}
               />
             ))}
           </div>
@@ -323,39 +316,12 @@ export default function Dashboard() {
         finishedCount={finished.length}
         upToDateCount={upToDate.length}
         episodesWatched={stats.nb_episodes_watched ?? 0}
+        todayCount={todayCount}
       />
     </div>
     )}
-  </Skeleton>
+    </>
   )
 }
 
-function EditorialBlocks({ streak, finishedCount, upToDateCount, episodesWatched }: {
-  streak: number
-  finishedCount: number
-  upToDateCount: number
-  episodesWatched: number
-}) {
-  const { t } = useI18n()
-  const quotes = t.dashboard.quotes
-  const quote = quotes[Math.abs(episodesWatched) % quotes.length]
-  return (
-    <section aria-label="Highlights" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      <div className="bg-yellow border-[3px] border-border p-5 shadow-brutal lg:col-span-2">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-text/70 mb-2">{t.dashboard.weeklyChallenge}</div>
-        <div className="text-2xl sm:text-3xl font-black uppercase font-heading leading-tight">{t.dashboard.weeklyChallengeGoal}</div>
-        <div className="text-sm font-bold mt-3">{t.dashboard.streakLabel} <span className="bg-text text-bg px-2 py-0.5">{streak > 1 ? t.dashboard.streakDays.replace('{streak}', String(streak)) : t.dashboard.streakStart}</span></div>
-      </div>
-      <div className="bg-blue text-text border-[3px] border-border p-5 shadow-brutal">
-        <div className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-2">{t.dashboard.achievement}</div>
-        <div className="text-4xl mb-1">◆</div>
-        <div className="text-sm font-black uppercase">{finishedCount > 0 ? t.dashboard.collector : t.dashboard.newcomer}</div>
-        <div className="text-xs font-bold mt-1 opacity-80">{t.dashboard.achievementCount.replace('{finished}', String(finishedCount)).replace('{upToDate}', String(upToDateCount))}</div>
-      </div>
-      <div className="bg-pink text-text border-[3px] border-border p-5 shadow-brutal lg:col-span-3">
-        <div className="text-[10px] font-bold uppercase tracking-widest opacity-70 mb-2">{t.dashboard.quoteOfTheDay}</div>
-        <div className="text-xl sm:text-2xl font-black uppercase font-heading leading-tight">“{quote}”</div>
-      </div>
-    </section>
-  )
-}
+
