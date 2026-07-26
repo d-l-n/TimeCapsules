@@ -178,7 +178,6 @@ service cloud.firestore {
                 && docId in ['default-upcoming', 'default-pending', 'default-uptodate', 'default-finished']))
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
-        && request.resource.data.is_default != true
         && allowFields(['user_id', 'name', 'description', 'show_ids', 'createdAt', 'is_default', 'seeded'])
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
         && resource.data.is_default != true
