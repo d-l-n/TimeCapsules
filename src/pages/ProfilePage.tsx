@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { updateProfile, updateEmail, deleteUser } from 'firebase/auth'
-import { auth } from '../lib/firebase'
+import { updateProfile, updateEmail, deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth'
+import { auth, googleProvider } from '../lib/firebase-auth'
 import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { useTheme, ACCENT_PRESETS, type AccentKey } from '../lib/ThemeContext'
@@ -13,6 +13,7 @@ import CalendarPage from './CalendarPage'
 import StatsPage from './StatsPage'
 import ListsPage from './ListsPage'
 import ErrorBox from '../components/ErrorBox'
+import { SunIcon, MoonIcon } from '../components/Icons'
 
 export default function ProfilePage() {
   const { user, logout, refreshUser } = useAuth()
@@ -21,8 +22,8 @@ export default function ProfilePage() {
 
   const dangerBtn = `w-full border-[3px] border-border py-2 text-xs font-bold uppercase transition-colors cursor-pointer ${
     theme === 'dark'
-      ? 'bg-[#f5f0eb] text-[#0a0a0a] hover:bg-yellow hover:text-text'
-      : 'bg-[#0a0a0a] text-[#f5f0eb] hover:bg-yellow hover:text-text'
+      ? 'bg-bg text-text sm:hover:bg-yellow sm:hover:text-text'
+      : 'bg-text text-bg sm:hover:bg-yellow sm:hover:text-text'
   }`
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -41,12 +42,17 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
-  // Confirmations
+  // Confirmations & Re-authentication
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showClearCacheConfirm, setShowClearCacheConfirm] = useState(false)
   const [cacheMessage, setCacheMessage] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [showReauth, setShowReauth] = useState(false)
+  const [reauthPassword, setReauthPassword] = useState('')
+  const [reauthLoading, setReauthLoading] = useState(false)
+  const [reauthError, setReauthError] = useState<string | null>(null)
+  const [pendingAction, setPendingAction] = useState<'delete' | 'save-profile' | null>(null)
 
   const handleClearCache = () => {
     const cacheKeys: string[] = [
@@ -132,9 +138,9 @@ export default function ProfilePage() {
       console.error(err)
       let errMsg = t.profile.error
       if (err.code === 'auth/requires-recent-login') {
-        errMsg = lang === 'es' 
-          ? 'Por seguridad, necesitas volver a iniciar sesión para cambiar tu correo.'
-          : 'For security, you must log in again to change your email.'
+        setPendingAction('save-profile')
+        setShowReauth(true)
+        return
       }
       setMessage({ type: 'error', text: errMsg })
     } finally {
@@ -144,15 +150,106 @@ export default function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     if (!auth.currentUser) return
+    setDeleteError(null)
     try {
       await deleteUser(auth.currentUser)
       navigate('/login')
     } catch (err: any) {
+      if (err.code === 'auth/requires-recent-login') {
+        setShowReauth(true)
+      } else {
+        console.error(err)
+        const errMsg = lang === 'es'
+          ? 'Error al eliminar la cuenta. Si es una cuenta registrada, por seguridad debes iniciar sesión de nuevo antes de eliminarla.'
+          : 'Error deleting account. For security reasons, you must log in again before deleting your account.'
+        setDeleteError(errMsg)
+      }
+    }
+  }
+
+  const handleReauthAction = async () => {
+    if (!auth.currentUser || reauthLoading) return
+    setReauthLoading(true)
+    setReauthError(null)
+
+    const isGoogleUser = auth.currentUser.providerData.some(p => p.providerId === 'google.com')
+
+    try {
+      if (isGoogleUser) {
+        await reauthenticateWithPopup(auth.currentUser, googleProvider)
+      } else {
+        if (!reauthPassword.trim()) {
+          setReauthError(lang === 'es' ? 'Ingresa tu contraseña' : 'Enter your password')
+          setReauthLoading(false)
+          return
+        }
+        if (!auth.currentUser.email) {
+          setReauthError(lang === 'es' ? 'Error: correo no disponible' : 'Error: email not available')
+          setReauthLoading(false)
+          return
+        }
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, reauthPassword)
+        await reauthenticateWithCredential(auth.currentUser, credential)
+      }
+
+      // Re-authenticated successfully — execute pending action
+      setShowReauth(false)
+      setReauthPassword('')
+
+      if (pendingAction === 'save-profile') {
+        try {
+          // 1. Update Display Name and Photo URL (mismo orden que handleSaveProfile)
+          await updateProfile(auth.currentUser, {
+            displayName: displayName.trim() || null,
+            photoURL: photoURL.trim() || null,
+          })
+
+          // 2. Sync display name to Firestore for group member visibility
+          await saveUserProfile(user.uid, displayName.trim(), photoURL.trim())
+
+          // 3. Update Email if it has changed
+          if (email.trim() && email.trim() !== user.email) {
+            await updateEmail(auth.currentUser, email.trim())
+          }
+
+          // 4. Reload to refresh user.photoURL/displayName in AuthContext
+          await refreshUser()
+          setMessage({ type: 'success', text: t.profile.success })
+        } catch (err: any) {
+          console.error(err)
+          const errMsg = err.code === 'auth/email-already-in-use'
+            ? (lang === 'es' ? 'Este correo ya está en uso' : 'This email is already in use')
+            : (err.code === 'auth/requires-recent-login'
+              ? (lang === 'es' ? 'Aún necesitas iniciar sesión de nuevo. Intenta recargar la página.' : 'Still need to log in again. Try reloading the page.')
+              : t.profile.error)
+          setMessage({ type: 'error', text: errMsg })
+        }
+      } else {
+        // Default: delete account
+        await deleteUser(auth.currentUser)
+        setShowDeleteConfirm(false)
+        navigate('/login')
+      }
+    } catch (err: any) {
       console.error(err)
-      const errMsg = lang === 'es'
-        ? 'Error al eliminar la cuenta. Si es una cuenta registrada, por seguridad debes iniciar sesión de nuevo antes de eliminarla.'
-        : 'Error deleting account. For security reasons, you must log in again before deleting your account.'
-      setDeleteError(errMsg)
+      if (err.code === 'auth/wrong-password') {
+        setReauthError(lang === 'es' ? 'Contraseña incorrecta' : 'Wrong password')
+      } else if (err.code === 'auth/user-mismatch') {
+        setReauthError(lang === 'es' ? 'Este no es el usuario correcto' : 'Wrong user account')
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setReauthError(null)
+        setShowReauth(false)
+      } else if (err.code === 'auth/popup-blocked') {
+        setReauthError(lang === 'es'
+          ? 'El navegador bloqueó la ventana emergente. Permite popups para este sitio e intenta de nuevo.'
+          : 'The browser blocked the popup. Allow popups for this site and try again.')
+      } else {
+        setReauthError(err.message || (lang === 'es' ? 'Error al re-autenticar' : 'Re-authentication failed'))
+      }
+    } finally {
+      setReauthLoading(false)
+      setReauthPassword('')
+      setPendingAction(null)
     }
   }
 
@@ -191,7 +288,7 @@ export default function ProfilePage() {
             onClick={() => setSection(s.key)}
             aria-current={section === s.key}
             className={`flex-shrink-0 snap-start whitespace-nowrap border-[3px] border-border px-4 py-2.5 text-xs font-bold uppercase transition-colors cursor-pointer ${
-              section === s.key ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow hover:border-text'
+              section === s.key ? 'bg-yellow text-text border-text' : 'bg-surface text-text sm:hover:bg-yellow sm:hover:border-text'
             }`}
           >
             {s.label}
@@ -227,8 +324,9 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     aria-label={t.auth.signOut}
-                    className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-pink hover:text-text transition-colors cursor-pointer"
+                    className="w-full border-[3px] border-border border-l-[6px] border-l-pink bg-surface text-text py-2 text-xs font-bold uppercase flex items-center gap-2 sm:hover:bg-pink sm:hover:text-text sm:hover:border-l-pink transition-colors cursor-pointer"
                   >
+                    <span aria-hidden="true" className="text-pink sm:hover:text-text transition-colors">⤿</span>
                     {t.auth.signOut}
                   </button>
                   <button
@@ -251,8 +349,8 @@ export default function ProfilePage() {
                     <Row label={t.settings.theme} />
                     <p className="text-[11px] text-text-secondary leading-tight">{t.settings.themeDesc}</p>
                     <div className="flex gap-2 w-full">
-                      <TogglePill active={theme === 'light'} onClick={() => setTheme('light')} label={t.settings.light}><re-icon icon="sun" className="w-6 h-6"></re-icon></TogglePill>
-                      <TogglePill active={theme === 'dark'} onClick={() => setTheme('dark')} label={t.settings.dark}><re-icon icon="moon"></re-icon></TogglePill>
+                      <TogglePill active={theme === 'light'} onClick={() => setTheme('light')} label={t.settings.light}><SunIcon className="w-6 h-6" /></TogglePill>
+                      <TogglePill active={theme === 'dark'} onClick={() => setTheme('dark')} label={t.settings.dark}><MoonIcon className="w-6 h-6" /></TogglePill>
                     </div>
                   </div>
 
@@ -264,7 +362,7 @@ export default function ProfilePage() {
                         <button
                           key={key}
                           onClick={() => setAccent(key)}
-                          className={`w-7 h-7 border-2 transition-all cursor-pointer ${
+                          className={`btn-square w-7 h-7 border-2 transition-all cursor-pointer ${
                             accent === key ? 'border-border scale-110 ring-2 ring-yellow ring-offset-2 ring-offset-surface' : 'border-transparent hover:scale-110'
                           }`}
                           style={{ backgroundColor: ACCENT_PRESETS[key] }}
@@ -326,7 +424,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => setShowClearCacheConfirm(true)}
                   aria-label={t.profile.clearCache}
-                  className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                  className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
                 >
                   {t.profile.clearCache}
                 </button>
@@ -389,14 +487,14 @@ export default function ProfilePage() {
                   navigate('/login')
                 }}
                 aria-label="Confirm sign out"
-                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase hover:bg-orange hover:text-text transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange sm:hover:text-text transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'SÍ, CERRAR SESIÓN' : 'YES, SIGN OUT'}
               </button>
               <button
                 onClick={() => setShowSignOutConfirm(false)}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -424,18 +522,92 @@ export default function ProfilePage() {
                   await handleDeleteAccount()
                 }}
                 aria-label="Confirm delete"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase hover:bg-text hover:text-pink transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'ELIMINAR' : 'DELETE'}
               </button>
               <button
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError(null) }}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showReauth && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape' && !reauthLoading) { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}}>
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
+              {lang === 'es' ? 'Verificar identidad' : 'Verify Identity'}
+            </h3>
+            {auth.currentUser?.providerData.some(p => p.providerId === 'google.com') ? (
+              <>
+                <p className="text-sm font-bold">
+                  {pendingAction === 'save-profile'
+                    ? (lang === 'es' ? 'Re-autentica con Google para cambiar tu correo.' : 'Re-authenticate with Google to change your email.')
+                    : (lang === 'es' ? 'Re-autentica con Google para continuar.' : 'Re-authenticate with Google to continue.')}
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleReauthAction}
+                    disabled={reauthLoading}
+                    className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {reauthLoading ? '...' : (lang === 'es' ? 'CONTINUAR CON GOOGLE' : 'CONTINUE WITH GOOGLE')}
+                  </button>
+                  <button
+                    onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}
+                    disabled={reauthLoading}
+                    className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-bold">
+                  {pendingAction === 'save-profile'
+                    ? (lang === 'es' ? 'Ingresa tu contraseña para verificar tu identidad y cambiar tu correo.' : 'Enter your password to verify your identity and change your email.')
+                    : (lang === 'es' ? 'Ingresa tu contraseña para verificar tu identidad y eliminar la cuenta.' : 'Enter your password to verify your identity and delete your account.')}
+                </p>
+                {reauthError && (
+                  <div className="border-[3px] border-border bg-pink/10 text-pink px-3 py-2 text-[10px] font-bold uppercase">{reauthError}</div>
+                )}
+                <input
+                  type="password"
+                  value={reauthPassword}
+                  onChange={e => setReauthPassword(e.target.value)}
+                  placeholder={lang === 'es' ? 'Contraseña' : 'Password'}
+                  autoFocus
+                  className="w-full border-2 border-border bg-surface px-3 py-2 text-sm font-bold outline-none focus:bg-yellow/30 transition-colors"
+                  onKeyDown={e => { if (e.key === 'Enter' && !reauthLoading) handleReauthAction() }}
+                />
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleReauthAction}
+                    disabled={reauthLoading || !reauthPassword.trim()}
+                    className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {reauthLoading ? '...' : (
+                      pendingAction === 'save-profile'
+                        ? (lang === 'es' ? 'VERIFICAR Y GUARDAR' : 'VERIFY & SAVE')
+                        : (lang === 'es' ? 'VERIFICAR Y ELIMINAR' : 'VERIFY & DELETE'))}
+                  </button>
+                  <button
+                    onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}
+                    disabled={reauthLoading}
+                    className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -453,14 +625,14 @@ export default function ProfilePage() {
               <button
                 onClick={handleClearCache}
                 aria-label={t.profile.clearCache}
-                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase hover:bg-orange transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'LIMPIAR' : 'CLEAR'}
               </button>
               <button
                 onClick={() => setShowClearCacheConfirm(false)}
                 aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase hover:bg-yellow transition-colors cursor-pointer"
+                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
                 {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
               </button>
@@ -512,7 +684,7 @@ function TogglePill({ active, onClick, label, children, borderWidth = 'border-2'
       aria-label={label}
       aria-pressed={active}
       className={`flex items-center justify-center gap-1 px-2.5 whitespace-nowrap shrink-0 ${borderWidth} border-border py-1.5 text-xs font-bold uppercase transition-colors cursor-pointer ${
-        active ? 'bg-yellow text-text border-text' : 'bg-surface text-text hover:bg-yellow'
+        active ? 'bg-yellow text-text border-text' : 'bg-surface text-text sm:hover:bg-yellow'
       }`}
     >
       {children ?? label}
@@ -572,7 +744,7 @@ function ProfileForm({ displayName, setDisplayName, photoURL, setPhotoURL, email
           <label htmlFor="profile-email" className="text-xs font-bold uppercase text-text-secondary">{t.profile.email}</label>
           <input id="profile-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="johndoe@example.com" className={inputCls} />
         </div>
-        <button type="submit" disabled={saving} aria-label={t.profile.save} className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase hover:bg-pink transition-colors cursor-pointer disabled:opacity-50">
+        <button type="submit" disabled={saving} aria-label={t.profile.save} className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-pink transition-colors cursor-pointer disabled:opacity-50">
           {saving ? t.profile.saving : t.profile.save}
         </button>
       </form>
