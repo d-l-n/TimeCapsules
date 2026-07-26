@@ -14,6 +14,7 @@ import StatsPage from './StatsPage'
 import ListsPage from './ListsPage'
 import ErrorBox from '../components/ErrorBox'
 import { SunIcon, MoonIcon } from '../components/Icons'
+import AnimatedOverlay from '../components/AnimatedOverlay'
 
 export default function ProfilePage() {
   const { user, logout, refreshUser } = useAuth()
@@ -161,9 +162,7 @@ export default function ProfilePage() {
         setShowReauth(true)
       } else {
         console.error(err)
-        const errMsg = lang === 'es'
-          ? 'Error al eliminar la cuenta. Si es una cuenta registrada, por seguridad debes iniciar sesión de nuevo antes de eliminarla.'
-          : 'Error deleting account. For security reasons, you must log in again before deleting your account.'
+        const errMsg = t.profile.deleteErrorMsg
         setDeleteError(errMsg)
       }
     }
@@ -181,12 +180,12 @@ export default function ProfilePage() {
         await reauthenticateWithPopup(auth.currentUser, googleProvider)
       } else {
         if (!reauthPassword.trim()) {
-          setReauthError(lang === 'es' ? 'Ingresa tu contraseña' : 'Enter your password')
+          setReauthError(t.profile.reauthPasswordError)
           setReauthLoading(false)
           return
         }
         if (!auth.currentUser.email) {
-          setReauthError(lang === 'es' ? 'Error: correo no disponible' : 'Error: email not available')
+          setReauthError(t.profile.reauthEmailError)
           setReauthLoading(false)
           return
         }
@@ -222,9 +221,9 @@ export default function ProfilePage() {
         } catch (err: any) {
           console.error(err)
           const errMsg = err.code === 'auth/email-already-in-use'
-            ? (lang === 'es' ? 'Este correo ya está en uso' : 'This email is already in use')
+            ? t.profile.emailInUseError
             : (err.code === 'auth/requires-recent-login'
-              ? (lang === 'es' ? 'Aún necesitas iniciar sesión de nuevo. Intenta recargar la página.' : 'Still need to log in again. Try reloading the page.')
+              ? t.profile.reauthReloadError
               : t.profile.error)
           setMessage({ type: 'error', text: errMsg })
         }
@@ -237,18 +236,16 @@ export default function ProfilePage() {
     } catch (err: any) {
       console.error(err)
       if (err.code === 'auth/wrong-password') {
-        setReauthError(lang === 'es' ? 'Contraseña incorrecta' : 'Wrong password')
+        setReauthError(t.profile.reauthWrongPassword)
       } else if (err.code === 'auth/user-mismatch') {
-        setReauthError(lang === 'es' ? 'Este no es el usuario correcto' : 'Wrong user account')
+        setReauthError(t.profile.reauthWrongUser)
       } else if (err.code === 'auth/popup-closed-by-user') {
         setReauthError(null)
         setShowReauth(false)
       } else if (err.code === 'auth/popup-blocked') {
-        setReauthError(lang === 'es'
-          ? 'El navegador bloqueó la ventana emergente. Permite popups para este sitio e intenta de nuevo.'
-          : 'The browser blocked the popup. Allow popups for this site and try again.')
+        setReauthError(t.profile.reauthPopupBlocked)
       } else {
-        setReauthError(err.message || (lang === 'es' ? 'Error al re-autenticar' : 'Re-authentication failed'))
+        setReauthError(err.message || t.profile.reauthGenericError)
       }
     } finally {
       setReauthLoading(false)
@@ -473,101 +470,94 @@ export default function ProfilePage() {
         </div>
 
       {/* Confirmation Modals */}
-      {showSignOutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowSignOutConfirm(false)}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-              {t.auth.signOut}
-            </h3>
-            <p className="text-sm font-bold">
-              {t.profile.signOutConfirm}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={async () => {
-                  setShowSignOutConfirm(false)
-                  await logout()
-                  navigate('/login')
-                }}
-                aria-label="Confirm sign out"
-                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange sm:hover:text-text transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'SÍ, CERRAR SESIÓN' : 'YES, SIGN OUT'}
-              </button>
-              <button
-                onClick={() => setShowSignOutConfirm(false)}
-                aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
-              </button>
-            </div>
+      <AnimatedOverlay open={showSignOutConfirm} onClose={() => setShowSignOutConfirm(false)} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
+            {t.auth.signOut}
+          </h3>
+          <p className="text-sm font-bold">
+            {t.profile.signOutConfirm}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={async () => {
+                setShowSignOutConfirm(false)
+                await logout()
+                navigate('/login')
+              }}
+              aria-label="Confirm sign out"
+              className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange sm:hover:text-text transition-colors cursor-pointer"
+            >
+              {t.profile.confirmSignOutBtn}
+            </button>
+            <button
+              onClick={() => setShowSignOutConfirm(false)}
+              aria-label="Cancel"
+              className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
+            >
+              {t.lists.cancel}
+            </button>
           </div>
         </div>
-      )}
+      </AnimatedOverlay>
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && (setShowDeleteConfirm(false), setDeleteError(null))}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-              {t.profile.deleteAccount}
-            </h3>
-            <p className="text-sm font-bold text-pink">
-              {t.profile.deleteConfirm}
-            </p>
-            {deleteError && (
-              <ErrorBox message={deleteError} />
-            )}
-            <div className="flex gap-3">
-              <button
-                onClick={async () => {
-                  setDeleteError(null)
-                  await handleDeleteAccount()
-                }}
-                aria-label="Confirm delete"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'ELIMINAR' : 'DELETE'}
+      <AnimatedOverlay open={showDeleteConfirm} onClose={() => { setShowDeleteConfirm(false); setDeleteError(null) }} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
+            {t.profile.deleteAccount}
+          </h3>
+          <p className="text-sm font-bold text-pink">
+            {t.profile.deleteConfirm}
+          </p>
+          {deleteError && (
+            <ErrorBox message={deleteError} />
+          )}
+          <div className="flex gap-3">
+            <button
+              onClick={async () => {
+                setDeleteError(null)
+                await handleDeleteAccount()
+              }}
+              aria-label="Confirm delete"
+              className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
+            >              {t.profile.confirmDeleteBtn}
               </button>
               <button
                 onClick={() => { setShowDeleteConfirm(false); setDeleteError(null) }}
                 aria-label="Cancel"
                 className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
-              </button>
-            </div>
+                {t.lists.cancel}
+            </button>
           </div>
         </div>
-      )}
+      </AnimatedOverlay>
 
-      {showReauth && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape' && !reauthLoading) { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-              {lang === 'es' ? 'Verificar identidad' : 'Verify Identity'}
-            </h3>
-            {auth.currentUser?.providerData.some(p => p.providerId === 'google.com') ? (
-              <>
-                <p className="text-sm font-bold">
-                  {pendingAction === 'save-profile'
-                    ? (lang === 'es' ? 'Re-autentica con Google para cambiar tu correo.' : 'Re-authenticate with Google to change your email.')
-                    : (lang === 'es' ? 'Re-autentica con Google para continuar.' : 'Re-authenticate with Google to continue.')}
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleReauthAction}
-                    disabled={reauthLoading}
-                    className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {reauthLoading ? '...' : (lang === 'es' ? 'CONTINUAR CON GOOGLE' : 'CONTINUE WITH GOOGLE')}
-                  </button>
-                  <button
-                    onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}
-                    disabled={reauthLoading}
-                    className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
+      <AnimatedOverlay open={showReauth} onClose={() => { if (!reauthLoading) { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
+            {t.profile.reauthTitle}
+          </h3>
+          {auth.currentUser?.providerData.some(p => p.providerId === 'google.com') ? (
+            <>
+              <p className="text-sm font-bold">
+                {pendingAction === 'save-profile'
+                  ? t.profile.reauthGoogleChangeEmail
+                  : t.profile.reauthGoogleContinue}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleReauthAction}
+                  disabled={reauthLoading}
+                  className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {reauthLoading ? '...' : t.profile.reauthGoogleBtn}
+                </button>
+                <button
+                  onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}
+                  disabled={reauthLoading}
+                  className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer"
+                >                  {t.lists.cancel}
                   </button>
                 </div>
               </>
@@ -575,74 +565,70 @@ export default function ProfilePage() {
               <>
                 <p className="text-sm font-bold">
                   {pendingAction === 'save-profile'
-                    ? (lang === 'es' ? 'Ingresa tu contraseña para verificar tu identidad y cambiar tu correo.' : 'Enter your password to verify your identity and change your email.')
-                    : (lang === 'es' ? 'Ingresa tu contraseña para verificar tu identidad y eliminar la cuenta.' : 'Enter your password to verify your identity and delete your account.')}
-                </p>
-                {reauthError && (
-                  <div className="border-[3px] border-border bg-pink/10 text-pink px-3 py-2 text-[10px] font-bold uppercase">{reauthError}</div>
-                )}
-                <input
-                  type="password"
-                  value={reauthPassword}
-                  onChange={e => setReauthPassword(e.target.value)}
-                  placeholder={lang === 'es' ? 'Contraseña' : 'Password'}
-                  autoFocus
-                  className="w-full border-2 border-border bg-surface px-3 py-2 text-sm font-bold outline-none focus:bg-yellow/30 transition-colors"
-                  onKeyDown={e => { if (e.key === 'Enter' && !reauthLoading) handleReauthAction() }}
-                />
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleReauthAction}
-                    disabled={reauthLoading || !reauthPassword.trim()}
-                    className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {reauthLoading ? '...' : (
-                      pendingAction === 'save-profile'
-                        ? (lang === 'es' ? 'VERIFICAR Y GUARDAR' : 'VERIFY & SAVE')
-                        : (lang === 'es' ? 'VERIFICAR Y ELIMINAR' : 'VERIFY & DELETE'))}
-                  </button>
-                  <button
-                    onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}
-                    disabled={reauthLoading}
-                    className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer"
-                  >
-                    {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                    ? t.profile.reauthPasswordChangeEmail
+                    : t.profile.reauthPasswordDelete}
+              </p>
+              {reauthError && (
+                <div className="border-[3px] border-border bg-pink/10 text-pink px-3 py-2 text-[10px] font-bold uppercase">{reauthError}</div>
+              )}
+              <input
+                type="password"
+                value={reauthPassword}
+                onChange={e => setReauthPassword(e.target.value)}
+                placeholder={t.profile.reauthPasswordPlaceholder}
+                autoFocus
+                className="w-full border-2 border-border bg-surface px-3 py-2 text-sm font-bold outline-none focus:bg-yellow/30 transition-colors"
+                onKeyDown={e => { if (e.key === 'Enter' && !reauthLoading) handleReauthAction() }}
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={handleReauthAction}
+                  disabled={reauthLoading || !reauthPassword.trim()}
+                  className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {reauthLoading ? '...' : (
+                    pendingAction === 'save-profile'
+                      ? t.profile.reauthVerifySaveBtn
+                      : t.profile.reauthVerifyDeleteBtn)}
+                </button>
+                <button
+                  onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}
+                  disabled={reauthLoading}
+                  className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {t.lists.cancel}
+                </button>
+              </div>
+            </>
+          )}
         </div>
-      )}
+      </AnimatedOverlay>
 
-      {showClearCacheConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowClearCacheConfirm(false)}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-              {t.profile.clearCache}
-            </h3>
-            <p className="text-sm font-bold">
-              {t.profile.clearCacheConfirm}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={handleClearCache}
-                aria-label={t.profile.clearCache}
-                className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'LIMPIAR' : 'CLEAR'}
+      <AnimatedOverlay open={showClearCacheConfirm} onClose={() => setShowClearCacheConfirm(false)} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
+            {t.profile.clearCache}
+          </h3>
+          <p className="text-sm font-bold">
+            {t.profile.clearCacheConfirm}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleClearCache}
+              aria-label={t.profile.clearCache}
+              className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors cursor-pointer"
+            >              {t.profile.confirmClearBtn}
               </button>
               <button
                 onClick={() => setShowClearCacheConfirm(false)}
                 aria-label="Cancel"
                 className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
-              </button>
-            </div>
+                {t.lists.cancel}
+            </button>
           </div>
         </div>
-      )}
+      </AnimatedOverlay>
     </div>
   )
 }

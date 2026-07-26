@@ -87,7 +87,7 @@ export default function BrutalDropdown({ value, options, onChange, placeholder, 
             setIsOpen(true)
           }
         }}
-        className={`border-[3px] border-border bg-surface font-bold uppercase cursor-pointer sm:hover:bg-yellow transition-all text-left w-full flex items-center justify-between gap-2 ${buttonClassName}`}
+        className={`border-2 border-border bg-surface font-bold uppercase cursor-pointer sm:hover:bg-yellow transition-all text-left w-full flex items-center justify-between gap-2 ${buttonClassName}`}
         aria-label={ariaLabel}
         aria-expanded={isOpen}
         aria-haspopup="listbox"

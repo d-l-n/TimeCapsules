@@ -30,6 +30,7 @@ interface SeasonSectionProps {
   spoilerFree: boolean
   avgRuntime: number
   userUid: string
+  compactMode: boolean
   t: ReturnType<typeof useI18n>['t']
   onToggleSeason: (n: number) => void
   onMarkSeasonWatched: (n: number, ids: number[]) => void
@@ -50,7 +51,7 @@ export default function SeasonSection({
   watchedCounts, toggling, expandedSynopsis, emotions, resumePositions,
   editingPosition, editValue, setEditValue, editInputRef,
   selectedGroupId, groupMembers, groupProgress, memberSeasonProgress, memberColorMap,
-  sortByProgress, markingSeason, spoilerFree, avgRuntime, userUid, t,
+  sortByProgress, markingSeason, spoilerFree, avgRuntime, userUid, compactMode, t,
   onToggleSeason, onMarkSeasonWatched, onMarkSeasonUnwatched,
   onToggle, onRewatch, onToggleSynopsis,
   onResumeClick, onResumeSave, onResumePreset, onResumeClear, onResumeKeyDown,
@@ -147,7 +148,7 @@ export default function SeasonSection({
         </div>
       )}
       {!collapsed && (
-        <div className={`grid grid-cols-1 gap-2 transition-all duration-300 ${markingSeason === seasonNum ? 'opacity-40 pointer-events-none' : ''}`}>
+        <div className={`grid gap-2 transition-all duration-300 ${compactMode ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'grid-cols-1'} ${markingSeason === seasonNum ? 'opacity-40 pointer-events-none' : ''}`}>
           {sortedEps.map((ep, idx) => {
             const isWatched = (watchedCounts.get(ep.id) ?? 0) > 0
             const isToggling = toggling === ep.id
@@ -177,6 +178,7 @@ export default function SeasonSection({
                 spoilerFree={spoilerFree}
                 avgRuntime={avgRuntime}
                 userUid={userUid}
+                compactMode={compactMode}
                 t={t}
                 onToggle={onToggle}
                 onRewatch={onRewatch}

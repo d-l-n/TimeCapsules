@@ -1,19 +1,75 @@
+import AnimatedOverlay from '../AnimatedOverlay'
 import type { useI18n } from '../../lib/I18nContext'
 
-interface ConfirmSeasonModalProps {
-  data: { seasonNumber: number; episodeIds: number[]; action: 'watch' | 'unwatch' }
-  onConfirm: () => void
-  onCancel: () => void
-  t: ReturnType<typeof useI18n>['t']
+interface ConfirmSeasonData {
+  seasonNumber: number
+  episodeIds: number[]
+  action: 'watch' | 'unwatch'
+  laterEpisodeIds?: number[]
 }
 
-export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t }: ConfirmSeasonModalProps) {
+interface ConfirmSeasonModalProps {
+  data: ConfirmSeasonData
+  onConfirm: (includeLater?: boolean) => void
+  onCancel: () => void
+  t: ReturnType<typeof useI18n>['t']
+  isProcessing?: boolean
+}
+
+export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isProcessing }: ConfirmSeasonModalProps) {
+  const hasLater = data.action === 'unwatch' && data.laterEpisodeIds && data.laterEpisodeIds.length > 0
+
+  if (hasLater) {
+    return (
+      <AnimatedOverlay open={!isProcessing} onClose={onCancel} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl relative">
+          <button
+            onClick={onCancel}
+            disabled={isProcessing}
+            className="x-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm sm:hover:bg-pink transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label={t.lists.cancel}
+          >
+            X
+          </button>
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 mb-4" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>
+            {t.showDetail.laterUnwatchTitle}
+          </h3>
+          <p className="text-sm font-bold mb-6">
+            {t.showDetail.laterUnwatchMsg
+              .replace('{current}', String(data.seasonNumber))
+              .replace('{currentCount}', String(data.episodeIds.length))
+              .replace('{laterCount}', String(data.laterEpisodeIds!.length))}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => onConfirm(true)}
+              disabled={isProcessing}
+              className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-yellow/50 text-text/50 cursor-wait' : 'bg-yellow text-text sm:hover:bg-pink cursor-pointer'}`}
+              aria-label={t.showDetail.laterUnwatchYes}
+            >
+              {isProcessing ? '...' : t.showDetail.laterUnwatchYes}
+            </button>
+            <button
+              onClick={() => onConfirm(false)}
+              disabled={isProcessing}
+              className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-surface/50 text-text/50 cursor-not-allowed' : 'bg-surface text-text sm:hover:bg-pink cursor-pointer'}`}
+              aria-label={t.showDetail.laterUnwatchNo}
+            >
+              {isProcessing ? '...' : t.showDetail.laterUnwatchNo}
+            </button>
+          </div>
+        </div>
+      </AnimatedOverlay>
+    )
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onClick={onCancel}>
-      <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl relative" onClick={e => e.stopPropagation()}>
+    <AnimatedOverlay open={!isProcessing} onClose={onCancel} className="p-4">
+      <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl relative">
         <button
           onClick={onCancel}
-          className="x-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm sm:hover:bg-pink transition-colors cursor-pointer"
+          disabled={isProcessing}
+          className="x-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-sm sm:hover:bg-pink transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           aria-label={t.lists.cancel}
         >
           X
@@ -28,21 +84,23 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t }: Con
         </p>
         <div className="flex gap-3">
           <button
-            onClick={onConfirm}
-            className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-pink transition-colors"
-            aria-label={t.showDetail.catchUpYes}
+            onClick={() => onConfirm()}
+            disabled={isProcessing}
+            className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-yellow/50 text-text/50 cursor-wait' : 'bg-yellow text-text sm:hover:bg-pink cursor-pointer'}`}
+            aria-label={data.action === 'watch' ? t.showDetail.catchUpYes : t.showDetail.confirmUnwatchYes}
           >
-            {t.showDetail.catchUpYes}
+            {isProcessing ? '...' : (data.action === 'watch' ? t.showDetail.catchUpYes : t.showDetail.confirmUnwatchYes)}
           </button>
           <button
             onClick={onCancel}
-            className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-pink transition-colors"
+            disabled={isProcessing}
+            className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-surface/50 text-text/50 cursor-not-allowed' : 'bg-surface text-text sm:hover:bg-pink cursor-pointer'}`}
             aria-label={t.lists.cancel}
           >
             {t.lists.cancel}
           </button>
         </div>
       </div>
-    </div>
+    </AnimatedOverlay>
   )
 }

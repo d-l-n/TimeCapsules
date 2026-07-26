@@ -255,7 +255,7 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
   return (
     <>
       {/* Top header bar with hamburger */}
-      <header className="fixed top-0 z-30 bg-bg border-b-[3px] border-border w-full" role="banner">
+      <header className="fixed top-0 z-30 bg-text border-b-[3px] border-border w-full text-white" role="banner">
         <div className="flex items-center justify-between px-4 h-14">
           <div className="flex items-center gap-3">
             <button
@@ -268,7 +268,7 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
             </button>
             <Link to="/dashboard" className="flex items-center gap-2" aria-label={`${t.app.name} — ${t.nav.dashboard}`}>
               <span className="bg-yellow text-text border-3 border-border px-2 py-1 text-base font-black leading-none font-heading">TC</span>
-              <span className="text-text font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
+              <span className="text-white font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
             </Link>
           </div>
           <div className="flex items-center gap-2">
@@ -291,7 +291,7 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
               {user?.photoURL ? (
                 <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-xs font-black">{user?.displayName?.charAt(0)?.toUpperCase() || 'U'}</span>
+                <span className="text-xs font-black text-white">{user?.displayName?.charAt(0)?.toUpperCase() || 'U'}</span>
               )}
             </Link>
           </div>
@@ -341,11 +341,11 @@ function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadC
   const location = useLocation()
   return (
     <>
-<header className="fixed top-0 z-30 bg-bg border-b-[3px] border-border w-full" role="banner">
+<header className="fixed top-0 z-30 bg-text border-b-[3px] border-border w-full text-white" role="banner">
         <div className="flex items-center justify-between px-4 h-14">
           <Link to="/dashboard" className="flex items-center gap-2" aria-label={`${t.app.name} — ${t.nav.dashboard}`}>
             <span className="bg-yellow text-text border-3 border-border px-2 py-1 text-base font-black leading-none font-heading">TC</span>
-            <span className="text-text font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
+            <span className="text-white font-black uppercase tracking-tight text-sm leading-none">{t.app.name}</span>
           </Link>
           <div className="flex items-center gap-2">
             <div className="relative">
@@ -367,7 +367,7 @@ function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadC
               {user?.photoURL ? (
                 <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-xs font-black">{user?.displayName?.charAt(0)?.toUpperCase() || 'U'}</span>
+                <span className="text-xs font-black text-white">{user?.displayName?.charAt(0)?.toUpperCase() || 'U'}</span>
               )}
             </Link>
           </div>

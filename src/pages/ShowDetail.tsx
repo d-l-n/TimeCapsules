@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getShowById, getEpisodesByShow, getRatingForShow, getWatchedEpisodesForShow, toggleWatchedEpisode, getResumePositions, setResumePosition, getShowByTmdbId, createShowFromTmdb, addFollowedShow, ensureEpisode } from '../services/showService'
+import { getShowById, getEpisodesByShow, getRatingForShow, getWatchedEpisodesForShow, toggleWatchedEpisode, addWatchedEpisode, removeWatchedEpisode, batchUpdateStats, getResumePositions, setResumePosition, getShowByTmdbId, createShowFromTmdb, addFollowedShow, ensureEpisode, getFollowedTmdbIds } from '../services/showService'
 import type { ShowDoc, EpisodeDoc, RatingDoc } from '../lib/firebase-queries'
 import { getTmdbDetails, getTmdbDetailsAuto, getTmdbAllEpisodes, getWatchProviders, getTmdbCollection, getSimilar, getRecommended, tmdbLang } from '../services/tmdb'
 import type { WatchProvidersResult, TmdbSeasonEpisode, TmdbCollectionPart, TmdbCollectionInfo, TmdbSearchResult, TmdbDetails } from '../services/tmdb'
@@ -23,11 +23,14 @@ import EmptyState from '../components/EmptyState'
 import MediaGrid from '../components/show-detail/MediaGrid'
 import CatchUpModal from '../components/show-detail/CatchUpModal'
 import ConfirmSeasonModal from '../components/show-detail/ConfirmSeasonModal'
+import SeriesReactions from '../components/show-detail/SeriesReactions'
 import StreamProviders from '../components/show-detail/StreamProviders'
 import CollectionGrid from '../components/show-detail/CollectionGrid'
 import SeasonSection from '../components/show-detail/SeasonSection'
 import RatingPicker from '../components/show-detail/RatingPicker'
 import PositionEditor from '../components/show-detail/PositionEditor'
+import { playWatchSound, playUnwatchSound, playCelebrationSound } from '../lib/sound'
+import { triggerConfetti } from '../lib/confetti'
 import { TimerIcon } from '../components/Icons'
 import BrutalDropdown from '../components/BrutalDropdown'
 import { MEMBER_COLORS, fmtPos } from '../components/show-detail/types'
@@ -89,6 +92,7 @@ export default function ShowDetail() {
       autoCollapsedSim.current = true
     }
   }, [collection])
+  const [movieToggling, setMovieToggling] = useState(false)
   const [showGroupFeed, setShowGroupFeed] = useState(false)
   const [resumePositions, setResumePositions] = useState<Map<number, number>>(new Map())
   const [editingPosition, setEditingPosition] = useState<number | null>(null)
@@ -96,6 +100,7 @@ export default function ShowDetail() {
   const [feedbackEp, setFeedbackEp] = useState<{ id: number; watched: boolean; x: number; y: number } | null>(null)
   const editInputRef = useRef<HTMLInputElement>(null)
   const togglingRef = useRef(false)
+  const movieTogglingRef = useRef(false)
   const { groups } = useGroups(user?.uid)
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
   const [groupProgress, setGroupProgress] = useState<GroupEpisodeProgress[]>([])
@@ -108,7 +113,12 @@ export default function ShowDetail() {
   const [emotions, setEmotions] = useState<Map<number, string>>(new Map())
   const [emotionPickerFor, setEmotionPickerFor] = useState<number | null>(null)
   const [showRatingPicker, setShowRatingPicker] = useState(false)
-  const [confirmSeason, setConfirmSeason] = useState<{ seasonNumber: number; episodeIds: number[]; action: 'watch' | 'unwatch' } | null>(null)
+  const [confirmSeason, setConfirmSeason] = useState<{
+    seasonNumber: number
+    episodeIds: number[]
+    action: 'watch' | 'unwatch'
+    laterEpisodeIds?: number[]
+  } | null>(null)
   const [groupWatchFeed, setGroupWatchFeed] = useState<GroupWatchEventDoc[]>([])
   const [groupWatchToast, setGroupWatchToast] = useState<GroupWatchEventDoc | null>(null)
   const [movieRuntime, setMovieRuntime] = useState<number | null>(null)
@@ -118,6 +128,18 @@ export default function ShowDetail() {
   const [sortByProgress, setSortByProgress] = useState<Set<number>>(new Set())
   const [showsInGroups, setShowsInGroups] = useState<Set<string>>(new Set())
   const [addingToGroup, setAddingToGroup] = useState<string | null>(null)
+  const [wlToggling, setWlToggling] = useState(false)
+  const [listToggling, setListToggling] = useState<Set<string>>(new Set())
+  const [episodeToast, setEpisodeToast] = useState<{ episodeNumber: number; seasonNumber: number; watched: boolean } | null>(null)
+  const [seasonToast, setSeasonToast] = useState<{ seasonNumber: number; action: 'watch' | 'unwatch'; count: number } | null>(null)
+  const [seriesToast, setSeriesToast] = useState<number | null>(null)
+  const [movieToast, setMovieToast] = useState<{ watched: boolean; name: string } | null>(null)
+  const [watchlistToast, setWatchlistToast] = useState<{ added: boolean } | null>(null)
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number; context: 'catchUp' | 'season' } | null>(null)
+  const [compactMode, setCompactMode] = useState(() => localStorage.getItem('compactMode') === 'true')
+  const handleCompactToggle = useCallback(() => {
+    setCompactMode(prev => { const next = !prev; localStorage.setItem('compactMode', String(next)); return next })
+  }, [])
   const watchedCountsRef = useRef(watchedCounts)
   useEffect(() => { watchedCountsRef.current = watchedCounts }, [watchedCounts])
 
@@ -320,6 +342,18 @@ export default function ShowDetail() {
   useEffect(() => {
     setSortByProgress(new Set())
   }, [selectedGroupId])
+
+  // Sync simAdded with real database state when similar/recommended load
+  useEffect(() => {
+    if (!user?.uid || (similar.length === 0 && recommended.length === 0)) return
+    ;(async () => {
+      const followedIds = await getFollowedTmdbIds(user.uid)
+      const allItems = [...similar, ...recommended]
+      const added = new Map<number, boolean>()
+      allItems.forEach(item => { if (followedIds.has(item.id)) added.set(item.id, true) })
+      setSimAdded(added)
+    })()
+  }, [user?.uid, similar, recommended])
 
   // Check which groups already have this show
   useEffect(() => {
@@ -529,11 +563,49 @@ export default function ShowDetail() {
         }
         return next
       })
+      const watching = !currentlyWatched
       if (clientX !== undefined && clientY !== undefined) {
-        setFeedbackEp({ id: episodeId, watched: !currentlyWatched, x: clientX, y: clientY })
+        setFeedbackEp({ id: episodeId, watched: watching, x: clientX, y: clientY })
         setTimeout(() => setFeedbackEp(null), 800)
       }
-      if (!currentlyWatched) setEmotionPickerFor(episodeId)
+      if (watching) {
+        playWatchSound()
+      } else {
+        playUnwatchSound()
+      }
+      const ep = mergedEpisodes.find(e => e.id === episodeId)
+      if (ep) {
+        setEpisodeToast({ episodeNumber: ep.episode_number, seasonNumber: ep.season_number, watched: watching })
+        setTimeout(() => setEpisodeToast(null), 3000)
+      }
+      if (watching && ep) {
+        const seasonEps = mergedEpisodes.filter(e => e.season_number === ep.season_number)
+        const allWatched = seasonEps.every(e => {
+          const alreadyWatched = (watchedCounts.get(e.id) ?? 0) > 0
+          const justWatched = e.id === episodeId
+          return alreadyWatched || justWatched
+        })
+        if (allWatched) triggerConfetti()
+        const allSeriesWatched = mergedEpisodes.every(e => {
+          const alreadyWatched = (watchedCounts.get(e.id) ?? 0) > 0
+          const justWatched = e.id === episodeId
+          return alreadyWatched || justWatched
+        })
+        if (allSeriesWatched) { triggerConfetti(260); playCelebrationSound(); setSeriesToast(episodeId); setTimeout(() => setSeriesToast(null), 4000) } else { setEmotionPickerFor(episodeId) }
+      }
+      // Auto-scroll to next unwatched episode after marking current as watched
+      if (watching) {
+        const currentIndex = mergedEpisodes.findIndex(e => e.id === episodeId)
+        if (currentIndex !== -1) {
+          const nextUnwatched = mergedEpisodes.slice(currentIndex + 1).find(e => (watchedCounts.get(e.id) ?? 0) <= 0)
+          if (nextUnwatched) {
+            setTimeout(() => {
+              const el = document.querySelector(`[data-episode-id="${nextUnwatched.id}"]`)
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }, 150)
+          }
+        }
+      }
     } catch {}
     setToggling(null)
     togglingRef.current = false
@@ -545,15 +617,20 @@ export default function ShowDetail() {
     setCatchUpPrompt(null)
 
     const idsToWatch = markAll ? [...prompt.prevIds, prompt.episodeId] : (prompt.seasonEpisodeIds ?? [prompt.episodeId])
+    const showId = parseInt(id)
+
+    setBatchProgress({ current: 0, total: idsToWatch.length, context: 'catchUp' })
     setToggling(prompt.episodeId)
     togglingRef.current = true
     try {
-      const showId = parseInt(id)
       const realIds = await Promise.all(idsToWatch.map(eid => resolveEpisodeId(eid)))
-      await Promise.all(realIds.map(eid => toggleWatchedEpisode(user.uid, eid, showId, true, true)))
+      // Parallel Firestore writes — no existence query, no per-item stats
+      await Promise.all(realIds.map(realId => addWatchedEpisode(user.uid, realId, showId)))
+      await batchUpdateStats(user.uid, realIds.length)
       if (selectedGroupId) {
-        await Promise.all(realIds.map(eid => createGroupWatchEvent(selectedGroupId, eid, showId, user.uid)))
+        await Promise.all(realIds.map(realId => createGroupWatchEvent(selectedGroupId, realId, showId, user.uid)))
       }
+      setBatchProgress({ current: realIds.length, total: realIds.length, context: 'catchUp' })
       setWatchedCounts(prev => {
         const next = new Map(prev)
         idsToWatch.forEach(eid => {
@@ -561,10 +638,29 @@ export default function ShowDetail() {
         })
         return next
       })
+      playWatchSound()
+      setSeasonToast({ seasonNumber: 0, action: 'watch', count: idsToWatch.length })
+      setTimeout(() => setSeasonToast(null), 3000)
+      const newlyWatched = new Set(idsToWatch)
+      for (const seasonEps of Object.values(grouped)) {
+        const allWatched = seasonEps.every(e => {
+          const alreadyWatched = (watchedCounts.get(e.id) ?? 0) > 0
+          const justWatched = newlyWatched.has(e.id)
+          return alreadyWatched || justWatched
+        })
+        if (allWatched) { triggerConfetti(); break }
+      }
+      const allSeriesWatched = mergedEpisodes.every(e => {
+        const alreadyWatched = (watchedCounts.get(e.id) ?? 0) > 0
+        const justWatched = newlyWatched.has(e.id)
+        return alreadyWatched || justWatched
+      })
+      if (allSeriesWatched) { triggerConfetti(260); playCelebrationSound(); setSeriesToast(prompt.episodeId); setTimeout(() => setSeriesToast(null), 4000) } else { setEmotionPickerFor(prompt.episodeId) }
     } catch {}
+    setBatchProgress(null)
     setToggling(null)
     togglingRef.current = false
-  }, [catchUpPrompt, user?.uid, id, selectedGroupId, resolveEpisodeId])
+  }, [catchUpPrompt, user?.uid, id, selectedGroupId, resolveEpisodeId, grouped, watchedCounts, mergedEpisodes])
 
   const handleToggleSynopsis = useCallback((episodeId: number) => {
     setExpandedSynopsis(prev => {
@@ -589,9 +685,15 @@ export default function ShowDetail() {
       if (selectedGroupId) {
         await createGroupWatchEvent(selectedGroupId, episodeId, parseInt(id), user.uid)
       }
+      playWatchSound()
+      const ep = mergedEpisodes.find(e => e.id === episodeId)
+      if (ep) {
+        setEpisodeToast({ episodeNumber: ep.episode_number, seasonNumber: ep.season_number, watched: true })
+        setTimeout(() => setEpisodeToast(null), 3000)
+      }
     } catch {}
     setToggling(null)
-  }, [user?.uid, id, toggling, selectedGroupId, resolveEpisodeId])
+  }, [user?.uid, id, toggling, selectedGroupId, mergedEpisodes, resolveEpisodeId])
 
   const handleMarkSeasonWatched = useCallback(async (seasonNumber: number, episodeIds: number[]) => {
     if (!user?.uid || !id || markingSeason !== null) return
@@ -623,10 +725,18 @@ export default function ShowDetail() {
     if (!user?.uid || !id || markingSeason !== null) return
     const watchedIds = episodeIds.filter(eid => (watchedCounts.get(eid) ?? 0) > 0)
     if (watchedIds.length === 0) return
-    setConfirmSeason({ seasonNumber, episodeIds: watchedIds, action: 'unwatch' })
-  }, [user?.uid, id, markingSeason, watchedCounts])
 
-  const handleConfirmSeason = useCallback(async () => {
+    const laterWatched = mergedEpisodes
+      .filter(e => e.season_number > seasonNumber && (watchedCounts.get(e.id) ?? 0) > 0)
+    const laterIds = laterWatched.map(e => e.id)
+    if (laterIds.length > 0) {
+      setConfirmSeason({ seasonNumber, episodeIds: watchedIds, action: 'unwatch', laterEpisodeIds: laterIds })
+    } else {
+      setConfirmSeason({ seasonNumber, episodeIds: watchedIds, action: 'unwatch' })
+    }
+  }, [user?.uid, id, markingSeason, watchedCounts, mergedEpisodes])
+
+  const handleConfirmSeason = useCallback(async (includeLater?: boolean) => {
     const cs = confirmSeason
     if (!cs || !user?.uid || !id || markingSeason !== null) return
     setConfirmSeason(null)
@@ -634,19 +744,53 @@ export default function ShowDetail() {
     try {
       const watched = cs.action === 'watch'
       const showId = parseInt(id)
-      const realIds = await Promise.all(cs.episodeIds.map(eid => resolveEpisodeId(eid)))
-      await Promise.all(realIds.map(eid => toggleWatchedEpisode(user.uid, eid, showId, watched, watched)))
-      if (watched && selectedGroupId) {
-        await Promise.all(realIds.map(eid => createGroupWatchEvent(selectedGroupId, eid, showId, user.uid)))
+      const allIds = includeLater && cs.laterEpisodeIds
+        ? [...cs.episodeIds, ...cs.laterEpisodeIds]
+        : cs.episodeIds
+      const realIds = await Promise.all(allIds.map(eid => resolveEpisodeId(eid)))
+      const lastEpId = allIds[allIds.length - 1]
+      setBatchProgress({ current: 0, total: realIds.length, context: 'season' })
+      // Parallel Firestore writes — blind add/delete, no per-item stats
+      if (watched) {
+        await Promise.all(realIds.map(realId => addWatchedEpisode(user.uid, realId, showId)))
+        await batchUpdateStats(user.uid, realIds.length)
+        if (selectedGroupId) {
+          await Promise.all(realIds.map(realId => createGroupWatchEvent(selectedGroupId, realId, showId, user.uid)))
+        }
+      } else {
+        const removedCounts = await Promise.all(realIds.map(realId => removeWatchedEpisode(user.uid, realId)))
+        const totalRemoved = removedCounts.reduce((a, b) => a + b, 0)
+        if (totalRemoved > 0) await batchUpdateStats(user.uid, -totalRemoved)
       }
+      setBatchProgress({ current: realIds.length, total: realIds.length, context: 'season' })
       setWatchedCounts(prev => {
         const next = new Map(prev)
-        cs.episodeIds.forEach(eid => watched ? next.set(eid, 1) : next.delete(eid))
+        allIds.forEach(eid => watched ? next.set(eid, 1) : next.delete(eid))
         return next
       })
+      if (watched) playWatchSound()
+      else playUnwatchSound()
+      setSeasonToast({ seasonNumber: cs.seasonNumber, action: cs.action, count: allIds.length })
+      setTimeout(() => setSeasonToast(null), 3000)
+      if (watched) {
+        const seasonEps = mergedEpisodes.filter(e => e.season_number === cs.seasonNumber)
+        const allWatched = seasonEps.every(e => {
+          const alreadyWatched = (watchedCounts.get(e.id) ?? 0) > 0
+          const justWatched = cs.episodeIds.includes(e.id)
+          return alreadyWatched || justWatched
+        })
+        if (allWatched) triggerConfetti()
+        const allSeriesWatched = mergedEpisodes.every(e => {
+          const alreadyWatched = (watchedCounts.get(e.id) ?? 0) > 0
+          const justWatched = cs.episodeIds.includes(e.id)
+          return alreadyWatched || justWatched
+        })
+        if (allSeriesWatched) { triggerConfetti(260); playCelebrationSound(); setSeriesToast(lastEpId); setTimeout(() => setSeriesToast(null), 4000) } else { setEmotionPickerFor(lastEpId) }
+      }
     } catch {}
+    setBatchProgress(null)
     setMarkingSeason(null)
-  }, [confirmSeason, user?.uid, id, markingSeason, selectedGroupId, resolveEpisodeId])
+  }, [confirmSeason, user?.uid, id, markingSeason, selectedGroupId, resolveEpisodeId, mergedEpisodes, watchedCounts])
 
   const handleCancelSeason = useCallback(() => setConfirmSeason(null), [])
 
@@ -659,22 +803,43 @@ export default function ShowDetail() {
     })
   }, [])
 
+  const allSeasonNums = useMemo(() => Object.keys(grouped).map(Number).sort((a, b) => a - b), [grouped])
+  const allCollapsed = allSeasonNums.length > 0 && allSeasonNums.every(s => collapsedSeasons.has(s))
+
+  const handleCollapseAll = useCallback(() => {
+    setCollapsedSeasons(new Set(allSeasonNums))
+  }, [allSeasonNums])
+
+  const handleExpandAll = useCallback(() => {
+    setCollapsedSeasons(new Set())
+  }, [])
+
   const handleMovieToggle = useCallback(async () => {
-    if (!user?.uid) return
+    if (!user?.uid || movieToggling || movieTogglingRef.current) return
+    movieTogglingRef.current = true
     const showId = show?.tmdb_id
-    if (!showId) return
-    const isCurrentlyWatched = isMovie && (watchedCounts.get(showId) ?? 0) > 0
-    await toggleWatchedEpisode(user.uid, showId, showId, !isCurrentlyWatched, true)
-    if (!isCurrentlyWatched && selectedGroupId) {
-      await createGroupWatchEvent(selectedGroupId, showId, showId, user.uid)
-    }
-    setWatchedCounts(prev => {
-      const next = new Map(prev)
-      if (isCurrentlyWatched) next.delete(showId)
-      else next.set(showId, 1)
-      return next
-    })
-  }, [user?.uid, show?.tmdb_id, isMovie, watchedCounts, selectedGroupId])
+    if (!showId) { movieTogglingRef.current = false; return }
+    setMovieToggling(true)
+    try {
+      const isCurrentlyWatched = isMovie && (watchedCounts.get(showId) ?? 0) > 0
+      await toggleWatchedEpisode(user.uid, showId, showId, !isCurrentlyWatched, true)
+      if (!isCurrentlyWatched && selectedGroupId) {
+        await createGroupWatchEvent(selectedGroupId, showId, showId, user.uid)
+      }
+      setWatchedCounts(prev => {
+        const next = new Map(prev)
+        if (isCurrentlyWatched) next.delete(showId)
+        else next.set(showId, 1)
+        return next
+      })
+      if (!isCurrentlyWatched) playWatchSound()
+      else playUnwatchSound()
+      setMovieToast({ watched: !isCurrentlyWatched, name: show?.name || '' })
+      setTimeout(() => setMovieToast(null), 3000)
+    } catch {}
+    setMovieToggling(false)
+    movieTogglingRef.current = false
+  }, [user?.uid, movieToggling, show?.tmdb_id, isMovie, watchedCounts, selectedGroupId])
 
   function parsePosition(input: string): number | null {
     const trimmed = input.trim()
@@ -811,8 +976,7 @@ export default function ShowDetail() {
               </button>
             ))}
             {(isMovie ? movieRuntime : avgRuntime > 0) && (
-              <span className="border-[3px] border-border px-1.5 sm:px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase bg-surface shadow-brutal-xs inline-flex items-center gap-1">
-                <TimerIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <span className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase bg-surface">
                 {isMovie ? `${movieRuntime}m` : `${avgRuntime}m`}
               </span>
             )}
@@ -841,13 +1005,22 @@ export default function ShowDetail() {
           {!wlLoading && user?.uid && show?.tmdb_id && (
             <button
               onClick={async () => {
-                if (inWatchlist) { await removeFromWatchlist(user.uid, show.tmdb_id); setInWatchlist(false) }
-                else { await addToWatchlist(user.uid, show.tmdb_id); setInWatchlist(true) }
+                if (wlToggling) return
+                setWlToggling(true)
+                try {
+                  const adding = !inWatchlist
+                  if (inWatchlist) { await removeFromWatchlist(user.uid, show.tmdb_id); setInWatchlist(false); playUnwatchSound() }
+                  else { await addToWatchlist(user.uid, show.tmdb_id); setInWatchlist(true); playWatchSound() }
+                  setWatchlistToast({ added: adding })
+                  setTimeout(() => setWatchlistToast(null), 3000)
+                } catch {}
+                setWlToggling(false)
               }}
-              className={`btn-brutal text-xs sm:text-sm ${inWatchlist ? 'bg-yellow' : 'bg-surface'}`}
+              disabled={wlToggling}
+              className={`btn-brutal text-xs sm:text-sm ${wlToggling ? 'bg-yellow/50 text-text/50 cursor-wait' : inWatchlist ? 'bg-yellow cursor-pointer' : 'bg-surface cursor-pointer'}`}
               aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
             >
-              {inWatchlist ? t.watchlist.added : t.watchlist.add}
+              {wlToggling ? '...' : inWatchlist ? t.watchlist.added : t.watchlist.add}
             </button>
           )}
           {user?.uid && show?.tmdb_id && (
@@ -860,17 +1033,24 @@ export default function ShowDetail() {
                   {userLists.length === 0 && <div className="px-3 py-2 text-xs text-text-secondary">{t.lists.noLists}</div>}
                       {userLists.map(list => {
                     const inList = showInLists.has(list.id)
+                    const isToggling = listToggling.has(list.id)
                     return (
                       <button
                         key={list.id}
                         onClick={async () => {
-                          if (inList) { await removeShowFromList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.delete(list.id); return n }) }
-                          else { await addShowToList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.add(list.id); return n }) }
+                          if (isToggling) return
+                          setListToggling(prev => new Set(prev).add(list.id))
+                          try {
+                            if (inList) { await removeShowFromList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.delete(list.id); return n }) }
+                            else { await addShowToList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.add(list.id); return n }) }
+                          } catch {}
+                          setListToggling(prev => { const n = new Set(prev); n.delete(list.id); return n })
                         }}
-                        className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 sm:hover:bg-yellow transition-colors cursor-pointer ${inList ? 'bg-yellow text-text' : ''}`}
+                        disabled={isToggling}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 transition-colors ${isToggling ? 'bg-surface/50 text-text/50 cursor-wait' : inList ? 'bg-yellow text-text sm:hover:bg-yellow cursor-pointer' : 'bg-surface text-text sm:hover:bg-yellow cursor-pointer'}`}
                         aria-label={`${inList ? "Remove from" : "Add to"} list: ${getListDisplayName(list, lang)}`}
                       >
-                        {getListDisplayName(list, lang)} {inList && 'OK'}
+                        {isToggling ? '...' : `${getListDisplayName(list, lang)} ${inList ? 'OK' : ''}`}
                       </button>
                     )
                   })}
@@ -883,10 +1063,11 @@ export default function ShowDetail() {
             <>
               <button
                 onClick={handleMovieToggle}
-                className={`btn-brutal text-xs sm:text-sm ${movieWatched ? 'bg-yellow' : 'bg-surface'}`}
+                disabled={movieToggling}
+                className={`btn-brutal text-xs sm:text-sm transition-all duration-300 ease-out ${movieToggling ? 'bg-yellow/50 text-text/50 cursor-wait' : movieWatched ? 'bg-yellow cursor-pointer' : 'bg-surface cursor-pointer'}`}
                 aria-label={movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               >
-                {movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
+                {movieToggling ? '...' : movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               </button>
               {editingPosition === show.tmdb_id ? (
                 <PositionEditor
@@ -949,10 +1130,12 @@ export default function ShowDetail() {
                 setAddingToGroup(null)
               }}
               disabled={!show?.tmdb_id || showsInGroups.has(selectedGroupId) || addingToGroup !== null}
-              className={`border-2 border-border px-2 py-1 text-[10px] font-bold uppercase transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                showsInGroups.has(selectedGroupId)
-                  ? 'bg-green/30 text-text border-green'
-                  : 'bg-surface text-text sm:hover:bg-yellow'
+              className={`border-2 border-border px-2 py-1 text-[10px] font-bold uppercase transition-colors ${
+                addingToGroup === selectedGroupId
+                  ? 'bg-yellow/50 text-text/50 cursor-wait'
+                  : showsInGroups.has(selectedGroupId)
+                    ? 'bg-green/30 text-text border-green cursor-pointer'
+                    : 'bg-surface text-text sm:hover:bg-yellow cursor-pointer'
               }`}
               aria-label={showsInGroups.has(selectedGroupId) ? 'Already in group' : 'Add show to group'}
             >
@@ -1033,7 +1216,26 @@ export default function ShowDetail() {
       {isMovie && collection ? (
         <CollectionGrid collection={collection} parts={collectionParts} excludeId={show?.tmdb_id} t={t} />
       ) : (
-        Object.entries(grouped).map(([season, eps]) => {
+        <>
+          {allSeasonNums.length > 1 && (
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={handleCompactToggle}
+                className={`border-2 border-border px-2 py-1 text-[10px] font-bold uppercase transition-colors cursor-pointer ${compactMode ? 'bg-yellow text-text' : 'bg-surface sm:hover:bg-yellow'}`}
+                aria-label={t.showDetail.compactMode}
+              >
+                {t.showDetail.compactMode} {compactMode ? 'ON' : 'OFF'}
+              </button>
+              <button
+                onClick={allCollapsed ? handleExpandAll : handleCollapseAll}
+                className="border-2 border-border px-2 py-1 text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors cursor-pointer"
+                aria-label={allCollapsed ? t.showDetail.expandAll : t.showDetail.collapseAll}
+              >
+                {allCollapsed ? t.showDetail.expandAll : t.showDetail.collapseAll}
+              </button>
+            </div>
+          )}
+          {Object.entries(grouped).map(([season, eps]) => {
           const seasonNum = Number(season)
           const watchedCount = watchedCountsBySeason[seasonNum] || 0
           const allWatched = watchedCount === eps.length
@@ -1066,6 +1268,7 @@ export default function ShowDetail() {
               spoilerFree={spoilerFree}
               avgRuntime={avgRuntime}
               userUid={user?.uid ?? ''}
+              compactMode={compactMode}
               t={t}
               onToggleSeason={handleToggleSeason}
               onMarkSeasonWatched={handleMarkSeasonWatched}
@@ -1081,7 +1284,8 @@ export default function ShowDetail() {
               onSortByProgressToggle={(n) => setSortByProgress(prev => { const s = new Set(prev); if (s.has(n)) s.delete(n); else s.add(n); return s })}
             />
           )
-        })
+        })}
+        </>
       )}
       <MediaGrid
         items={similar}
@@ -1113,6 +1317,7 @@ export default function ShowDetail() {
           onCatchUp={handleCatchUp}
           onClose={() => setCatchUpPrompt(null)}
           t={t}
+          isProcessing={toggling !== null}
         />
       )}
       {confirmSeason && (
@@ -1121,6 +1326,7 @@ export default function ShowDetail() {
           onConfirm={handleConfirmSeason}
           onCancel={handleCancelSeason}
           t={t}
+          isProcessing={markingSeason !== null}
         />
       )}
       {emotionPickerFor && user?.uid && (
@@ -1134,8 +1340,83 @@ export default function ShowDetail() {
           onClose={() => setEmotionPickerFor(null)}
         />
       )}
-      {groupWatchToast && (
+      {batchProgress && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="progressbar" aria-valuenow={batchProgress.current} aria-valuemin={0} aria-valuemax={batchProgress.total} aria-label={`Saving ${batchProgress.current} of ${batchProgress.total} episodes`}>
+          <div className="bg-surface border-[3px] border-border p-6 shadow-brutal-xl max-w-xs w-full mx-4">
+            <div className="text-xs font-bold uppercase text-text-secondary mb-3 text-center">{batchProgress.context === 'season' ? t.profile.saving : t.showDetail.catchUpTitle}</div>
+            <div className="text-lg font-black text-center mb-3">
+              <span className="text-yellow">{batchProgress.current}</span>
+              <span className="text-text-secondary"> / </span>
+              <span>{batchProgress.total}</span>
+            </div>
+            <div className="h-3 bg-surface-light border-2 border-border overflow-hidden">
+              <div
+                className="h-full bg-yellow progress-shimmer transition-all duration-300 ease-out"
+                style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+      {watchlistToast && (
+        <div className="fixed bottom-0 right-4 z-50 animate-slide-up mb-2">
+          <div className={`bg-surface border-[3px] px-4 py-3 shadow-brutal-xl max-w-xs ${watchlistToast.added ? 'border-yellow' : 'border-pink'}`}>
+            <div className="text-[10px] font-bold text-text-secondary uppercase">{t.watchlist.title}</div>
+            <div className="text-xs font-bold mt-1">
+              <span className={watchlistToast.added ? 'text-yellow' : 'text-pink'}>
+                {watchlistToast.added ? t.watchlist.added : t.watchlist.removed}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {episodeToast && (
+        <div className="fixed bottom-12 right-4 z-50 animate-slide-up">
+          <div className={`bg-surface border-[3px] px-4 py-3 shadow-brutal-xl max-w-xs ${episodeToast.watched ? 'border-yellow' : 'border-pink'}`}>
+            <div className="text-[10px] font-bold text-text-secondary uppercase">{t.showDetail.season} {episodeToast.seasonNumber} · {t.showDetail.episode} {episodeToast.episodeNumber}</div>
+            <div className="text-xs font-bold mt-1">
+              <span className={episodeToast.watched ? 'text-yellow' : 'text-pink'}>
+                {episodeToast.watched ? t.showDetail.watched : t.showDetail.unwatched}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {movieToast && (
         <div className="fixed bottom-24 right-4 z-50 animate-slide-up">
+          <div className={`bg-surface border-[3px] px-4 py-3 shadow-brutal-xl max-w-xs ${movieToast.watched ? 'border-yellow' : 'border-pink'}`}>
+            <div className="text-[10px] font-bold text-text-secondary uppercase truncate max-w-[200px]">{movieToast.name}</div>
+            <div className="text-xs font-bold mt-1">
+              <span className={movieToast.watched ? 'text-yellow' : 'text-pink'}>
+                {movieToast.watched ? t.showDetail.watched : t.showDetail.unwatched}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+      {seriesToast !== null && (
+        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
+          <div className="bg-surface border-[3px] border-yellow px-6 py-5 shadow-brutal-xl max-w-sm text-center">
+            <div className="text-lg sm:text-xl font-black text-yellow">{t.showDetail.seriesComplete}</div>
+            <div className="text-[10px] font-bold text-text-secondary uppercase mt-2">{show?.name}</div>
+            <SeriesReactions episodeId={seriesToast} uid={user?.uid ?? ''} currentEmotion={emotions.get(seriesToast) ?? null} onSelect={(emotionId) => { setEmotions(prev => { const n = new Map(prev); if (emotionId) n.set(seriesToast, emotionId); else n.delete(seriesToast); return n }) }} onClose={() => setSeriesToast(null)} />
+          </div>
+        </div>
+      )}
+      {seasonToast && (
+        <div className="fixed bottom-36 right-4 z-50 animate-slide-up">
+          <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-brutal-xl max-w-xs">
+            <div className="text-[10px] font-bold text-text-secondary uppercase">{seasonToast.action === 'watch' ? t.showDetail.markedWatched : t.showDetail.markedUnwatched}</div>
+            <div className="text-xs font-bold mt-1">
+              {seasonToast.seasonNumber > 0 && <span className="text-pink">{t.showDetail.season} {seasonToast.seasonNumber}</span>}
+              {seasonToast.seasonNumber > 0 && <span> — </span>}
+              <span>{seasonToast.count} {seasonToast.count !== 1 ? `${t.showDetail.episode}s` : t.showDetail.episode}</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {groupWatchToast && (
+        <div className="fixed bottom-48 right-4 z-50 animate-slide-up">
           <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-brutal-xl max-w-xs">
             <div className="text-[10px] font-bold text-text-secondary uppercase">{t.watchParty.watchingTogether}</div>
             <div className="text-xs font-bold mt-1">

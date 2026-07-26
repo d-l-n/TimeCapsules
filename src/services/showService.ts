@@ -189,7 +189,61 @@ export async function toggleWatchedEpisode(uid: string, episodeId: number, showI
 
 async function updateStatsOnToggle(uid: string, delta: number) {
   const snap = await getDocs(query(collection(db, 'user_stats'), where('user_id', '==', uid), limit(1)))
-  if (snap.empty) return
+  if (snap.empty) {
+    await setDoc(doc(db, 'user_stats', uid), {
+      user_id: uid,
+      nb_episodes_watched: delta > 0 ? delta : 0,
+      time_spent: delta > 0 ? delta * 30 : 0,
+    })
+    return
+  }
+  await updateDoc(snap.docs[0].ref, {
+    nb_episodes_watched: increment(delta),
+    time_spent: increment(delta * 30),
+  })
+}
+
+/** Quick add for batch operations — skips stats update but checks existence to avoid duplicates. */
+export async function addWatchedEpisode(uid: string, episodeId: number, showId: number) {
+  const existing = await getDocs(query(
+    collection(db, 'watched_episodes'),
+    where('user_id', '==', uid),
+    where('episode_id', '==', episodeId),
+    limit(1),
+  ))
+  if (!existing.empty) return
+  await addDoc(collection(db, 'watched_episodes'), {
+    user_id: uid,
+    episode_id: episodeId,
+    show_id: showId,
+    watched_at: new Date().toISOString(),
+  })
+}
+
+/** Blind remove (query + delete, no stats) for batch unmarking episodes. Returns number of docs removed. */
+export async function removeWatchedEpisode(uid: string, episodeId: number): Promise<number> {
+  const snap = await getDocs(query(
+    collection(db, 'watched_episodes'),
+    where('user_id', '==', uid),
+    where('episode_id', '==', episodeId),
+  ))
+  if (snap.empty) return 0
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
+  return snap.docs.length
+}
+
+/** Update user stats with a total delta after a batch operation. */
+export async function batchUpdateStats(uid: string, delta: number) {
+  const snap = await getDocs(query(collection(db, 'user_stats'), where('user_id', '==', uid), limit(1)))
+  if (snap.empty) {
+    const nb = delta > 0 ? delta : 0
+    await setDoc(doc(db, 'user_stats', uid), {
+      user_id: uid,
+      nb_episodes_watched: nb,
+      time_spent: nb * 30,
+    })
+    return
+  }
   await updateDoc(snap.docs[0].ref, {
     nb_episodes_watched: increment(delta),
     time_spent: increment(delta * 30),
@@ -215,6 +269,20 @@ export async function getUserWatchlistTmdbMap(uid: string): Promise<Map<number, 
 export async function getUserWatchedShowIds(uid: string): Promise<Set<number>> {
   const items = await findMany<{ show_id: number }>('watched_episodes', where('user_id', '==', uid))
   return new Set(items.map(w => w.show_id))
+}
+
+/** Returns a Set of tmdb_ids that the user currently follows. */
+export async function getFollowedTmdbIds(uid: string): Promise<Set<number>> {
+  const [followed, showsMap] = await Promise.all([
+    findMany<{ show_id: number }>('followed_shows', where('user_id', '==', uid), where('active', '==', 1)),
+    buildShowsMap(),
+  ])
+  const ids = new Set<number>()
+  followed.forEach(f => {
+    const sh = showsMap.get(f.show_id)
+    if (sh?.tmdb_id) ids.add(sh.tmdb_id)
+  })
+  return ids
 }
 
 export async function getResumePositions(uid: string, showId: number): Promise<Map<number, number>> {

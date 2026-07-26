@@ -11,6 +11,7 @@ import type { ShowDoc } from '../lib/firebase-queries'
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 import ShowCard from '../components/ShowCard'
+import AnimatedOverlay from '../components/AnimatedOverlay'
 
 export default function ListDetail() {
   const { id } = useParams<{ id: string }>()
@@ -121,12 +122,11 @@ export default function ListDetail() {
           ))}
         </div>
       )}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowDeleteConfirm(false)}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-              {t.lists.delete}
-            </h3>
+      <AnimatedOverlay open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
+            {t.lists.delete}
+          </h3>
             <p className="text-sm font-bold">
               {t.lists.confirmDelete}
             </p>
@@ -136,22 +136,19 @@ export default function ListDetail() {
                 aria-label="Confirm delete"
                 className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
-                {lang === 'es' ? 'ELIMINAR' : 'DELETE'}
+                {t.lists.delete}
               </button>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
                 aria-label="Cancel"
                 className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
+              >                {t.lists.cancel}
               </button>
             </div>
           </div>
-        </div>
-      )}
-      {showEmptyConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onKeyDown={(e) => e.key === 'Escape' && setShowEmptyConfirm(false)}>
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
+        </AnimatedOverlay>
+      <AnimatedOverlay open={showEmptyConfirm} onClose={() => setShowEmptyConfirm(false)} className="p-4">
+          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
             <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
               {t.lists.emptyListBtn}
             </h3>
@@ -164,19 +161,18 @@ export default function ListDetail() {
                 aria-label="Confirm empty"
                 className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
               >
-                {lang === 'es' ? 'VACIAR' : 'EMPTY'}
+                {t.lists.emptyListBtn}
               </button>
               <button
                 onClick={() => setShowEmptyConfirm(false)}
                 aria-label="Cancel"
                 className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
               >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
+                {t.lists.cancel}
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </AnimatedOverlay>
     </div>
   )
 }

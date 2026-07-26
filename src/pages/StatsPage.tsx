@@ -23,6 +23,8 @@ export default function StatsPage() {
     }
   }, [loading, badges.length])
 
+  const maxCount = ratingDist.length > 0 ? Math.max(...ratingDist.map(r => r.count)) : 0
+
   const kpis = [
     { label: t.stats.episodesWatched, value: stats.nb_episodes_watched ?? 0 },
     { label: t.stats.showsFollowed, value: showCount },
@@ -46,18 +48,15 @@ export default function StatsPage() {
         <section aria-label={t.stats.ratingDistribution} className="bg-surface border-[3px] border-border p-5 shadow-brutal">
           <h3 className="text-xl sm:text-2xl font-black uppercase border-b-[3px] border-border pb-3 mb-5 font-heading">{t.stats.ratingDistribution}</h3>
           <div className="space-y-3">
-            {ratingDist.map(({ rating, count }) => {
-              const maxCount = Math.max(...ratingDist.map(r => r.count))
-              return (
-                <div key={rating} className="flex items-center gap-3">
-                  <span className="text-sm font-bold w-8 text-right border-2 border-border px-1 py-1 bg-surface-light">{rating}</span>
-                  <div className="flex-1 h-6 sm:h-8 bg-surface-light border-2 border-border" role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={maxCount} aria-label={`${rating} stars: ${count} ratings`}>
-                    <div className="h-full bg-purple border-r-2 border-border transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
-                  </div>
-                  <span className="text-sm font-bold w-10 text-right">{count}</span>
+            {ratingDist.map(({ rating, count }) => (
+              <div key={rating} className="flex items-center gap-3">
+                <span className="text-sm font-bold w-8 text-right border-2 border-border px-1 py-1 bg-surface-light">{rating}</span>
+                <div className="flex-1 h-6 sm:h-8 bg-surface-light border-2 border-border" role="progressbar" aria-valuenow={count} aria-valuemin={0} aria-valuemax={maxCount} aria-label={`${rating} stars: ${count} ratings`}>
+                  <div className="h-full bg-purple border-r-2 border-border transition-all" style={{ width: `${(count / maxCount) * 100}%` }} />
                 </div>
-              )
-            })}
+                <span className="text-sm font-bold w-10 text-right">{count}</span>
+              </div>
+            ))}
           </div>
         </section>
       )}

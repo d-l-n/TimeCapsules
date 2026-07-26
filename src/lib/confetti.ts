@@ -1,6 +1,6 @@
 let activeRaf: number | null = null
 
-export function triggerConfetti(): void {
+export function triggerConfetti(count: number = 110): void {
   if (
     window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ||
     document.querySelector('[data-reduce-effects="true"]')
@@ -23,7 +23,7 @@ export function triggerConfetti(): void {
   }
 
   const palette = ['#ccff00', '#ff2d78', '#ffd700', '#ffffff']
-  const particles = Array.from({ length: 110 }, (_, i) => ({
+  const particles = Array.from({ length: count }, (_, i) => ({
     x: (i % 2 ? 0.65 : 0.35) * canvas.width,
     y: canvas.height * 0.38,
     vx: (Math.random() - 0.5) * 9,

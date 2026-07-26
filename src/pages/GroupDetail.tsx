@@ -11,6 +11,7 @@ import Loading from '../components/Loading'
 import ShowCard from '../components/ShowCard'
 import SectionHeader from '../components/SectionHeader'
 import ErrorBox from '../components/ErrorBox'
+import AnimatedOverlay from '../components/AnimatedOverlay'
 
 const TRENDING_LIMIT = 8
 
@@ -192,9 +193,7 @@ export default function GroupDetail() {
 
   const handleShareCode = async () => {
     if (!inviteCode) return
-    const shareText = lang === 'es'
-      ? `Únete a mi grupo en Time Capsules con el código: ${inviteCode}`
-      : `Join my group on Time Capsules with code: ${inviteCode}`
+    const shareText = t.groups.shareText.replace('{inviteCode}', inviteCode)
 
     if (navigator.share) {
       try {
@@ -450,53 +449,48 @@ export default function GroupDetail() {
 
       {error && <ErrorBox message={error} className="mb-4" />}
 
-      {confirmLeave && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true">
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.leaveConfirm}</h3>
-            <div className="flex gap-3">
-              <button
-                onClick={handleLeave}
-                aria-label="Confirm leave group"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'SALIR' : 'LEAVE'}
-              </button>
-              <button
-                onClick={() => setConfirmLeave(false)}
-                aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
-              </button>
-            </div>
+      <AnimatedOverlay open={confirmLeave} onClose={() => setConfirmLeave(false)} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.leaveTitle}</h3>
+          <p className="text-sm font-bold">{t.groups.leaveConfirm}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleLeave}
+              aria-label="Confirm leave group"
+              className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
+            >                {t.groups.leaveBtn}
+            </button>
+            <button
+              onClick={() => setConfirmLeave(false)}
+              aria-label="Cancel"
+              className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
+            >                {t.lists.cancel}
+            </button>
           </div>
         </div>
-      )}
+      </AnimatedOverlay>
 
-      {confirmRemove != null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true">
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-4 p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.removeConfirm}</h3>
-            <div className="flex gap-3">
-              <button
-                onClick={confirmRemoveShow}
-                aria-label="Confirm remove"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'QUITAR' : 'REMOVE'}
-              </button>
-              <button
-                onClick={() => setConfirmRemove(null)}
-                aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-              >
-                {lang === 'es' ? 'CANCELAR' : 'CANCEL'}
-              </button>
-            </div>
+      <AnimatedOverlay open={confirmRemove != null} onClose={() => setConfirmRemove(null)} className="p-4">
+        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
+          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.removeTitle}</h3>
+          <p className="text-sm font-bold">{t.groups.removeConfirm}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={confirmRemoveShow}
+              aria-label="Confirm remove"
+              className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
+            >
+              {t.groups.removeBtn}
+            </button>
+            <button
+              onClick={() => setConfirmRemove(null)}
+              aria-label="Cancel"
+              className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
+            >                {t.lists.cancel}
+            </button>
           </div>
         </div>
-      )}
+      </AnimatedOverlay>
     </div>
   )
 }

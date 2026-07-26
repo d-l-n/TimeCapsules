@@ -51,7 +51,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
                 <Link to={detailPath} className="block relative" aria-label={name}>
                   <div className="aspect-[2/3] bg-surface-light border-b-[3px] border-border overflow-hidden">
                     {imgSrc ? (
-                      <img src={imgSrc} alt={`${name} poster`} className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-200" loading="lazy" />
+                      <img src={imgSrc} alt={`${name} poster`} className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-200" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center p-3 text-center text-sm font-bold uppercase leading-tight">{name}</div>
                     )}

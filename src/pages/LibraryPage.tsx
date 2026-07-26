@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { useFollowedShows, useWatchlist } from '../hooks'
-import { getUserWatchedShowIds } from '../services/showService'
+import { getFinishedContent } from '../services/showService'
 import { findMany } from '../lib/firestore-utils'
 import { where } from 'firebase/firestore'
 import type { DashItem } from '../services/showService'
@@ -25,7 +25,7 @@ export default function LibraryPage() {
   const { t } = useI18n()
   const { shows, binging, loading: followedLoading } = useFollowedShows(user?.uid)
   const { items: watchlist, loading: wlLoading } = useWatchlist(user?.uid)
-  const [watchedIds, setWatchedIds] = useState<Set<number>>(new Set())
+  const [finishedIds, setFinishedIds] = useState<Set<number>>(new Set())
   const [favoriteIds, setFavoriteIds] = useState<Set<number>>(new Set())
   const [filter, setFilter] = useState<Filter>('all')
 
@@ -33,12 +33,12 @@ export default function LibraryPage() {
     if (!user?.uid) return
     let cancelled = false
     ;(async () => {
-      const [watched, ratings] = await Promise.all([
-        getUserWatchedShowIds(user.uid),
+      const [finished, ratings] = await Promise.all([
+        getFinishedContent(user.uid),
         findMany<{ show_id: number }>('ratings', where('user_id', '==', user.uid)),
       ])
       if (cancelled) return
-      setWatchedIds(watched)
+      setFinishedIds(new Set(finished.map(f => f.id)))
       setFavoriteIds(new Set(ratings.map(r => r.show_id)))
     })()
     return () => { cancelled = true }
@@ -64,12 +64,12 @@ export default function LibraryPage() {
         add({ id: w.show_id, name: w.name, poster_url: w.poster_url, imdb_rating: w.imdb_rating, media_type: w.media_type }, 'planned')
       }
     })
-    watchedIds.forEach(id => {
+    finishedIds.forEach(id => {
       const it = map.get(id)
       if (it) it.status = 'completed'
     })
     return [...map.values()]
-  }, [binging, shows, watchlist, bingingIds, followedIds, watchedIds, favoriteIds])
+  }, [binging, shows, watchlist, bingingIds, followedIds, finishedIds, favoriteIds])
 
   const filtered = useMemo(() => {
     if (filter === 'all') return items

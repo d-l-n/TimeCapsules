@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { getTmdbImage } from '../../services/tmdb'
-import { getEmoji } from '../../services/emotionService'
+import { FaceSmile2, EmojiSad, Ghost, Flame, MagicStar, EmojiNormal, Heart, Fire, Confetti, Star } from 'reicon-react'
 import type { MemberWithProfile, GroupEpisodeProgress } from '../../services/groupService'
 import type { MergedEpisode } from './types'
 import { fmtPos } from './types'
@@ -29,6 +29,7 @@ interface EpisodeRowProps {
   spoilerFree: boolean
   avgRuntime: number
   userUid: string
+  compactMode: boolean
   t: ReturnType<typeof useI18n>['t']
   onToggle: (id: number, watched: boolean, cx?: number, cy?: number) => void
   onRewatch: (id: number) => void
@@ -44,26 +45,26 @@ export default function EpisodeRow({
   ep, isWatched, isCurrent, isToggling, isExpanded, hasInfo,
   watchedCounts, emotions, resumePositions, editingPosition, editValue, setEditValue, editInputRef,
   selectedGroupId, groupMembers, groupProgress, memberColorMap,
-  spoilerFree, avgRuntime, userUid, t,
+  spoilerFree, avgRuntime, userUid, compactMode, t,
   onToggle, onRewatch, onToggleSynopsis,
   onResumeClick, onResumeSave, onResumePreset, onResumeClear, onResumeKeyDown,
 }: EpisodeRowProps) {
   const rowBg = isWatched ? 'bg-green' : isCurrent ? 'bg-yellow text-text' : 'bg-surface'
   return (
-    <div className="border-2 border-border">
+    <div className="border-2 border-border" data-episode-id={ep.id}>
       <div className="flex">
         <button
           onClick={(e) => onToggle(ep.id, isWatched, e.clientX, e.clientY)}
           disabled={isToggling}
-          className={`flex-1 min-w-0 px-2 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-3 transition-all text-left ${rowBg} ${!isWatched && !isCurrent ? 'sm:hover:bg-yellow' : ''}`}
+          className={`flex-1 min-w-0 px-2 sm:px-4 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-3 transition-all duration-300 ease-out text-left ${rowBg} ${!isWatched && !isCurrent ? 'sm:hover:bg-yellow' : ''} ${compactMode ? 'py-1 sm:py-1.5' : 'py-2 sm:py-2.5'}`}
           aria-label={`${t.showDetail.episode} ${ep.episode_number}${ep.title ? ` — ${ep.title}` : ''}${isWatched ? ` — ${t.showDetail.watched}` : ''}`}
         >
-          <span className={`border-2 px-1 sm:px-2 py-0.5 text-[9px] sm:text-xs shrink-0 flex items-center gap-1 ${isWatched ? 'border-text bg-green text-text' : isCurrent ? 'border-text bg-yellow text-text' : 'border-border bg-surface text-text'}`} aria-hidden="true">
+          <span className={`border-2 px-1 sm:px-2 py-0.5 text-[9px] sm:text-xs shrink-0 flex items-center gap-1 transition-all duration-300 ease-out ${isWatched ? 'border-text bg-green text-text' : isCurrent ? 'border-text bg-yellow text-text' : 'border-border bg-surface text-text'}`} aria-hidden="true">
             {isToggling ? '...' : isWatched ? <><WatchedIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{watchedCounts.get(ep.id)! > 1 && `×${watchedCounts.get(ep.id)}`}</> : `E${ep.episode_number}`}
           </span>
-          <span className={`truncate ${isWatched ? 'line-through opacity-70' : ''}`}>{ep.title}</span>
+          <span className={`transition-all duration-300 ease-out ${compactMode ? 'break-words' : 'truncate'} ${isWatched ? 'line-through opacity-70' : ''}`}>{ep.title}</span>
         </button>
-        {isWatched && (
+        {!compactMode && isWatched && (
           <button
             onClick={(e) => { e.stopPropagation(); onRewatch(ep.id) }}
             disabled={isToggling}
@@ -74,10 +75,10 @@ export default function EpisodeRow({
             {isToggling ? '...' : <RewatchIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
           </button>
         )}
-        {emotions.has(ep.id) && (
-          <span className="shrink-0 text-sm px-1 flex items-center" title={emotions.get(ep.id)!}>{getEmoji(emotions.get(ep.id)!)}</span>
+        {!compactMode && emotions.has(ep.id) && (
+          <EmotionIcon emotionId={emotions.get(ep.id)!} />
         )}
-        {selectedGroupId && groupMembers.length > 1 && (
+        {!compactMode && selectedGroupId && groupMembers.length > 1 && (
           <GroupProgressPopover
             members={groupMembers}
             episodeId={ep.id}
@@ -87,7 +88,7 @@ export default function EpisodeRow({
             t={t}
           />
         )}
-        {editingPosition === ep.id ? (
+        {!compactMode && (editingPosition === ep.id ? (
           <PositionEditor
             contentId={ep.id}
             contentType="episode"
@@ -111,8 +112,8 @@ export default function EpisodeRow({
           >
             <TimerIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {resumePositions.has(ep.id) ? fmtPos(resumePositions.get(ep.id)!) : t.showDetail.noPosition}
           </button>
-        )}
-        {hasInfo && (
+        ))}
+        {!compactMode && hasInfo && (
           <button
             onClick={() => onToggleSynopsis(ep.id)}
             className={`shrink-0 px-2 sm:px-3 text-[10px] sm:text-xs font-bold border-l-2 border-border transition-colors ${isExpanded ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
@@ -122,7 +123,7 @@ export default function EpisodeRow({
           </button>
         )}
       </div>
-      {isExpanded && hasInfo && (
+      {!compactMode && isExpanded && hasInfo && (
         <div className="border-t-2 border-border px-3 sm:px-4 py-2 sm:py-3 bg-surface text-xs sm:text-sm flex flex-col sm:flex-row gap-3 sm:gap-4">
           {ep.still_path && !(spoilerFree && !isWatched) && (
             <div className="sm:w-48 shrink-0">
@@ -146,6 +147,22 @@ export default function EpisodeRow({
       )}
     </div>
   )
+}
+
+function EmotionIcon({ emotionId }: { emotionId: string }) {
+  const iconMap: Record<string, React.ReactNode> = {
+    happy: <FaceSmile2 size={16} weight="Filled" />,
+    sad: <EmojiSad size={16} weight="Filled" />,
+    scared: <Ghost size={16} weight="Filled" />,
+    angry: <Flame size={16} weight="Filled" />,
+    mindblown: <MagicStar size={16} weight="Filled" />,
+    boring: <EmojiNormal size={16} weight="Filled" />,
+    love: <Heart size={16} weight="Filled" />,
+    fire: <Fire size={16} weight="Filled" />,
+    party: <Confetti size={16} weight="Filled" />,
+    star: <Star size={16} weight="Filled" />,
+  }
+  return <span className="shrink-0 px-1 flex items-center" title={emotionId}>{iconMap[emotionId] ?? '?'}</span>
 }
 
 function GroupProgressPopover({ members, episodeId, groupProgress, userId, memberColorMap, t }: {

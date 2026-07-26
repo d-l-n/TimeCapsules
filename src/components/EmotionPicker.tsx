@@ -1,17 +1,19 @@
 import { useCallback } from 'react'
 import { setEmotion } from '../services/emotionService'
+import { FaceSmile2, EmojiSad, Ghost, Flame, MagicStar, EmojiNormal, Heart, Fire, Confetti, Star } from 'reicon-react'
+import AnimatedOverlay from './AnimatedOverlay'
 
 const EMOTIONS = [
-  { id: 'happy', label: 'Happy' },
-  { id: 'sad', label: 'Sad' },
-  { id: 'scared', label: 'Scared' },
-  { id: 'angry', label: 'Angry' },
-  { id: 'mindblown', label: 'Mind Blown' },
-  { id: 'boring', label: 'Boring' },
-  { id: 'love', label: 'Love' },
-  { id: 'fire', label: 'Fire' },
-  { id: 'party', label: 'Party' },
-  { id: 'star', label: 'Amazing' },
+  { id: 'happy', label: 'Happy', Icon: FaceSmile2 },
+  { id: 'sad', label: 'Sad', Icon: EmojiSad },
+  { id: 'scared', label: 'Scared', Icon: Ghost },
+  { id: 'angry', label: 'Angry', Icon: Flame },
+  { id: 'mindblown', label: 'Mind Blown', Icon: MagicStar },
+  { id: 'boring', label: 'Boring', Icon: EmojiNormal },
+  { id: 'love', label: 'Love', Icon: Heart },
+  { id: 'fire', label: 'Fire', Icon: Fire },
+  { id: 'party', label: 'Party', Icon: Confetti },
+  { id: 'star', label: 'Amazing', Icon: Star },
 ]
 
 export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect, onClose }: {
@@ -29,8 +31,8 @@ export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect
   }, [uid, episodeId, currentEmotion, onSelect, onClose])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="bg-surface border-[3px] border-border max-w-xs w-full mx-4 p-4 shadow-brutal-xl" onClick={e => e.stopPropagation()}>
+    <AnimatedOverlay open onClose={onClose} className="p-4" ariaLabel="How did it make you feel?">
+      <div className="bg-surface border-[3px] border-border max-w-xs w-full mx-auto p-4 shadow-brutal-xl">
         <div className="text-xs font-bold uppercase border-b-4 border-border pb-2 mb-3">How did it make you feel?</div>
         <div className="grid grid-cols-5 gap-2">
           {EMOTIONS.map(em => (
@@ -38,10 +40,10 @@ export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect
               key={em.id}
               onClick={() => handlePick(em.id)}
               aria-label={em.label}
-              className={`text-[10px] font-bold uppercase p-2.5 border-2 transition-all duration-150 cursor-pointer sm:hover:bg-yellow sm:hover:border-border focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2 ${currentEmotion === em.id ? 'border-border bg-yellow shadow-brutal-sm' : 'border-border/30 bg-surface-light sm:hover:border-border/70'}`}
+              className={`flex flex-col items-center gap-1 p-2 border-2 transition-all duration-150 cursor-pointer sm:hover:bg-yellow sm:hover:border-border focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2 ${currentEmotion === em.id ? 'border-border bg-yellow shadow-brutal-sm' : 'border-border/30 bg-surface-light sm:hover:border-border/70'}`}
               title={em.label}
             >
-              {em.label.split(' ').map(w => w[0]).join('')}
+              <em.Icon size={20} weight={currentEmotion === em.id ? 'Filled' : 'Outline'} />
             </button>
           ))}
         </div>
@@ -55,6 +57,6 @@ export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect
           </button>
         )}
       </div>
-    </div>
+    </AnimatedOverlay>
   )
 }

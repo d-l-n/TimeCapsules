@@ -20,13 +20,15 @@
     "fix:media-type": "tsx scripts/10-fix-media-type.ts",
     "delete:bad-shows": "tsx scripts/11-delete-bad-shows.ts",
     "cleanup:migration-fields": "tsx scripts/12-cleanup-migration-fields.ts",
+    "deduplicate:watched": "tsx scripts/13-deduplicate-watched.ts",
     "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=timecapsules --branch main"
   },
   "dependencies": {
     "firebase": "^12.15.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-router-dom": "^7.18.1"
+    "react-router-dom": "^7.18.1",
+    "reicon-react": "^1.1.302"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
