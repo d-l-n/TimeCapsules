@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { fmtTime } from '../lib/formatting'
+import { ArrowRightIcon } from './Icons'
 
 interface DashboardHeroProps {
   streak: number
@@ -32,7 +33,7 @@ export default function DashboardHero({ streak, episodesWatched, showsTracked, t
           className="btn-brutal btn-accent shrink-0"
         >
           {t.dashboard.goDiscover}
-          <re-icon icon="arrow-right" decorative></re-icon>
+          <ArrowRightIcon className="w-3 h-3 inline" />
         </Link>
       </div>
 
@@ -55,7 +56,7 @@ function StatLink({ to, value, label, tone }: { to: string; value: string; label
   return (
     <Link
       to={to}
-      className={`group bg-surface-light border-[3px] border-border p-4 sm:p-5 relative overflow-hidden transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal-md ${tone === 'highlight' ? 'hover:bg-pink/30' : ''}`}
+      className={`group bg-surface-light border-[3px] border-border p-4 sm:p-5 relative overflow-hidden transition-all sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md ${tone === 'highlight' ? 'sm:hover:bg-pink/30' : ''}`}
     >
       <div className="text-3xl sm:text-5xl font-black mb-1 font-heading leading-none">{value}</div>
       <div className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary">{label}</div>

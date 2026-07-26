@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRightIcon } from './Icons'
 
 interface SectionHeaderProps {
   id: string
@@ -21,14 +22,14 @@ export default function SectionHeader({ id, title, count, actionLabel, actionTo,
       </div>
       {actionLabel && (actionTo || onAction) && (
         actionTo ? (
-          <Link to={actionTo} className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary hover:text-text transition-colors shrink-0 leading-none flex items-center gap-1">
-            {actionLabel} <re-icon icon="arrow-right" decorative></re-icon>
+          <Link to={actionTo} className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary sm:hover:text-text transition-colors shrink-0 leading-none flex items-center gap-1">
+            {actionLabel} <ArrowRightIcon className="w-3 h-3 inline" />
           </Link>
         ) : (
           <button
             onClick={onAction}
             disabled={actionLoading}
-            className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary hover:text-text transition-colors disabled:opacity-40 shrink-0 cursor-pointer leading-none"
+            className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary sm:hover:text-text transition-colors disabled:opacity-40 shrink-0 cursor-pointer leading-none"
             aria-label={actionLabel}
           >
             {actionLoading ? '...' : actionLabel}

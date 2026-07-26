@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { updateProfile, updateEmail, deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth'
+import { updateProfile, verifyBeforeUpdateEmail, deleteUser, reauthenticateWithPopup, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth'
 import { auth, googleProvider } from '../lib/firebase-auth'
 import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
@@ -126,14 +126,16 @@ export default function ProfilePage() {
       // 2. Sync display name to Firestore for group member visibility
       await saveUserProfile(user.uid, displayName.trim(), photoURL.trim())
 
-      // 3. Update Email if it has changed
+      // 3. Update Email if it has changed — sends verification link to new address
       if (email.trim() && email.trim() !== user.email) {
-        await updateEmail(auth.currentUser, email.trim())
+        await verifyBeforeUpdateEmail(auth.currentUser, email.trim())
+        setMessage({ type: 'success', text: t.profile.emailVerificationSent })
+      } else {
+        setMessage({ type: 'success', text: t.profile.success })
       }
 
       // 4. Reload to refresh user.photoURL/displayName in AuthContext
       await refreshUser()
-      setMessage({ type: 'success', text: t.profile.success })
     } catch (err: any) {
       console.error(err)
       let errMsg = t.profile.error
@@ -207,14 +209,16 @@ export default function ProfilePage() {
           // 2. Sync display name to Firestore for group member visibility
           await saveUserProfile(user.uid, displayName.trim(), photoURL.trim())
 
-          // 3. Update Email if it has changed
+          // 3. Update Email if it has changed — sends verification link to new address
           if (email.trim() && email.trim() !== user.email) {
-            await updateEmail(auth.currentUser, email.trim())
+            await verifyBeforeUpdateEmail(auth.currentUser, email.trim())
+            setMessage({ type: 'success', text: t.profile.emailVerificationSent })
+          } else {
+            setMessage({ type: 'success', text: t.profile.success })
           }
 
           // 4. Reload to refresh user.photoURL/displayName in AuthContext
           await refreshUser()
-          setMessage({ type: 'success', text: t.profile.success })
         } catch (err: any) {
           console.error(err)
           const errMsg = err.code === 'auth/email-already-in-use'
