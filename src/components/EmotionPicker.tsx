@@ -33,7 +33,7 @@ export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect
   useEffect(() => { ref.current?.showModal() }, [])
 
   return (
-    <dialog ref={ref} onClose={onClose}>
+    <dialog ref={ref} onClose={onClose} aria-modal="true">
       <div className="bg-surface border-[3px] border-border max-w-xs w-full mx-auto p-4 shadow-brutal-xl">
         <div className="text-xs font-bold uppercase border-b-4 border-border pb-2 mb-3">How did it make you feel?</div>
         <div className="grid grid-cols-5 gap-2">

@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+import { lazy, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/AuthContext'
 import Layout from './components/Layout'
@@ -24,6 +24,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (!user?.uid) return
+    const lastCheck = localStorage.getItem('lastNotifCheck')
+    const today = new Date().toDateString()
+    if (lastCheck !== today) {
+      import('./services/notificationService').then(({ checkUpcomingEpisodes }) =>
+        checkUpcomingEpisodes(user.uid).then(() => {
+          localStorage.setItem('lastNotifCheck', today)
+        })
+      )
+    }
+  }, [user?.uid])
+
   return (
     <ErrorBoundary>
       <Routes>

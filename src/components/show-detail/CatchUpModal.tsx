@@ -24,7 +24,7 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t, isProcessing
   }, [isProcessing])
 
   return (
-    <dialog ref={ref} onClose={onClose}>
+    <dialog ref={ref} onClose={onClose} aria-modal="true">
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl relative">
         <button
           onClick={onClose}

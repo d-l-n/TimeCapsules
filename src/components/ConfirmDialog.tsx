@@ -38,7 +38,7 @@ export default function ConfirmDialog({ open, onClose, title, message, confirmLa
   }, [onClose])
 
   return (
-    <dialog ref={ref} onClose={onClose}>
+    <dialog ref={ref} onClose={onClose} aria-modal="true">
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
         <h3 className="text-lg font-heading uppercase border-b-4 border-border pb-3">{title}</h3>
         <p className={`text-sm font-bold ${variant === 'danger' ? 'text-pink' : ''}`}>{message}</p>

@@ -1,7 +1,8 @@
 import { collection, addDoc, getDocs, query, where, limit, deleteDoc } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 
 export async function setEmotion(uid: string, episodeId: number, emotionId: string | null) {
+  const db = await getDb()
   const snap = await getDocs(query(
     collection(db, 'episode_emotions'),
     where('user_id', '==', uid),
@@ -22,6 +23,7 @@ export async function setEmotion(uid: string, episodeId: number, emotionId: stri
 }
 
 export async function getEmotionsForShow(uid: string, showId: number): Promise<Map<number, string>> {
+  const db = await getDb()
   const weSnap = await getDocs(query(
     collection(db, 'watched_episodes'),
     where('user_id', '==', uid),
@@ -42,6 +44,7 @@ export async function getEmotionsForShow(uid: string, showId: number): Promise<M
 }
 
 export async function getEmotionsForHistory(uid: string): Promise<Map<number, string>> {
+  const db = await getDb()
   const snap = await getDocs(query(
     collection(db, 'episode_emotions'),
     where('user_id', '==', uid),

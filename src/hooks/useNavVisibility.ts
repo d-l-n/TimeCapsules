@@ -22,5 +22,5 @@ export function useNavVisibility({ showNotifPanel = false }: { showNotifPanel?: 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [showNotifPanel])
 
-  return { navHiddenByScroll, chromeHiddenByScroll: navHiddenByScroll }
+  return { navHiddenByScroll }
 }

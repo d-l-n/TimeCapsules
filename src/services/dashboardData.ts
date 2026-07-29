@@ -6,7 +6,7 @@ import { getTvNextEpisode, tmdbLang } from './tmdb'
 import { buildShowsMap } from './showService'
 import { memoize } from '../lib/hook-cache'
 
-const cachedGetTvNextEpisode = memoize(getTvNextEpisode, 60 * 60_000)
+export const cachedGetTvNextEpisode = memoize(getTvNextEpisode, 60 * 60_000)
 
 export async function splitFinishedByAiringStatus(uid: string, lang: string): Promise<{ finished: DashItem[]; upToDate: DashItem[] }> {
   const [allFinished, showsMap] = await Promise.all([getFinishedContent(uid), buildShowsMap()])

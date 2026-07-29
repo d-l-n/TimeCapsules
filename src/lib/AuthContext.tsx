@@ -29,6 +29,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user?.uid || seeded.current) return
     seeded.current = true
+    const doneKey = `seedDone:${user.uid}`
+    if (localStorage.getItem(doneKey)) return
     ;(async () => {
       const [{ ensureDefaultLists, syncDefaultLists }, { gatherSeedData }] = await Promise.all([
         import('../services/listService'),
@@ -37,6 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await ensureDefaultLists(user.uid, lang)
       const seed = await gatherSeedData(user.uid, lang)
       await syncDefaultLists(user.uid, seed)
+      localStorage.setItem(doneKey, '1')
     })().catch(() => {})
   }, [user?.uid, lang])
 

@@ -1,8 +1,6 @@
 import { collection, query, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, arrayUnion, arrayRemove, where, setDoc } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import { DEFAULT_LIST_IDS, isDefaultList, type CustomListDoc, type DefaultListId } from '../lib/firebase-queries'
-
-const col = collection(db, 'custom_lists')
 
 export const DEFAULT_LIST_NAMES: Record<DefaultListId, { en: string; es: string }> = {
   'default-upcoming': { en: 'Upcoming Releases', es: 'Próximos Estrenos' },
@@ -19,22 +17,26 @@ export function getListDisplayName(list: CustomListDoc, lang: 'en' | 'es'): stri
 }
 
 export async function createList(uid: string, name: string, description: string): Promise<string> {
-  const ref = await addDoc(col, { user_id: uid, name, description, show_ids: [], createdAt: new Date().toISOString() })
+  const db = await getDb()
+  const ref = await addDoc(collection(db, 'custom_lists'), { user_id: uid, name, description, show_ids: [], createdAt: new Date().toISOString() })
   return ref.id
 }
 
 export async function updateList(id: string, data: Partial<Pick<CustomListDoc, 'name' | 'description'>>) {
+  const db = await getDb()
   if (isDefaultList(id)) return
-  await updateDoc(doc(col, id), data)
+  await updateDoc(doc(db, 'custom_lists', id), data)
 }
 
 export async function deleteList(id: string) {
+  const db = await getDb()
   if (isDefaultList(id)) return
-  await deleteDoc(doc(col, id))
+  await deleteDoc(doc(db, 'custom_lists', id))
 }
 
 export async function emptyList(id: string) {
-  await updateDoc(doc(col, id), { show_ids: [] })
+  const db = await getDb()
+  await updateDoc(doc(db, 'custom_lists', id), { show_ids: [] })
 }
 
 export interface DefaultListSeed {
@@ -45,6 +47,7 @@ export interface DefaultListSeed {
 }
 
 export async function syncDefaultLists(uid: string, seed: DefaultListSeed) {
+  const db = await getDb()
   const _snap = await getDocs(query(collection(db, 'custom_lists'), where('user_id', '==', uid)))
   const existing = _snap.docs.map(d => ({ ...(d.data() as CustomListDoc), id: d.id }))
   const byId = new Map(existing.map(l => [l.id, l]))
@@ -57,18 +60,19 @@ export async function syncDefaultLists(uid: string, seed: DefaultListSeed) {
   await Promise.all(DEFAULT_LIST_IDS.map(id => {
     const l = byId.get(id)
     if (l && !l.seeded && l.show_ids.length === 0 && map[id].length > 0) {
-      return updateDoc(doc(col, id), { show_ids: map[id], seeded: true })
+      return updateDoc(doc(db, 'custom_lists', id), { show_ids: map[id], seeded: true })
     }
     return Promise.resolve()
   }))
 }
 
 export async function ensureDefaultLists(uid: string, lang: 'en' | 'es' = 'en') {
+  const db = await getDb()
   const _snap = await getDocs(query(collection(db, 'custom_lists'), where('user_id', '==', uid)))
   const existing = _snap.docs.map(d => ({ ...(d.data() as CustomListDoc), id: d.id }))
   const have = new Set(existing.map(l => l.id))
   await Promise.all(DEFAULT_LIST_IDS.filter(id => !have.has(id)).map(id =>
-    setDoc(doc(col, id), {
+    setDoc(doc(db, 'custom_lists', id), {
       user_id: uid,
       name: DEFAULT_LIST_NAMES[id][lang],
       description: '',
@@ -80,19 +84,23 @@ export async function ensureDefaultLists(uid: string, lang: 'en' | 'es' = 'en') 
 }
 
 export async function getUserLists(uid: string): Promise<CustomListDoc[]> {
+  const db = await getDb()
   const _snap = await getDocs(query(collection(db, 'custom_lists'), where('user_id', '==', uid)))
   return _snap.docs.map(d => ({ ...(d.data() as CustomListDoc), id: d.id }))
 }
 
 export async function getList(id: string): Promise<CustomListDoc | null> {
-  const snap = await getDoc(doc(col, id))
+  const db = await getDb()
+  const snap = await getDoc(doc(db, 'custom_lists', id))
   return snap.exists() ? { id: snap.id, ...snap.data() } as CustomListDoc : null
 }
 
 export async function addShowToList(listId: string, showId: number) {
-  await updateDoc(doc(col, listId), { show_ids: arrayUnion(showId) })
+  const db = await getDb()
+  await updateDoc(doc(db, 'custom_lists', listId), { show_ids: arrayUnion(showId) })
 }
 
 export async function removeShowFromList(listId: string, showId: number) {
-  await updateDoc(doc(col, listId), { show_ids: arrayRemove(showId) })
+  const db = await getDb()
+  await updateDoc(doc(db, 'custom_lists', listId), { show_ids: arrayRemove(showId) })
 }

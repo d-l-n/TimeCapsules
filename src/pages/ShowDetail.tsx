@@ -14,7 +14,7 @@ import type { CustomListDoc } from '../lib/firebase-queries'
 import type { GroupEpisodeProgress, MemberWithProfile } from '../services/groupService'
 import type { GroupWatchEventDoc } from '../lib/firebase-queries'
 import { doc, setDoc } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import EmotionPicker from '../components/EmotionPicker'
 import { getEmotionsForShow } from '../services/emotionService'
 
@@ -190,6 +190,7 @@ export default function ShowDetail() {
     let cancelled = false
     ;(async () => {
       try {
+        const db = await getDb()
         let sh = await getShowById(showId)
         if (cancelled) return
 

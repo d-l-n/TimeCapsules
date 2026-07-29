@@ -49,36 +49,11 @@ describe('useOnlineStatus', () => {
     expect(result.current).toBe(false)
   })
 
-  it('reconciles on focus event', () => {
-    Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
-    const { result } = renderHook(() => useOnlineStatus())
-
-    act(() => {
-      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
-      window.dispatchEvent(new Event('focus'))
-    })
-
-    expect(result.current).toBe(false)
-  })
-
-  it('reconciles on visibilitychange event', () => {
-    Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
-    const { result } = renderHook(() => useOnlineStatus())
-
-    act(() => {
-      Object.defineProperty(navigator, 'onLine', { value: false, configurable: true })
-      document.dispatchEvent(new Event('visibilitychange'))
-    })
-
-    expect(result.current).toBe(false)
-  })
-
   it('removes event listeners on unmount', () => {
     const removeSpy = vi.spyOn(window, 'removeEventListener')
     const { unmount } = renderHook(() => useOnlineStatus())
     unmount()
     expect(removeSpy).toHaveBeenCalledWith('online', expect.any(Function))
     expect(removeSpy).toHaveBeenCalledWith('offline', expect.any(Function))
-    expect(removeSpy).toHaveBeenCalledWith('focus', expect.any(Function))
   })
 })

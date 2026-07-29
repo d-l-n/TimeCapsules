@@ -496,7 +496,7 @@ export default function ProfilePage() {
         variant="danger"
         error={deleteError}
       />
-      <dialog ref={reauthDialog} onClose={() => { if (!reauthLoading) { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}}>
+      <dialog ref={reauthDialog} aria-modal="true" onClose={() => { if (!reauthLoading) { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }}}>
         <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
           <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
             {t.profile.reauthTitle}

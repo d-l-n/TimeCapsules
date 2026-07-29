@@ -4,7 +4,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useTheme } from '../lib/ThemeContext'
 import { useI18n } from '../lib/I18nContext'
 
-import { useDevice, useNotifications, useNavVisibility } from '../hooks'
+import { useMediaQuery, useNotifications, useNavVisibility } from '../hooks'
 import type { NotificationDoc } from '../lib/firebase-queries'
 import { MenuIcon, CloseIcon, SunIcon, MoonIcon } from '.'
 import { DashboardIcon, GroupIcon, LibraryIcon, SearchIcon, BellIcon, StatsIcon } from './Icons'
@@ -22,7 +22,8 @@ export default function Layout() {
   const { theme, toggle } = useTheme()
   const { t, lang } = useI18n()
   const { pathname } = useLocation()
-  const { isMobile, isSidebarCollapsed } = useDevice()
+  const isMobile = useMediaQuery('(max-width: 767px)')
+  const isSidebarCollapsed = useMediaQuery('(max-width: 1099px)')
   const [showNotifPanel, setShowNotifPanel] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const notifData = useNotifications(user?.uid)

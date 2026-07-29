@@ -1,30 +1,16 @@
 import { useEffect, useState } from 'react'
 
-function readOnlineStatus(): boolean {
-  if (typeof navigator === 'undefined') return true
-  return navigator.onLine
-}
-
 export function useOnlineStatus(): boolean {
-  const [isOnline, setIsOnline] = useState<boolean>(readOnlineStatus)
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine)
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)
-    const reconcile = () => setIsOnline(readOnlineStatus())
-
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-    window.addEventListener('focus', reconcile)
-    document.addEventListener('visibilitychange', reconcile)
-
     return () => {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
-      window.removeEventListener('focus', reconcile)
-      document.removeEventListener('visibilitychange', reconcile)
     }
   }, [])
 

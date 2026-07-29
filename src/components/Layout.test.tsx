@@ -15,7 +15,7 @@ vi.mock('../lib/ThemeContext', () => ({
 
 vi.mock('../hooks', () => ({
   useOnlineStatus: vi.fn(() => true),
-  useDevice: vi.fn(),
+  useMediaQuery: vi.fn(),
   useNotifications: vi.fn(),
   useNavVisibility: vi.fn(),
   useSpoilerFree: vi.fn(() => [false, vi.fn()]),
@@ -23,7 +23,7 @@ vi.mock('../hooks', () => ({
 
 const { useAuth } = await import('../lib/AuthContext')
 const { useTheme } = await import('../lib/ThemeContext')
-const { useDevice, useNotifications, useNavVisibility } = await import('../hooks')
+const { useMediaQuery, useNotifications, useNavVisibility } = await import('../hooks')
 
 const mockUser = {
   uid: 'user-1',
@@ -54,19 +54,19 @@ describe('Layout', () => {
       loading: false,
       refresh: vi.fn(),
     })
-    vi.mocked(useNavVisibility).mockReturnValue({ chromeHiddenByScroll: false, navHiddenByScroll: false })
+    vi.mocked(useNavVisibility).mockReturnValue({ navHiddenByScroll: false })
   })
 
   // ── Desktop Layout ──────────────────────────────────
 
   it('renders app name in desktop header', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     expect(screen.getByText(/TIME CAPSULES/i)).toBeInTheDocument()
   })
 
   it('renders Dashboard and Library nav links on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     const dashboardLinks = screen.getAllByRole('link', { name: /Dashboard/i })
     expect(dashboardLinks.length).toBeGreaterThanOrEqual(1)
@@ -74,33 +74,33 @@ describe('Layout', () => {
   })
 
   it('renders Discover button on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     expect(screen.getByRole('link', { name: /Discover/i })).toBeInTheDocument()
   })
 
   it('renders theme toggle button on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     const toggle = screen.getByRole('button', { name: /Dark/i })
     expect(toggle).toBeInTheDocument()
   })
 
   it('renders user name and profile link on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     expect(screen.getByText(/TestUser/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Profile/i })).toBeInTheDocument()
   })
 
   it('shows notifications bell on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     expect(screen.getByRole('button', { name: /Notifications/i })).toBeInTheDocument()
   })
 
   it('shows unread badge when there are unread notifications', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useNotifications).mockReturnValue({
       notifications: [],
       unreadCount: 3,
@@ -114,7 +114,7 @@ describe('Layout', () => {
   })
 
   it('shows 9+ badge when unread count exceeds 9', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useNotifications).mockReturnValue({
       notifications: [],
       unreadCount: 15,
@@ -128,7 +128,7 @@ describe('Layout', () => {
   })
 
   it('opens notification panel on bell click', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     fireEvent.click(screen.getByRole('button', { name: /Notifications/i }))
     await waitFor(() => expect(screen.getByText(/No notifications yet/i)).toBeInTheDocument())
@@ -136,7 +136,7 @@ describe('Layout', () => {
 
   it('calls theme toggle on button click', () => {
     const toggle = vi.fn()
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useTheme).mockReturnValue({ theme: 'light', toggle } as any)
     render(<Layout />, { wrapper })
     fireEvent.click(screen.getByRole('button', { name: /Dark/i }))
@@ -144,7 +144,7 @@ describe('Layout', () => {
   })
 
   it('shows theme toggle icon changes between light and dark', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     const { rerender } = render(<Layout />, { wrapper })
     expect(screen.getByRole('button', { name: /Dark/i })).toBeInTheDocument()
 
@@ -154,7 +154,7 @@ describe('Layout', () => {
   })
 
   it('renders main content area with role main on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     render(<Layout />, { wrapper })
     expect(screen.getByRole('main')).toBeInTheDocument()
   })
@@ -162,35 +162,35 @@ describe('Layout', () => {
   // ── Mobile Layout ───────────────────────────────────
 
   it('renders app name in mobile header', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockReturnValue(true)
     render(<Layout />, { wrapper })
     expect(screen.getByText(/TIME CAPSULES/i)).toBeInTheDocument()
   })
 
   it('renders bottom navigation with nav items on mobile', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockReturnValue(true)
     render(<Layout />, { wrapper })
     const nav = screen.getByRole('navigation')
     expect(nav).toBeInTheDocument()
   })
 
   it('applies nav-hidden class when navHiddenByScroll is true on mobile', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
-    vi.mocked(useNavVisibility).mockReturnValue({ chromeHiddenByScroll: false, navHiddenByScroll: true })
+    vi.mocked(useMediaQuery).mockReturnValue(true)
+    vi.mocked(useNavVisibility).mockReturnValue({ navHiddenByScroll: true })
     const { container } = render(<Layout />, { wrapper })
     const nav = container.querySelector('nav')
     expect(nav!.className).toContain('nav--hidden')
   })
 
   it('renders main content with bottom padding for mobile nav', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockReturnValue(true)
     render(<Layout />, { wrapper })
     const main = screen.getByRole('main')
     expect(main.className).toContain('pb-28')
   })
 
   it('renders bottom navigation items on mobile', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockReturnValue(true)
     render(<Layout />, { wrapper })
     expect(screen.getAllByRole('link', { name: /Dashboard/i }).length).toBeGreaterThanOrEqual(1)
     expect(screen.getByRole('link', { name: /Library/i })).toBeInTheDocument()
@@ -198,7 +198,7 @@ describe('Layout', () => {
   })
 
   it('opens notification panel on mobile bell click', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockReturnValue(true)
     render(<Layout />, { wrapper })
     fireEvent.click(screen.getByRole('button', { name: /Notifications/i }))
     await waitFor(() => expect(screen.getByText(/No notifications yet/i)).toBeInTheDocument())
@@ -207,13 +207,13 @@ describe('Layout', () => {
   // ── Tablet Layout (hamburger) ────────────────────────
 
   it('renders hamburger menu button on tablet', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     expect(screen.getByRole('button', { name: /Open menu/i })).toBeInTheDocument()
   })
 
   it('shows sidebar drawer when hamburger is clicked on tablet', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     const menuBtn = screen.getByRole('button', { name: /Open menu/i })
     fireEvent.click(menuBtn)
@@ -221,7 +221,7 @@ describe('Layout', () => {
   })
 
   it('hides sidebar drawer when backdrop overlay is clicked on tablet', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     fireEvent.click(screen.getByRole('button', { name: /Open menu/i }))
     const libraryLinks = screen.getAllByText(/Library/i)
@@ -236,27 +236,27 @@ describe('Layout', () => {
   })
 
   it('shows notification bell and theme toggle on tablet header', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     expect(screen.getByRole('button', { name: /Notifications/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /Dark/i })).toBeInTheDocument()
   })
 
   it('renders app name in tablet header', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     const timeCapsules = screen.getAllByText(/TIME CAPSULES/i)
     expect(timeCapsules.length).toBeGreaterThanOrEqual(1)
   })
 
   it('renders main content area on tablet', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     expect(screen.getByRole('main')).toBeInTheDocument()
   })
 
   it('opens notification panel on tablet bell click', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: false, isSidebarCollapsed: true })
+    vi.mocked(useMediaQuery).mockImplementation((q: string) => q.includes('767') ? false : true)
     render(<Layout />, { wrapper })
     fireEvent.click(screen.getByRole('button', { name: /Notifications/i }))
     await waitFor(() => expect(screen.getAllByText(/No notifications yet/i).length).toBeGreaterThanOrEqual(1))
@@ -265,7 +265,7 @@ describe('Layout', () => {
   // ── User Display Edge Cases ─────────────────────────
 
   it('shows email username when displayName is null', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useAuth).mockReturnValue({
       user: { uid: 'user-1', email: 'user@example.com', displayName: null, photoURL: null, providerData: [] },
       logout: vi.fn(),
@@ -277,7 +277,7 @@ describe('Layout', () => {
   })
 
   it('shows username from email when displayName is null on desktop', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useAuth).mockReturnValue({
       user: { uid: 'user-1', email: 'alice@example.com', displayName: null, photoURL: null, providerData: [] },
       logout: vi.fn(),
@@ -288,7 +288,7 @@ describe('Layout', () => {
   })
 
   it('renders user photo when photoURL is provided', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useAuth).mockReturnValue({
       user: { uid: 'user-1', email: 'test@example.com', displayName: 'User', photoURL: 'https://example.com/photo.jpg', providerData: [] },
       logout: vi.fn(),
@@ -303,13 +303,13 @@ describe('Layout', () => {
   // ── Sub-components ──────────────────────────────────
 
   it('renders OfflineBanner inside layout', () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     const { container } = render(<Layout />, { wrapper })
     expect(container.querySelector('[role="status"]')).not.toBeInTheDocument()
   })
 
   it('renders NotificationPanel with notifications list when opened', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     vi.mocked(useNotifications).mockReturnValue({
       notifications: [
         { id: 'n1', title: 'New Episode', body: 'S5E1 aired', read: false, show_id: 1, uid: 'user-1', createdAt: 1 },
@@ -330,7 +330,7 @@ describe('Layout', () => {
   })
 
   it('calls markAsRead when READ button is clicked in notification panel', async () => {
-    vi.mocked(useDevice).mockReturnValue({ isMobile: false, isDesktop: true, isSidebarCollapsed: false })
+    vi.mocked(useMediaQuery).mockReturnValue(false)
     const mockMarkAsRead = vi.fn()
     vi.mocked(useNotifications).mockReturnValue({
       notifications: [

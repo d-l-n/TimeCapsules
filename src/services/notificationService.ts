@@ -1,31 +1,35 @@
 import { addDoc, updateDoc, doc, collection, where, orderBy, limit, getDocs, query } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import { getFollowedActiveShows } from './showService'
 import { getTmdbDetailsAuto } from './tmdb'
 import type { NotificationDoc } from '../lib/firebase-queries'
 
 export async function getNotifications(uid: string): Promise<NotificationDoc[]> {
+  const db = await getDb()
   const _snap = await getDocs(query(collection(db, 'notifications'), where('user_id', '==', uid), orderBy('created_at', 'desc'), limit(20)))
   return _snap.docs.map(d => ({ ...(d.data() as NotificationDoc), id: d.id }))
 }
 
 export async function getUnreadCount(uid: string): Promise<number> {
+  const db = await getDb()
   const _snap = await getDocs(query(collection(db, 'notifications'), where('user_id', '==', uid), where('read', '==', false)))
   const items = _snap.docs.map(d => ({ ...(d.data() as NotificationDoc), id: d.id }))
   return items.length
 }
 
 export async function markAsRead(id: string) {
+  const db = await getDb()
   await updateDoc(doc(db, 'notifications', id), { read: true })
 }
 
 export async function markAllAsRead(uid: string) {
-  // Needs doc IDs, so uses a manual query (findMany doesn't return doc refs)
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'notifications'), where('user_id', '==', uid), where('read', '==', false)))
   await Promise.all(snap.docs.map(d => updateDoc(doc(db, 'notifications', d.id), { read: true })))
 }
 
 async function createNotification(uid: string, type: NotificationDoc['type'], title: string, body: string, showId?: number) {
+  const db = await getDb()
   await addDoc(collection(db, 'notifications'), {
     user_id: uid,
     type,
@@ -38,6 +42,7 @@ async function createNotification(uid: string, type: NotificationDoc['type'], ti
 }
 
 export async function checkUpcomingEpisodes(uid: string) {
+  const db = await getDb()
   const shows = await getFollowedActiveShows(uid)
   const now = new Date()
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)

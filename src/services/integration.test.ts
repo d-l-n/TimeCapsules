@@ -4,7 +4,7 @@ import { mockQuerySnapshot, buildShow, buildEpisode, buildFollowedShow, buildWat
 import { memoClear } from '../lib/hook-cache'
 
 vi.mock('firebase/firestore', () => firestoreMock())
-vi.mock('../lib/firebase', () => ({ db: 'mock-db' }))
+vi.mock('../lib/firebase', () => ({ getDb: vi.fn().mockResolvedValue('mock-db') }))
 
 const firestore = vi.mocked(await import('firebase/firestore')) as any
 const showService = await import('./showService')

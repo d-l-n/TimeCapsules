@@ -13,7 +13,6 @@ vi.mock('../services/notificationService', () => ({
   getUnreadCount: vi.fn(),
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
-  checkUpcomingEpisodes: vi.fn(),
 }))
 
 const notifService = await import('../services/notificationService')
@@ -27,7 +26,6 @@ describe('useNotifications', () => {
     vi.mocked(notifService.getUnreadCount).mockResolvedValue(0)
     vi.mocked(notifService.markAsRead).mockResolvedValue(undefined)
     vi.mocked(notifService.markAllAsRead).mockResolvedValue(undefined)
-    vi.mocked(notifService.checkUpcomingEpisodes).mockResolvedValue(undefined)
   })
 
   it('returns loading initially', () => {
@@ -92,32 +90,6 @@ describe('useNotifications', () => {
       expect(result.current.unreadCount).toBe(0)
       expect(result.current.notifications.every(n => n.read)).toBe(true)
     })
-  })
-
-  it('does not call checkUpcomingEpisodes when already checked today', async () => {
-    const today = new Date().toDateString()
-    localStorage.setItem('lastNotifCheck', today)
-
-    renderHook(() => useNotifications('user-1'))
-
-    await waitFor(() => expect(notifService.getNotifications).toHaveBeenCalled())
-    expect(notifService.checkUpcomingEpisodes).not.toHaveBeenCalled()
-  })
-
-  it('calls checkUpcomingEpisodes once per day', async () => {
-    const yesterday = new Date(Date.now() - 86400000).toDateString()
-    localStorage.setItem('lastNotifCheck', yesterday)
-
-    renderHook(() => useNotifications('user-1'))
-
-    await waitFor(() => expect(notifService.checkUpcomingEpisodes).toHaveBeenCalledWith('user-1'))
-    expect(localStorage.getItem('lastNotifCheck')).toBe(new Date().toDateString())
-  })
-
-  it('calls checkUpcomingEpisodes when never checked before', async () => {
-    renderHook(() => useNotifications('user-1'))
-
-    await waitFor(() => expect(notifService.checkUpcomingEpisodes).toHaveBeenCalledWith('user-1'))
   })
 
   it('provides a refresh function that re-fetches', async () => {

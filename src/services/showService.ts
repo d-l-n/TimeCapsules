@@ -1,9 +1,10 @@
 import { collection, query, where, orderBy, limit, getDocs, addDoc, setDoc, doc, deleteDoc, increment, updateDoc } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import { memoize, memoClearKey } from '../lib/hook-cache'
 import type { ShowDoc, FollowedShowDoc, EpisodeDoc, RatingDoc, ResumePositionDoc } from '../lib/firebase-queries'
 
 const fetchShowsMap = async (): Promise<Map<number, ShowDoc>> => {
+  const db = await getDb()
   const snap = await getDocs(collection(db, 'shows'))
   const map = new Map<number, ShowDoc>()
   snap.docs.forEach(d => {
@@ -19,6 +20,7 @@ export interface DashItem { id: number; name: string; poster_url: string | null;
 export interface BingingItem { id: number; name: string; poster_url: string | null; imdb_rating: number | null; tmdb_id?: number | null; progress: number; episodesWatched: number; totalEpisodes: number }
 
 export async function getFollowedActiveShows(uid: string): Promise<DashItem[]> {
+  const db = await getDb()
   const [followedSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'followed_shows'), where('user_id', '==', uid), where('active', '==', 1), orderBy('followed_at', 'desc'), limit(20))),
     buildShowsMap(),
@@ -33,6 +35,7 @@ export async function getFollowedActiveShows(uid: string): Promise<DashItem[]> {
 }
 
 export async function getBingingShows(uid: string): Promise<BingingItem[]> {
+  const db = await getDb()
   const [wlSnap, weSnap, rSnap, epSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid))),
     getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid))),
@@ -109,16 +112,19 @@ export async function getBingingShows(uid: string): Promise<BingingItem[]> {
 }
 
 export async function getShowById(showId: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'shows'), where('tmdb_id', '==', showId), limit(1)))
   return snap.empty ? null : (snap.docs[0].data() as ShowDoc)
 }
 
 export async function getEpisodesByShow(showId: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'episodes'), where('show_id', '==', showId), orderBy('season_number'), orderBy('episode_number')))
   return snap.docs.map(d => ({ ...(d.data() as EpisodeDoc), id: d.id }))
 }
 
 export async function ensureEpisode(tmdbEpisodeId: number, showId: number, seasonNumber: number, episodeNumber: number, title: string | null) {
+  const db = await getDb()
   const exSnap = await getDocs(query(collection(db, 'episodes'), where('tmdb_id', '==', tmdbEpisodeId), limit(1)))
   if (!exSnap.empty) return tmdbEpisodeId
   await setDoc(doc(db, 'episodes', String(tmdbEpisodeId)), {
@@ -132,11 +138,13 @@ export async function ensureEpisode(tmdbEpisodeId: number, showId: number, seaso
 }
 
 export async function getRatingForShow(uid: string, showId: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'ratings'), where('user_id', '==', uid), where('show_id', '==', showId), limit(1)))
   return snap.empty ? null : (snap.docs[0].data() as RatingDoc)
 }
 
 export async function setRating(uid: string, showId: number, rating: number | null) {
+  const db = await getDb()
   const q = query(collection(db, 'ratings'), where('user_id', '==', uid), where('show_id', '==', showId))
   if (rating === null) {
     const snap = await getDocs(q)
@@ -152,12 +160,14 @@ export async function setRating(uid: string, showId: number, rating: number | nu
 }
 
 export async function getShowByTmdbId(tmdbId: number): Promise<{ id: string; data: ShowDoc } | null> {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'shows'), where('tmdb_id', '==', tmdbId), limit(1)))
   if (snap.empty) return null
   return { id: snap.docs[0].id, data: snap.docs[0].data() as ShowDoc }
 }
 
 export async function createShowFromTmdb(tmdbId: number, name: string, posterPath: string | null, backdropPath: string | null, overview: string | null, mediaType?: 'movie' | 'tv') {
+  const db = await getDb()
   console.log('[createShowFromTmdb] step 2a: exists check', tmdbId)
   const exSnap = await getDocs(query(collection(db, 'shows'), where('tmdb_id', '==', tmdbId), limit(1)))
   if (!exSnap.empty) { console.log('[createShowFromTmdb] existing, returning'); return tmdbId }
@@ -179,6 +189,7 @@ export async function createShowFromTmdb(tmdbId: number, name: string, posterPat
 }
 
 export async function getWatchedEpisodesForShow(uid: string, showId: number): Promise<Map<number, number>> {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid), where('show_id', '==', showId)))
   const items = snap.docs.map(d => ({ ...(d.data() as { episode_id: number }), id: d.id }))
   const counts = new Map<number, number>()
@@ -187,6 +198,7 @@ export async function getWatchedEpisodesForShow(uid: string, showId: number): Pr
 }
 
 export async function toggleWatchedEpisode(uid: string, episodeId: number, showId: number, watched: boolean, skipIfExists = false) {
+  const db = await getDb()
   const snap = await getDocs(query(
     collection(db, 'watched_episodes'),
     where('user_id', '==', uid),
@@ -211,6 +223,7 @@ export async function toggleWatchedEpisode(uid: string, episodeId: number, showI
 }
 
 async function updateStatsOnToggle(uid: string, delta: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'user_stats'), where('user_id', '==', uid), limit(1)))
   if (snap.empty) {
     await setDoc(doc(db, 'user_stats', uid), {
@@ -226,8 +239,8 @@ async function updateStatsOnToggle(uid: string, delta: number) {
   })
 }
 
-/** Quick add for batch operations — skips stats update but checks existence to avoid duplicates. */
 export async function addWatchedEpisode(uid: string, episodeId: number, showId: number) {
+  const db = await getDb()
   const existing = await getDocs(query(
     collection(db, 'watched_episodes'),
     where('user_id', '==', uid),
@@ -243,8 +256,8 @@ export async function addWatchedEpisode(uid: string, episodeId: number, showId: 
   })
 }
 
-/** Blind remove (query + delete, no stats) for batch unmarking episodes. Returns number of docs removed. */
 export async function removeWatchedEpisode(uid: string, episodeId: number): Promise<number> {
+  const db = await getDb()
   const snap = await getDocs(query(
     collection(db, 'watched_episodes'),
     where('user_id', '==', uid),
@@ -255,8 +268,8 @@ export async function removeWatchedEpisode(uid: string, episodeId: number): Prom
   return snap.docs.length
 }
 
-/** Update user stats with a total delta after a batch operation. */
 export async function batchUpdateStats(uid: string, delta: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'user_stats'), where('user_id', '==', uid), limit(1)))
   if (snap.empty) {
     const nb = delta > 0 ? delta : 0
@@ -274,6 +287,7 @@ export async function batchUpdateStats(uid: string, delta: number) {
 }
 
 export async function getUserWatchlistTmdbMap(uid: string): Promise<Map<number, number>> {
+  const db = await getDb()
   const [wlSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid))),
     buildShowsMap(),
@@ -289,15 +303,15 @@ export async function getUserWatchlistTmdbMap(uid: string): Promise<Map<number, 
   return map
 }
 
-/** Returns the set of show_ids that the user has watched at least one episode of. */
 export async function getUserWatchedShowIds(uid: string): Promise<Set<number>> {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid)))
   const items = snap.docs.map(d => ({ ...(d.data() as { show_id: number }), id: d.id }))
   return new Set(items.map(w => w.show_id))
 }
 
-/** Returns a Set of tmdb_ids that the user currently follows. */
 export async function getFollowedTmdbIds(uid: string): Promise<Set<number>> {
+  const db = await getDb()
   const [fSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'followed_shows'), where('user_id', '==', uid), where('active', '==', 1))),
     buildShowsMap(),
@@ -312,6 +326,7 @@ export async function getFollowedTmdbIds(uid: string): Promise<Set<number>> {
 }
 
 export async function getResumePositions(uid: string, showId: number): Promise<Map<number, number>> {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'resume_positions'), where('user_id', '==', uid), where('show_id', '==', showId)))
   const items = snap.docs.map(d => ({ ...(d.data() as ResumePositionDoc), id: d.id }))
   const map = new Map<number, number>()
@@ -320,6 +335,7 @@ export async function getResumePositions(uid: string, showId: number): Promise<M
 }
 
 export async function setResumePosition(uid: string, contentId: number, showId: number, contentType: 'episode' | 'movie', seconds: number | null) {
+  const db = await getDb()
   const q = query(collection(db, 'resume_positions'), where('user_id', '==', uid), where('content_id', '==', contentId), where('content_type', '==', contentType))
   if (seconds === null) {
     const snap = await getDocs(q)
@@ -335,6 +351,7 @@ export async function setResumePosition(uid: string, contentId: number, showId: 
 }
 
 export async function addFollowedShow(uid: string, showId: number) {
+  const db = await getDb()
   const exSnap = await getDocs(query(collection(db, 'followed_shows'), where('user_id', '==', uid), where('show_id', '==', showId), limit(1)))
   if (!exSnap.empty) return false
   await addDoc(collection(db, 'followed_shows'), {
@@ -347,11 +364,13 @@ export async function addFollowedShow(uid: string, showId: number) {
 }
 
 export async function removeFollowedShow(uid: string, showId: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'followed_shows'), where('user_id', '==', uid), where('show_id', '==', showId)))
   await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
 }
 
 export async function getFinishedContent(uid: string): Promise<DashItem[]> {
+  const db = await getDb()
   const [weSnap, epSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid))),
     getDocs(collection(db, 'episodes')),

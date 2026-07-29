@@ -1,4 +1,4 @@
-export * from './useDevice'
+export * from './useMediaQuery'
 export * from './useFollowedShows'
 export * from './useGroups'
 export * from './useHistory'

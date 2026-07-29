@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, checkUpcomingEpisodes } from '../services/notificationService'
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead } from '../services/notificationService'
 import type { NotificationDoc } from '../lib/firebase-queries'
 
 export function useNotifications(uid: string | undefined) {
@@ -19,17 +19,6 @@ export function useNotifications(uid: string | undefined) {
   }, [uid])
 
   useEffect(() => { refresh() }, [refresh])
-  useEffect(() => {
-    if (!uid) return
-    const lastCheck = localStorage.getItem('lastNotifCheck')
-    const today = new Date().toDateString()
-    if (lastCheck !== today) {
-      checkUpcomingEpisodes(uid).then(() => {
-        localStorage.setItem('lastNotifCheck', today)
-        refresh()
-      })
-    }
-  }, [uid, refresh])
 
   const handleMarkRead = useCallback(async (id: string) => {
     await markAsRead(id)

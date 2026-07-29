@@ -29,7 +29,7 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isPro
   const hasLater = data.action === 'unwatch' && data.laterEpisodeIds && data.laterEpisodeIds.length > 0
 
   return (
-    <dialog ref={ref} onClose={onCancel}>
+    <dialog ref={ref} onClose={onCancel} aria-modal="true">
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl relative">
         <button
           onClick={onCancel}

@@ -74,10 +74,7 @@ public/
 | `npm run build` | TypeScript check + Vite build |
 | `npm run lint` | Run oxlint |
 | `npm run pages:deploy` | Build + deploy to Cloudflare Pages |
-| `npm run merge:imdb` | Merge IMDb ratings |
 | `npm run qa:validate` | Validate data integrity |
-| `npm run reset` | Delete all collections (full reset) |
-| `npm run delete:anonymous` | Delete anonymous Firebase Auth users |
 
 ## Design Context
 

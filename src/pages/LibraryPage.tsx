@@ -4,7 +4,7 @@ import { useI18n } from '../lib/I18nContext'
 import { useFollowedShows, useWatchlist } from '../hooks'
 import { getFinishedContent } from '../services/showService'
 import { collection, query, getDocs, where } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import type { DashItem } from '../services/showService'
 import ShowCard from '../components/ShowCard'
 
@@ -33,6 +33,7 @@ export default function LibraryPage() {
     if (!user?.uid) return
     let cancelled = false
     ;(async () => {
+      const db = await getDb()
       const [finished, _snap] = await Promise.all([
         getFinishedContent(user.uid),
         getDocs(query(collection(db, 'ratings'), where('user_id', '==', user.uid))),

@@ -8,10 +8,9 @@ import type { DashItem } from '../services/showService'
 import { getWatchlist, removeFromWatchlist } from '../services/watchlistService'
 import { ensureDefaultLists, syncDefaultLists } from '../services/listService'
 import { getTodayEpisodeCount } from '../services/statsService'
-import { splitFinishedByAiringStatus, gatherSeedData } from '../services/dashboardData'
-import { getTvNextEpisode, tmdbLang } from '../services/tmdb'
+import { splitFinishedByAiringStatus, gatherSeedData, cachedGetTvNextEpisode } from '../services/dashboardData'
+import { tmdbLang } from '../services/tmdb'
 import type { NextEpisodeToAir } from '../services/tmdb'
-import { memoize } from '../lib/hook-cache'
 
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
@@ -30,8 +29,6 @@ interface UpcomingShow {
   next_episode: NextEpisodeToAir | null
   daysUntil: number | null
 }
-
-const cachedGetTvNextEpisode = memoize(getTvNextEpisode, 60 * 60_000)
 
 export default function Dashboard() {
   const { user } = useAuth()

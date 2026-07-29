@@ -1,11 +1,12 @@
 import { collection, query, getDocs, where, orderBy, limit } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import { buildShowsMap } from './showService'
 import type { WatchedEpisodeDoc, EpisodeDoc } from '../lib/firebase-queries'
 
 export interface HistoryItem { id: number; watched_at: string; episode_number: number; season_number: number; show_name: string; show_id: number; is_movie?: boolean }
 
 export async function getWatchHistory(uid: string): Promise<{ entries: HistoryItem[]; months: string[] }> {
+  const db = await getDb()
   const [weSnap, epSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid), orderBy('watched_at', 'desc'), limit(200))),
     getDocs(collection(db, 'episodes')),
@@ -26,7 +27,6 @@ export async function getWatchHistory(uid: string): Promise<{ entries: HistoryIt
       monthSet.add(`${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`)
       entries.push({ id: w.episode_id, watched_at: w.watched_at, episode_number: ep.episode_number, season_number: ep.season_number, show_name: show?.name ?? 'Unknown', show_id: ep.show_id || 0 })
     } else {
-      // Movie entries: episode_id === show_id (tmdb_id), not in episodes collection
       const sid = w.show_id
       if (sid) {
         const show = showsMap.get(sid)

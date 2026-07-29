@@ -1,5 +1,5 @@
 import { addDoc, collection, query, getDocs, deleteDoc, where, orderBy, limit } from 'firebase/firestore'
-import { db } from '../lib/firebase'
+import { getDb } from '../lib/firebase'
 import { buildShowsMap } from './showService'
 import type { WatchlistItemDoc } from '../lib/firebase-queries'
 
@@ -13,6 +13,7 @@ export interface WatchlistShow {
 }
 
 export async function getWatchlist(uid: string): Promise<WatchlistShow[]> {
+  const db = await getDb()
   const [wlSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid), orderBy('added_at', 'desc'))),
     buildShowsMap(),
@@ -26,6 +27,7 @@ export async function getWatchlist(uid: string): Promise<WatchlistShow[]> {
 }
 
 export async function addToWatchlist(uid: string, showId: number) {
+  const db = await getDb()
   const exSnap = await getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid), where('show_id', '==', showId), limit(1)))
   const existing = !exSnap.empty
   if (existing) return false
@@ -34,11 +36,13 @@ export async function addToWatchlist(uid: string, showId: number) {
 }
 
 export async function removeFromWatchlist(uid: string, showId: number) {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid), where('show_id', '==', showId)))
   await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
 }
 
 export async function isInWatchlist(uid: string, showId: number): Promise<boolean> {
+  const db = await getDb()
   const snap = await getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid), where('show_id', '==', showId), limit(1)))
   return !snap.empty
 }
