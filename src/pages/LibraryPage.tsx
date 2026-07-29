@@ -3,8 +3,8 @@ import { useAuth } from '../lib/AuthContext'
 import { useI18n } from '../lib/I18nContext'
 import { useFollowedShows, useWatchlist } from '../hooks'
 import { getFinishedContent } from '../services/showService'
-import { findMany } from '../lib/firestore-utils'
-import { where } from 'firebase/firestore'
+import { collection, query, getDocs, where } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import type { DashItem } from '../services/showService'
 import ShowCard from '../components/ShowCard'
 
@@ -33,10 +33,11 @@ export default function LibraryPage() {
     if (!user?.uid) return
     let cancelled = false
     ;(async () => {
-      const [finished, ratings] = await Promise.all([
+      const [finished, _snap] = await Promise.all([
         getFinishedContent(user.uid),
-        findMany<{ show_id: number }>('ratings', where('user_id', '==', user.uid)),
+        getDocs(query(collection(db, 'ratings'), where('user_id', '==', user.uid))),
       ])
+      const ratings = _snap.docs.map(d => ({ ...(d.data() as { show_id: number }), id: d.id }))
       if (cancelled) return
       setFinishedIds(new Set(finished.map(f => f.id)))
       setFavoriteIds(new Set(ratings.map(r => r.show_id)))

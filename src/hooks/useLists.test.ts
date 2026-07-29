@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useLists } from './useLists'
+import { clearCache } from '../lib/hook-cache'
 
 const mockLists = [
   { id: 'l1', user_id: 'user-1', name: 'Favorites', description: 'My top shows', show_ids: [1, 2, 3], createdAt: '2024-01-01T00:00:00Z' },
@@ -14,6 +15,7 @@ const listService = await import('../services/listService')
 
 describe('useLists', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(listService.getUserLists).mockResolvedValue([])
   })

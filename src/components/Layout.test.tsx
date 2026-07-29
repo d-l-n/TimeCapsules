@@ -54,7 +54,7 @@ describe('Layout', () => {
       loading: false,
       refresh: vi.fn(),
     })
-    vi.mocked(useNavVisibility).mockReturnValue({ chromeHiddenByScroll: false, navHiddenByScroll: false, isMobileBottomBar: false })
+    vi.mocked(useNavVisibility).mockReturnValue({ chromeHiddenByScroll: false, navHiddenByScroll: false })
   })
 
   // ── Desktop Layout ──────────────────────────────────
@@ -176,7 +176,7 @@ describe('Layout', () => {
 
   it('applies nav-hidden class when navHiddenByScroll is true on mobile', () => {
     vi.mocked(useDevice).mockReturnValue({ isMobile: true, isDesktop: false, isSidebarCollapsed: true })
-    vi.mocked(useNavVisibility).mockReturnValue({ chromeHiddenByScroll: false, navHiddenByScroll: true, isMobileBottomBar: true })
+    vi.mocked(useNavVisibility).mockReturnValue({ chromeHiddenByScroll: false, navHiddenByScroll: true })
     const { container } = render(<Layout />, { wrapper })
     const nav = container.querySelector('nav')
     expect(nav!.className).toContain('nav--hidden')

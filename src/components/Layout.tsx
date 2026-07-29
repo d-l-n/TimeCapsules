@@ -1,24 +1,21 @@
-import { type ReactNode, useState, useEffect } from 'react'
+import { type ReactNode, useState, useEffect, Suspense } from 'react'
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { useTheme } from '../lib/ThemeContext'
 import { useI18n } from '../lib/I18nContext'
-import { NavContext } from '../lib/NavContext'
+
 import { useDevice, useNotifications, useNavVisibility } from '../hooks'
 import type { NotificationDoc } from '../lib/firebase-queries'
 import { MenuIcon, CloseIcon, SunIcon, MoonIcon } from '.'
+import { DashboardIcon, GroupIcon, LibraryIcon, SearchIcon, BellIcon, StatsIcon } from './Icons'
 import InstallBanner from './InstallBanner'
 import OfflineBanner from './OfflineBanner'
 import ScrollToTop from './ScrollToTop'
-import ReloadButton from './ReloadButton'
-import DevTools from './DevTools'
+import Loading from './Loading'
 
-const DashboardIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
-const GroupIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3 3 0 0 1 0 5.8M21 20c0-2.6-1.6-4.8-4-5.6"/></svg>
-const LibraryIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="4" height="18"/><rect x="10" y="6" width="4" height="15"/><rect x="17" y="9" width="4" height="12"/></svg>
-const SearchIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-const BellIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.02 2.91C8.71 2.91 6.02 5.6 6.02 8.91v2.89c0 .61-.26 1.54-.57 2.06L4.3 15.77c-.71 1.18-.22 2.49 1.08 2.93 4.31 1.44 8.96 1.44 13.27 0 1.21-.4 1.74-1.83 1.08-2.93l-1.15-1.91c-.3-.52-.56-1.45-.56-2.06V8.91c0-3.3-2.7-6-6-6Z"/><path d="M13.87 3.2a6.3 6.3 0 0 0-3.7 0c.29-.74 1.01-1.26 1.85-1.26s1.56.52 1.85 1.26Z"/><path d="M15.02 19.06c0 1.65-1.35 3-3 3a3 3 0 0 1-3-3"/></svg>
-const StatsIcon = () => <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+
+
+
 
 export default function Layout() {
   const { user } = useAuth()
@@ -29,7 +26,7 @@ export default function Layout() {
   const [showNotifPanel, setShowNotifPanel] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const notifData = useNotifications(user?.uid)
-  const { chromeHiddenByScroll, navHiddenByScroll } = useNavVisibility({ showNotifPanel, pathname })
+  const { navHiddenByScroll } = useNavVisibility({ showNotifPanel })
 
   const closeNotifs = () => setShowNotifPanel(false)
   const closeSidebar = () => setSidebarOpen(false)
@@ -71,7 +68,6 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-bg flex flex-col" lang={lang}>
       <OfflineBanner />
-      <NavContext.Provider value={{ chromeHiddenByScroll }}>
       {isMobile ? (
         <MobileLayout
           user={user}
@@ -97,15 +93,13 @@ export default function Layout() {
         <>
           <DesktopSidebar {...sidebarProps} scrollToTop={scrollToTop} />
           <main className="flex-1 min-w-0 px-6 pt-6 pb-12 lg:px-8 lg:ml-[224px] lg:w-[calc(100%-224px)] lg:max-w-[1400px]" id="main-content" role="main">
-            <Outlet />
+            <Suspense fallback={<Loading />}><Outlet /></Suspense>
           </main>
         </>
       )}
-      </NavContext.Provider>
+
       <InstallBanner />
       <ScrollToTop />
-      <ReloadButton />
-      {import.meta.env.DEV && <DevTools />}
     </div>
   )
 }
@@ -324,7 +318,7 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
       </aside>
 
       <main className="flex-1 min-w-0 max-w-[1400px] mx-auto w-full px-6 pt-[80px] pb-12 lg:px-8" id="main-content" role="main">
-        <Outlet />
+        <Suspense fallback={<Loading />}><Outlet /></Suspense>
       </main>
     </>
   )
@@ -374,7 +368,7 @@ function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadC
         </div>
       </header>
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-5 pt-[76px] pb-28" id="main-content" role="main">
-        <Outlet />
+        <Suspense fallback={<Loading />}><Outlet /></Suspense>
       </main>
       <nav className={`nav-pill ${navHiddenByScroll ? 'nav--hidden' : ''}`} aria-label={t.nav.dashboard}>
         {navItems.map(({ to, label, icon }) => {

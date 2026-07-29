@@ -50,7 +50,7 @@ export default function CalendarPage() {
       <div className="flex items-center justify-between bg-surface border-[3px] border-border p-4">
         <button onClick={prevMonth} className="border-[3px] border-border px-3 py-2 text-sm font-bold bg-surface text-text sm:hover:bg-yellow transition-colors focus-visible:outline-2 focus-visible:outline-yellow focus-visible:outline-offset-2" aria-label={t.calendar.prevMonth}>&larr;</button>
         <div className="text-center">
-          <div className="text-lg font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }} id="calendar-heading">
+          <div className="text-lg font-heading uppercase" id="calendar-heading">
             {t.calendar.months[viewMonth]} {viewYear}
           </div>
           <div className="text-xs font-bold text-text-secondary mt-1" aria-live="polite">{monthCount} {t.calendar.episodesWatched}</div>

@@ -10,9 +10,8 @@ import { ensureDefaultLists, syncDefaultLists } from '../services/listService'
 import { getTodayEpisodeCount } from '../services/statsService'
 import { splitFinishedByAiringStatus, gatherSeedData } from '../services/dashboardData'
 import { getTvNextEpisode, tmdbLang } from '../services/tmdb'
-import { buildShowsMap } from '../lib/firestore-utils'
 import type { NextEpisodeToAir } from '../services/tmdb'
-import { memento } from '../lib/memento'
+import { memoize } from '../lib/hook-cache'
 
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
@@ -32,7 +31,7 @@ interface UpcomingShow {
   daysUntil: number | null
 }
 
-const cachedGetTvNextEpisode = memento(getTvNextEpisode, 5 * 60_000)
+const cachedGetTvNextEpisode = memoize(getTvNextEpisode, 60 * 60_000)
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -55,18 +54,17 @@ export default function Dashboard() {
     if (!user?.uid) return
     let cancelled = false
     ;(async () => {
-      const showsMap = await buildShowsMap()
       const wl = await getWatchlist(user.uid)
-      const withTmdb = wl.filter(f => {
-        const s = showsMap.get(f.show_id)
-        return s?.tmdb_id && s?.media_type !== 'movie'
-      }).slice(0, 8).map(f => ({
-        show_id: f.show_id,
-        name: f.name,
-        poster_url: f.poster_url,
-        media_type: showsMap.get(f.show_id)?.media_type,
-        tmdb_id: showsMap.get(f.show_id)?.tmdb_id ?? null,
-      }))
+      const withTmdb = wl
+        .filter(f => f.media_type !== 'movie')
+        .slice(0, 8)
+        .map(f => ({
+          show_id: f.show_id,
+          name: f.name,
+          poster_url: f.poster_url,
+          media_type: f.media_type,
+          tmdb_id: f.show_id,
+        }))
 
       const results = await Promise.allSettled(
         withTmdb.map(s => s.tmdb_id ? cachedGetTvNextEpisode(s.tmdb_id, tmdbLang(lang)) : Promise.resolve(null))
@@ -323,5 +321,3 @@ export default function Dashboard() {
     </>
   )
 }
-
-

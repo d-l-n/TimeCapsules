@@ -1,12 +1,5 @@
 import { initializeApp } from 'firebase/app'
-import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-
-const orig = console.error
-console.error = (...args) => {
-  if (typeof args[0] === 'string' && args[0].includes('BloomFilter')) return
-  if (args[0]?.name === 'BloomFilterError') return
-  orig.apply(console, args)
-}
+import { getAuth, GoogleAuthProvider, connectAuthEmulator } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -20,3 +13,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const googleProvider = new GoogleAuthProvider()
+
+if (import.meta.env.VITE_USE_EMULATOR === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
+}

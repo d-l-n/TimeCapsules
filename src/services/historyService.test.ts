@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildWatchedEpisode, buildEpisode, buildShow, mockQuerySnapshot } from '../test/factories'
 
 import { firestoreMock } from '../test/firestore-mock'
-import { mementoClear } from '../lib/memento'
+import { memoClear } from '../lib/hook-cache'
 
 vi.mock('firebase/firestore', () => firestoreMock())
 vi.mock('../lib/firebase', () => ({ db: 'mock-db' }))
@@ -13,8 +13,8 @@ const { getWatchHistory } = await import('./historyService')
 describe('historyService', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Clear the memento TTL cache so buildShowsMap doesn't return stale mock data
-    mementoClear()
+    // Clear the memoize TTL cache so buildShowsMap doesn't return stale mock data
+    memoClear()
   })
 
   it('returns empty entries and months when no watched episodes', async () => {
@@ -43,7 +43,7 @@ describe('historyService', () => {
   })
 
   it('skips episodes without matching episode doc', async () => {
-    vi.mocked(firestore.getDocs).mockResolvedValueOnce(mockQuerySnapshot([buildWatchedEpisode()]))
+    vi.mocked(firestore.getDocs).mockResolvedValueOnce(mockQuerySnapshot([buildWatchedEpisode({ show_id: 0 })]))
     vi.mocked(firestore.getDocs).mockResolvedValueOnce(mockQuerySnapshot([]))
     vi.mocked(firestore.getDocs).mockResolvedValueOnce(mockQuerySnapshot([buildShow()]))
 

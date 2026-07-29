@@ -1,4 +1,4 @@
-import AnimatedOverlay from '../AnimatedOverlay'
+import { useEffect, useRef } from 'react'
 import type { useI18n } from '../../lib/I18nContext'
 
 interface CatchUpModalProps {
@@ -10,13 +10,21 @@ interface CatchUpModalProps {
 }
 
 export default function CatchUpModal({ data, onCatchUp, onClose, t, isProcessing }: CatchUpModalProps) {
+  const ref = useRef<HTMLDialogElement>(null)
   const n = data.prevIds.length
   const message = data.hasPrevSeasons
     ? (n === 1 ? t.showDetail.catchUpPrevSeason : t.showDetail.catchUpPrevSeasonPlural).replace('{count}', String(n))
     : (n === 1 ? t.showDetail.catchUpSameSeason : t.showDetail.catchUpSameSeasonPlural).replace('{count}', String(n))
 
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (!isProcessing && !el.open) el.showModal()
+    else if (isProcessing && el.open) el.close()
+  }, [isProcessing])
+
   return (
-    <AnimatedOverlay open={!isProcessing} onClose={onClose} className="p-4" ariaLabel={t.showDetail.catchUpTitle}>
+    <dialog ref={ref} onClose={onClose}>
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl relative">
         <button
           onClick={onClose}
@@ -26,7 +34,7 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t, isProcessing
         >
           X
         </button>
-        <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 mb-4" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.showDetail.catchUpTitle}</h3>
+        <h3 className="text-lg font-heading uppercase border-b-4 border-border pb-3 mb-4">{t.showDetail.catchUpTitle}</h3>
         <p className="text-xs sm:text-sm font-bold mb-4 sm:mb-6">{message}</p>
         <div className="flex gap-2 sm:gap-3">
           <button
@@ -47,6 +55,6 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t, isProcessing
           </button>
         </div>
       </div>
-    </AnimatedOverlay>
+    </dialog>
   )
 }

@@ -21,6 +21,9 @@
     "delete:bad-shows": "tsx scripts/11-delete-bad-shows.ts",
     "cleanup:migration-fields": "tsx scripts/12-cleanup-migration-fields.ts",
     "deduplicate:watched": "tsx scripts/13-deduplicate-watched.ts",
+    "migrate:group-members": "tsx scripts/14-migrate-group-members.ts",
+    "seed:group-member-ids": "tsx scripts/15-seed-group-member-ids.ts",
+    "seed:e2e-emulator": "npx tsx scripts/seed-e2e-emulator.ts",
     "pages:deploy": "npm run build && wrangler pages deploy dist --project-name=timecapsules --branch main"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { firestoreMock } from '../test/firestore-mock'
 import { mockQuerySnapshot, buildShow, buildEpisode, buildFollowedShow, buildWatchedEpisode } from '../test/factories'
-import { mementoClear } from '../lib/memento'
+import { memoClear } from '../lib/hook-cache'
 
 vi.mock('firebase/firestore', () => firestoreMock())
 vi.mock('../lib/firebase', () => ({ db: 'mock-db' }))
@@ -26,7 +26,7 @@ function setupQueue(queue: Queue) {
 describe('integration: follow -> watch -> stats', () => {
   beforeEach(() => {
     ;['getDocs', 'addDoc', 'setDoc', 'deleteDoc', 'updateDoc', 'where', 'orderBy', 'limit', 'collection', 'query', 'doc'].forEach(m => firestore[m as keyof typeof firestore].mockClear())
-    mementoClear()
+    memoClear()
   })
 
   it('followed show appears in dashboard query and watching an episode raises stats', async () => {
@@ -81,7 +81,7 @@ describe('integration: follow -> watch -> stats', () => {
 describe('integration: rating + emotion roundtrip', () => {
   beforeEach(() => {
     ;['getDocs', 'addDoc', 'setDoc', 'deleteDoc', 'updateDoc', 'where', 'orderBy', 'limit', 'collection', 'query', 'doc'].forEach(m => firestore[m as keyof typeof firestore].mockClear())
-    mementoClear()
+    memoClear()
   })
 
   it('rating is written and reflected in distribution', async () => {

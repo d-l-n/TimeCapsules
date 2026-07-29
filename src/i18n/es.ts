@@ -206,12 +206,8 @@ export default {
     title: 'INSTALAR APP',
     desc: 'Instala {name} en tu dispositivo para acceso rápido.',
     btn: 'INSTALAR',
-    later: 'DESPUÉS',
-    dismiss: 'NO MOSTRAR',
-    iosInstructions: 'Toca Compartir y selecciona "Añadir a Pantalla de Inicio".',
-    update: 'ACTUALIZACIÓN DISPONIBLE',
-    updating: 'ACTUALIZANDO...',
-    updated: 'ACTUALIZACIÓN COMPLETADA',
+    dismiss: 'CERRAR',
+
   },
   offline: { title: 'SIN CONEXIÓN', desc: 'Los datos pueden no sincronizarse' },
   groups: {

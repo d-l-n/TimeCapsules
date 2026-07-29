@@ -1,17 +1,14 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  server: {
-    proxy: {
-      '/api/trakt': {
-        target: 'https://api.trakt.tv',
-        changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api\/trakt/, ''),
-      },
-    },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: ['./src/test/setup.ts'],
+    include: ['src/**/*.test.{ts,tsx}'],
   },
   build: {
     chunkSizeWarningLimit: 600,
@@ -28,8 +25,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'prompt',
-      injectRegister: null,
+      registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'Time Capsules',

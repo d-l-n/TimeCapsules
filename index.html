@@ -7,7 +7,6 @@
     <meta name="theme-color" content="#F6F6F3" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f0f0f" media="(prefers-color-scheme: dark)" />
     <meta name="description" content="Personal TV show & movie tracking history dashboard — Time Capsules" />
-    <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
@@ -18,41 +17,18 @@
   </head>
   <body>
     <div id="root">
-      <!-- ── CSS-painted PWA splash screen ──────────────── -->
       <div id="boot-fallback">
-        <!-- Painted TC monogram (text + offset shadow) -->
         <div class="splash-mono">TC</div>
-
-        <!-- Wordmark -->
         <div class="splash-wordmark">Time Capsules</div>
-
-        <!-- CSS-painted loading bar (replaces spinner) -->
         <div class="splash-loader">
           <div class="splash-loader-track">
             <div class="splash-loader-fill"></div>
           </div>
         </div>
-
-        <!-- Error UI (hidden until boot error) -->
-        <svg id="boot-error-icon" class="boot-error-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-          <circle cx="24" cy="24" r="17" stroke="#FF5CA8" stroke-width="2.5" stroke-linecap="square"/>
-          <path d="M24 24L24 13" stroke="#FF5CA8" stroke-width="2.5" stroke-linecap="square"/>
-          <path d="M24 24L33 24" stroke="#FF5CA8" stroke-width="2.5" stroke-linecap="square"/>
-          <path d="M10 38L19 29L16 24L26 14" stroke="#FF5CA8" stroke-width="2.5" stroke-linecap="square"/>
-          <path d="M26 14L30 11" stroke="#FF5CA8" stroke-width="2" stroke-linecap="square"/>
-        </svg>
-        <p id="boot-status" class="boot-status">Loading…</p>
-        <p id="boot-detail" class="boot-detail"></p>
-        <p class="boot-hint">If this stays here, the app failed to load.<br />Check your connection and reload.</p>
-        <p id="boot-retry" class="boot-retry"></p>
-        <button id="boot-reload" class="boot-reload-btn" onclick="location.reload()">Reload</button>
-
-        <!-- Bottom accent bar painted with CSS -->
         <div class="splash-bar"></div>
       </div>
 
       <style>
-        /* ── CSS-Painted PWA Splash Screen ──────────────── */
         #boot-fallback {
           position: fixed;
           inset: 0;
@@ -67,20 +43,17 @@
           padding: 24px;
         }
 
-        /* ── TC monogram painted with CSS ───────────────── */
         .splash-mono {
           font-size: clamp(90px, 18vw, 160px);
           font-weight: 900;
           letter-spacing: -0.08em;
           line-height: 1;
           color: #111111;
-          text-shadow:
-             8px  8px 0 #FFD400;
+          text-shadow: 8px 8px 0 #FFD400;
           margin-bottom: 8px;
           user-select: none;
         }
 
-        /* ── Wordmark ────────────────────────────────────── */
         .splash-wordmark {
           font-size: clamp(14px, 2.5vw, 22px);
           font-weight: 900;
@@ -89,11 +62,6 @@
           color: #111111;
           margin-bottom: 32px;
           line-height: 1.2;
-        }
-
-        /* ── CSS-painted loading bar ──────────────────────── */
-        .splash-loader {
-          margin-bottom: 0;
         }
 
         .splash-loader-track {
@@ -117,7 +85,6 @@
           100% { transform: translateX(385%); }
         }
 
-        /* ── Bottom accent bar ───────────────────────────── */
         .splash-bar {
           position: fixed;
           bottom: 0;
@@ -128,277 +95,19 @@
           box-shadow: 0 -3px 0 #111111;
         }
 
-        /* ── Error icon — hidden by default ──────────────── */
-        .boot-error-icon {
-          display: none;
-          width: 48px;
-          height: 48px;
-          margin-bottom: 20px;
-        }
-
-        @keyframes boot-pulse {
-          0%, 100% { opacity: 0.7; }
-          50% { opacity: 1; }
-        }
-
-        /* ── Error state: hide splash, show error UI ────── */
-        .boot-error .splash-mono,
-        .boot-error .splash-wordmark,
-        .boot-error .splash-loader {
-          display: none;
-        }
-
-        .boot-error .boot-error-icon {
-          display: block;
-          animation: boot-pulse 2.4s ease-in-out infinite;
-        }
-
-        /* ── Status / detail / hint text ─────────────────── */
-        .boot-status {
-          display: none;
-          font-weight: 800;
-          font-size: 13px;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          color: #111111;
-          margin: 0 0 12px;
-          line-height: 1.2;
-        }
-
-        .boot-error .boot-status { display: block; }
-
-        .boot-detail {
-          display: none;
-          font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
-          font-size: 10px;
-          color: #FF5CA8;
-          margin: -4px 0 12px;
-          line-height: 1.4;
-          word-break: break-word;
-        }
-        .boot-detail.boot-detail--visible { display: block; }
-
-        .boot-hint {
-          display: none;
-          font-size: 12px;
-          color: #555555;
-          margin: 0 0 24px;
-          line-height: 1.5;
-        }
-
-        .boot-error .boot-hint { display: block; }
-
-        .boot-retry {
-          display: none;
-          font-family: 'IBM Plex Mono', 'Courier New', Courier, monospace;
-          font-size: 9px;
-          color: #888888;
-          margin: -6px 0 14px;
-          line-height: 1.4;
-          letter-spacing: 0.04em;
-        }
-        .boot-retry.boot-retry--visible { display: block; }
-
-        /* ── Reload button ───────────────────────────────── */
-        .boot-reload-btn {
-          display: none;
-          align-items: center;
-          justify-content: center;
-          border: 3px solid #111111;
-          border-radius: 4px;
-          background: #FFD400;
-          color: #111111;
-          font-family: 'Inter', 'Geist', system-ui, sans-serif;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 0.02em;
-          font-size: 14px;
-          padding: 12px 28px;
-          cursor: pointer;
-          box-shadow: 4px 4px 0 #111111;
-          transition: translate 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
-        }
-
-        .boot-error .boot-reload-btn { display: inline-flex; }
-
-        .boot-reload-btn:hover {
-          translate: -2px -2px;
-          box-shadow: 6px 6px 0 #111111;
-          background: #ffe44d;
-        }
-
-        .boot-reload-btn:active {
-          translate: 2px 2px;
-          box-shadow: none;
-          transition: none;
-        }
-
-        /* ── Dark mode ───────────────────────────────────── */
         @media (prefers-color-scheme: dark) {
           #boot-fallback { background: #0f0f0f; }
-          .splash-mono {
-            color: #f0f0f0;
-            text-shadow: 8px 8px 0 #FFD400;
-          }
+          .splash-mono { color: #f0f0f0; }
           .splash-wordmark { color: #f0f0f0; }
           .splash-loader-track { border-color: #f0f0f0; }
-          .splash-loader-fill { background: #FFD400; }
-          .splash-bar {
-            background: #FFD400;
-            box-shadow: 0 -3px 0 #f0f0f0;
-          }
-          .boot-status { color: #f0f0f0; }
-          .boot-hint { color: #999999; }
-          .boot-reload-btn {
-            border-color: #f0f0f0;
-            box-shadow: 4px 4px 0 #f0f0f0;
-          }
-          .boot-reload-btn:hover {
-            box-shadow: 6px 6px 0 #f0f0f0;
-          }
-          .boot-reload-btn:active {
-            box-shadow: none;
-          }
+          .splash-bar { box-shadow: 0 -3px 0 #f0f0f0; }
         }
 
-        /* ── Reduced motion ──────────────────────────────── */
         @media (prefers-reduced-motion: reduce) {
-          .splash-loader-fill,
-          .boot-error-icon { animation: none !important; }
-        }
-
-        /* ── Mobile ──────────────────────────────────────── */
-        @media (max-width: 480px) {
-          #boot-fallback { padding: 20px; }
-          .splash-mono {
-            text-shadow:
-              6px  6px 0 #FFD400;
-          }
-        }
-
-        @media (prefers-color-scheme: dark) and (max-width: 480px) {
-          .splash-mono {
-            text-shadow: 6px 6px 0 #FFD400;
-          }
+          .splash-loader-fill { animation: none !important; }
         }
       </style>
     </div>
-    <script>
-      /* ── Boot error handler: detect error type & show contextual message ── */
-      (function() {
-        var retryTimer = null;
-        var retryCount = 0;
-        var RETRY_MAX = 5;
-        var RETRY_INTERVAL = 5000;
-
-        function showBootError(statusText, detailText) {
-          var f = document.getElementById('boot-fallback');
-          if (!f) return;
-          var s = document.getElementById('boot-status');
-          if (s) s.textContent = statusText;
-          var d = document.getElementById('boot-detail');
-          if (d && detailText) {
-            d.textContent = detailText;
-            d.classList.add('boot-detail--visible');
-          }
-          f.classList.add('boot-error');
-          startRetry();
-        }
-
-        function startRetry() {
-          if (retryTimer) return;
-          var el = document.getElementById('boot-retry');
-          retryCount = 0;
-          tickRetry(el);
-        }
-
-        function tickRetry(el) {
-          if (retryCount >= RETRY_MAX) {
-            if (el) {
-              el.textContent = 'Max retries reached. Reload manually.';
-              el.style.color = '#FF5CA8';
-            }
-            return;
-          }
-          retryCount++;
-          var remaining = Math.floor(RETRY_INTERVAL / 1000);
-          if (el) {
-            el.textContent = 'Retry ' + retryCount + '/' + RETRY_MAX + ' in ' + remaining + 's…';
-            el.classList.add('boot-retry--visible');
-          }
-          retryTimer = setInterval(function() {
-            remaining--;
-            if (remaining <= 0) {
-              clearInterval(retryTimer);
-              retryTimer = null;
-              if (el) el.textContent = 'Retrying…';
-              location.reload();
-            } else {
-              if (el) el.textContent = 'Retry ' + retryCount + '/' + RETRY_MAX + ' in ' + remaining + 's…';
-            }
-          }, 1000);
-        }
-
-        function cancelRetry() {
-          if (retryTimer) {
-            clearInterval(retryTimer);
-            retryTimer = null;
-          }
-          var el = document.getElementById('boot-retry');
-          if (el) {
-            el.classList.remove('boot-retry--visible');
-            el.textContent = '';
-            el.style.color = '';
-          }
-        }
-
-        // Cancel auto-retry when user manually clicks reload
-        document.getElementById('boot-reload').addEventListener('click', function(e) {
-          cancelRetry();
-        });
-
-        // Detect script load failure (network / 404 / server error)
-        var origOnError = window.onerror;
-        window.onerror = function(msg, source, line, col, error) {
-          var fb = document.getElementById('boot-fallback');
-          if (fb && fb.style.display !== 'none') {
-            var context = error ? (error.name || 'Error') + ': ' + (error.message || msg) : String(msg);
-            showBootError('Runtime Error', context.slice(0, 200));
-          }
-          if (origOnError) return origOnError.apply(this, arguments);
-          return false;
-        };
-
-        window.addEventListener('unhandledrejection', function(e) {
-          var fb = document.getElementById('boot-fallback');
-          if (fb && fb.style.display !== 'none') {
-            var reason = e.reason;
-            var msg = reason && reason.message ? reason.message : String(reason);
-            showBootError('Task Failed', msg.slice(0, 200));
-          }
-        });
-
-        // Expose helpers so the script onerror can call them
-        window.__showBootError = showBootError;
-        window.__startRetry = startRetry;
-      })();
-    </script>
-    <script type="module" src="/src/main.tsx" onerror="(function(){
-      var f = document.getElementById('boot-fallback');
-      if (!f) return;
-      var online = typeof navigator !== 'undefined' && navigator.onLine;
-      var status = online ? 'Failed to Load' : 'No Connection';
-      var detail = online ? 'The app bundle could not be fetched. Server may be down.' : 'You appear to be offline. Check your internet connection.';
-      if (typeof window.__showBootError === 'function') {
-        window.__showBootError(status, detail);
-      } else {
-        var s = document.getElementById('boot-status');
-        if (s) s.textContent = status;
-        var d = document.getElementById('boot-detail');
-        if (d) { d.textContent = detail; d.classList.add('boot-detail--visible'); }
-        f.classList.add('boot-error');
-        if (typeof window.__startRetry === 'function') window.__startRetry();
-      }
-    }())"></script>
-</body>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

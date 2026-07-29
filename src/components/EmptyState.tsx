@@ -31,52 +31,24 @@ export default function EmptyState({
         {description && <p className="text-sm text-text-secondary mb-6 leading-relaxed">{description}</p>}
         {action && (
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            {action.to ? (
-              <Link
-                to={action.to}
-                className={`inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md ${
-                  action.variant === 'secondary'
-                    ? 'bg-surface text-text sm:hover:bg-yellow'
-                    : 'bg-yellow text-text sm:hover:bg-orange'
-                }`}
-                onClick={action.onClick}
-              >
-                {action.label}
-              </Link>
-            ) : (
-              <button
-                onClick={action.onClick}
-                className={`inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md cursor-pointer ${
-                  action.variant === 'secondary'
-                    ? 'bg-surface text-text sm:hover:bg-yellow'
-                    : 'bg-yellow text-text sm:hover:bg-orange'
-                }`}
-              >
-                {action.label}
-              </button>
-            )}
-            {secondaryAction && (
-              secondaryAction.to ? (
-                <Link
-                  to={secondaryAction.to}
-                  className="inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase bg-surface text-text sm:hover:bg-yellow transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5"
-                  onClick={secondaryAction.onClick}
-                >
-                  {secondaryAction.label}
-                </Link>
-              ) : (
-                <button
-                  onClick={secondaryAction.onClick}
-                  className="inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase bg-surface text-text sm:hover:bg-yellow transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 cursor-pointer"
-                >
-                  {secondaryAction.label}
-                </button>
-              )
-            )}
+            <ActionItem action={action} />
+            {secondaryAction && <ActionItem action={secondaryAction} />}
           </div>
         )}
         {children}
       </div>
     </div>
   )
+}
+
+function ActionItem({ action }: { action: EmptyStateAction }) {
+  const cls = `inline-block border-[3px] border-border px-5 py-3 text-xs font-bold uppercase transition-all shadow-brutal-sm sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md ${
+    action.variant === 'secondary'
+      ? 'bg-surface text-text sm:hover:bg-yellow'
+      : 'bg-yellow text-text sm:hover:bg-orange'
+  }`
+  if (action.to) {
+    return <Link to={action.to} className={cls} onClick={action.onClick}>{action.label}</Link>
+  }
+  return <button onClick={action.onClick} className={`${cls} cursor-pointer`}>{action.label}</button>
 }

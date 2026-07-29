@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useNotifications } from './useNotifications'
+import { clearCache } from '../lib/hook-cache'
 
 const mockNotifications = [
   { id: 'n1', user_id: 'user-1', type: 'upcoming_episode' as const, title: 'New Episode', body: 'S5E6 airs tomorrow', show_id: 1, read: false, created_at: '2024-01-15T20:00:00Z' },
@@ -19,6 +20,7 @@ const notifService = await import('../services/notificationService')
 
 describe('useNotifications', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     localStorage.clear()
     vi.mocked(notifService.getNotifications).mockResolvedValue([])

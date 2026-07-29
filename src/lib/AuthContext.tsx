@@ -1,8 +1,6 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { onAuthStateChanged, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, type User } from 'firebase/auth'
 import { auth, googleProvider } from './firebase-auth'
-import { ensureDefaultLists, syncDefaultLists } from '../services/listService'
-import { gatherSeedData } from '../services/dashboardData'
 import { useI18n } from './I18nContext'
 
 interface AuthCtx {
@@ -20,6 +18,7 @@ const AuthContext = createContext<AuthCtx>(null!)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const seeded = useRef(false)
   const { lang } = useI18n()
 
   useEffect(() => {
@@ -28,9 +27,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (!user?.uid) return
-    ensureDefaultLists(user.uid, lang)
-    gatherSeedData(user.uid, lang).then(seed => syncDefaultLists(user.uid, seed)).catch(() => {})
+    if (!user?.uid || seeded.current) return
+    seeded.current = true
+    ;(async () => {
+      const [{ ensureDefaultLists, syncDefaultLists }, { gatherSeedData }] = await Promise.all([
+        import('../services/listService'),
+        import('../services/dashboardData'),
+      ])
+      await ensureDefaultLists(user.uid, lang)
+      const seed = await gatherSeedData(user.uid, lang)
+      await syncDefaultLists(user.uid, seed)
+    })().catch(() => {})
   }, [user?.uid, lang])
 
   const loginGoogle = async () => { await signInWithPopup(auth, googleProvider) }

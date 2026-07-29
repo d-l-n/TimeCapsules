@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { buildShow, buildEpisode, buildFollowedShow, buildWatchedEpisode, mockQuerySnapshot } from '../test/factories'
 
 import { firestoreMock } from '../test/firestore-mock'
-import { mementoClear } from '../lib/memento'
+import { memoClear } from '../lib/hook-cache'
 
 vi.mock('firebase/firestore', () => firestoreMock())
 vi.mock('../lib/firebase', () => ({ db: 'mock-db' }))
@@ -24,8 +24,8 @@ describe('showService', () => {
     firestore.collection.mockClear()
     firestore.query.mockClear()
     firestore.doc.mockClear()
-    // Clear the memento TTL cache so buildShowsMap doesn't return stale mock data
-    mementoClear()
+    // Clear the memoize TTL cache so buildShowsMap doesn't return stale mock data
+    memoClear()
   })
 
   describe('getFollowedActiveShows', () => {

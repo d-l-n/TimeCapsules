@@ -127,7 +127,7 @@ export default function EpisodeRow({
         <div className="border-t-2 border-border px-3 sm:px-4 py-2 sm:py-3 bg-surface text-xs sm:text-sm flex flex-col sm:flex-row gap-3 sm:gap-4">
           {ep.still_path && !(spoilerFree && !isWatched) && (
             <div className="sm:w-48 shrink-0">
-              <img src={getTmdbImage(ep.still_path, 'w500')!} alt="" className="w-full border-2 border-border" />
+              <img src={getTmdbImage(ep.still_path, 'w500')!} alt={ep.title ? `Still from ${ep.title}` : `Episode ${ep.episode_number}`} className="w-full border-2 border-border" />
             </div>
           )}
           <div className="flex-1 space-y-2">

@@ -1,16 +1,17 @@
 import { addDoc, updateDoc, doc, collection, where, orderBy, limit, getDocs, query } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { findMany } from '../lib/firestore-utils'
 import { getFollowedActiveShows } from './showService'
 import { getTmdbDetailsAuto } from './tmdb'
 import type { NotificationDoc } from '../lib/firebase-queries'
 
 export async function getNotifications(uid: string): Promise<NotificationDoc[]> {
-  return findMany<NotificationDoc>('notifications', where('user_id', '==', uid), orderBy('created_at', 'desc'), limit(20))
+  const _snap = await getDocs(query(collection(db, 'notifications'), where('user_id', '==', uid), orderBy('created_at', 'desc'), limit(20)))
+  return _snap.docs.map(d => ({ ...(d.data() as NotificationDoc), id: d.id }))
 }
 
 export async function getUnreadCount(uid: string): Promise<number> {
-  const items = await findMany<NotificationDoc>('notifications', where('user_id', '==', uid), where('read', '==', false))
+  const _snap = await getDocs(query(collection(db, 'notifications'), where('user_id', '==', uid), where('read', '==', false)))
+  const items = _snap.docs.map(d => ({ ...(d.data() as NotificationDoc), id: d.id }))
   return items.length
 }
 
@@ -40,7 +41,8 @@ export async function checkUpcomingEpisodes(uid: string) {
   const shows = await getFollowedActiveShows(uid)
   const now = new Date()
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
-  const existingNotifications = await findMany<NotificationDoc>('notifications', where('user_id', '==', uid), where('type', '==', 'upcoming_episode'), limit(50))
+  const _snap2 = await getDocs(query(collection(db, 'notifications'), where('user_id', '==', uid), where('type', '==', 'upcoming_episode'), limit(50)))
+  const existingNotifications = _snap2.docs.map(d => ({ ...(d.data() as NotificationDoc), id: d.id }))
   const existingKeys = new Set(existingNotifications.map(n => n.show_id))
 
   for (const show of shows) {

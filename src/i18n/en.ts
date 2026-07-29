@@ -206,12 +206,8 @@ export default {
     title: 'INSTALL APP',
     desc: 'Install {name} on your device for quick access.',
     btn: 'INSTALL',
-    later: 'LATER',
-    dismiss: 'DON\'T SHOW AGAIN',
-    iosInstructions: 'Tap Share and select "Add to Home Screen".',
-    update: 'UPDATE AVAILABLE',
-    updating: 'UPDATING...',
-    updated: 'UPDATE COMPLETE',
+    dismiss: 'DISMISS',
+
   },
   offline: { title: 'OFFLINE', desc: 'Data may not sync' },
   groups: {

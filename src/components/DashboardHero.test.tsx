@@ -38,14 +38,20 @@ describe('DashboardHero', () => {
     expect(screen.getByText(/day streak/i)).toBeInTheDocument()
   })
 
-  it('does not show streak when 1', () => {
+  it('shows dash instead of streak number when streak is 1', () => {
     render(<DashboardHero streak={1} episodesWatched={500} showsTracked={10} timeSpent={1200} />, { wrapper })
-    expect(screen.queryByText(/day streak/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/day streak/i)).toBeInTheDocument()
+    const links = screen.getAllByRole('link')
+    const streakLink = links.find(l => l.getAttribute('href') === '/stats')
+    expect(streakLink).toHaveTextContent(/-/)
   })
 
-  it('does not show streak when 0', () => {
+  it('shows dash instead of streak number when streak is 0', () => {
     render(<DashboardHero streak={0} episodesWatched={500} showsTracked={10} timeSpent={1200} />, { wrapper })
-    expect(screen.queryByText(/day streak/i)).not.toBeInTheDocument()
+    expect(screen.getByText(/day streak/i)).toBeInTheDocument()
+    const links = screen.getAllByRole('link')
+    const streakLink = links.find(l => l.getAttribute('href') === '/stats')
+    expect(streakLink).toHaveTextContent(/-/)
   })
 
   it('episodes link points to profile history tab', () => {

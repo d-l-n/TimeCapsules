@@ -839,7 +839,7 @@ export default function ShowDetail() {
     } catch {}
     setMovieToggling(false)
     movieTogglingRef.current = false
-  }, [user?.uid, movieToggling, show?.tmdb_id, isMovie, watchedCounts, selectedGroupId])
+  }, [user?.uid, movieToggling, show, isMovie, watchedCounts, selectedGroupId])
 
   function parsePosition(input: string): number | null {
     const trimmed = input.trim()

@@ -144,6 +144,7 @@ const mockShow = {
 }
 
 const mockEpisode = {
+  id: 'ep1',
   tmdb_id: 101,
   show_id: 1,
   season_number: 1,

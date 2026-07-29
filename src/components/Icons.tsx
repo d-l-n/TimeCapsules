@@ -1,3 +1,5 @@
+import { memo } from 'react'
+
 export const WatchedIcon = ({ className = 'w-3 h-3' }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" aria-hidden="true">
     <path d="M4 12.5 9.5 18 20 6" />
@@ -60,3 +62,29 @@ export const CloseIcon = ({ className = 'w-6 h-6' }: { className?: string }) => 
     <path d="M19 5L5 19" />
   </svg>
 )
+
+const DashboardIcon = memo(() => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8"/><rect x="13" y="3" width="8" height="8"/><rect x="3" y="13" width="8" height="8"/><rect x="13" y="13" width="8" height="8"/></svg>
+))
+
+const GroupIcon = memo(() => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3 3 0 0 1 0 5.8M21 20c0-2.6-1.6-4.8-4-5.6"/></svg>
+))
+
+const LibraryIcon = memo(() => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="4" height="18"/><rect x="10" y="6" width="4" height="15"/><rect x="17" y="9" width="4" height="12"/></svg>
+))
+
+const SearchIcon = memo(() => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+))
+
+const BellIcon = memo(() => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.02 2.91C8.71 2.91 6.02 5.6 6.02 8.91v2.89c0 .61-.26 1.54-.57 2.06L4.3 15.77c-.71 1.18-.22 2.49 1.08 2.93 4.31 1.44 8.96 1.44 13.27 0 1.21-.4 1.74-1.83 1.08-2.93l-1.15-1.91c-.3-.52-.56-1.45-.56-2.06V8.91c0-3.3-2.7-6-6-6Z"/><path d="M13.87 3.2a6.3 6.3 0 0 0-3.7 0c.29-.74 1.01-1.26 1.85-1.26s1.56.52 1.85 1.26Z"/><path d="M15.02 19.06c0 1.65-1.35 3-3 3a3 3 0 0 1-3-3"/></svg>
+))
+
+const StatsIcon = memo(() => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="square" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+))
+
+export { DashboardIcon, GroupIcon, LibraryIcon, SearchIcon, BellIcon, StatsIcon }

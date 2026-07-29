@@ -48,7 +48,7 @@ export default function StreamProviders({ providers, streamCountry, onCountryCha
                 rel="noopener noreferrer"
                 className="border-2 border-border px-1.5 py-1 text-[10px] sm:text-xs font-bold bg-surface flex items-center gap-1 sm:hover:bg-yellow transition-colors"
               >
-                {p.logo_path && <img src={getTmdbImage(p.logo_path, 'w500')!} alt="" className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded" />}
+                {p.logo_path && <img src={getTmdbImage(p.logo_path, 'w500')!} alt={p.provider_name} className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded" />}
                 {p.provider_name}
               </a>
             )

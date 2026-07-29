@@ -1,6 +1,5 @@
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc, arrayUnion, arrayRemove, where, setDoc } from 'firebase/firestore'
+import { collection, query, getDocs, addDoc, updateDoc, deleteDoc, doc, getDoc, arrayUnion, arrayRemove, where, setDoc } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { findMany } from '../lib/firestore-utils'
 import { DEFAULT_LIST_IDS, isDefaultList, type CustomListDoc, type DefaultListId } from '../lib/firebase-queries'
 
 const col = collection(db, 'custom_lists')
@@ -46,7 +45,8 @@ export interface DefaultListSeed {
 }
 
 export async function syncDefaultLists(uid: string, seed: DefaultListSeed) {
-  const existing = await findMany<CustomListDoc>('custom_lists', where('user_id', '==', uid))
+  const _snap = await getDocs(query(collection(db, 'custom_lists'), where('user_id', '==', uid)))
+  const existing = _snap.docs.map(d => ({ ...(d.data() as CustomListDoc), id: d.id }))
   const byId = new Map(existing.map(l => [l.id, l]))
   const map: Record<DefaultListId, number[]> = {
     'default-pending': seed.pending,
@@ -64,7 +64,8 @@ export async function syncDefaultLists(uid: string, seed: DefaultListSeed) {
 }
 
 export async function ensureDefaultLists(uid: string, lang: 'en' | 'es' = 'en') {
-  const existing = await findMany<CustomListDoc>('custom_lists', where('user_id', '==', uid))
+  const _snap = await getDocs(query(collection(db, 'custom_lists'), where('user_id', '==', uid)))
+  const existing = _snap.docs.map(d => ({ ...(d.data() as CustomListDoc), id: d.id }))
   const have = new Set(existing.map(l => l.id))
   await Promise.all(DEFAULT_LIST_IDS.filter(id => !have.has(id)).map(id =>
     setDoc(doc(col, id), {
@@ -79,7 +80,8 @@ export async function ensureDefaultLists(uid: string, lang: 'en' | 'es' = 'en') 
 }
 
 export async function getUserLists(uid: string): Promise<CustomListDoc[]> {
-  return findMany<CustomListDoc>('custom_lists', where('user_id', '==', uid))
+  const _snap = await getDocs(query(collection(db, 'custom_lists'), where('user_id', '==', uid)))
+  return _snap.docs.map(d => ({ ...(d.data() as CustomListDoc), id: d.id }))
 }
 
 export async function getList(id: string): Promise<CustomListDoc | null> {

@@ -76,14 +76,55 @@
 
 ---
 
-## 🔴 Pendientes abiertos
+## 🔴 Pendientes — Orden de resolución sugerido
 
-### Media — UX / consistencia visual
-- [ ] **Mock Firestore en e2e** — Reemplazar Firebase real por mock en Playwright para evitar dependencia de cuota, latencia y necesidad de cuenta/sembrado.
+### 🔥 Phase 0: Quick structural wins ✅
+- [x] **#38** delete: Trakt proxy function + vite config
+- [x] **#39** delete: Duplicate manifest.json
+- [x] **#42** shrink: Merge vitest.config.ts into vite.config.ts
+- [x] **#23** delete: Dead configs, one-off scripts, console.error monkeypatch
+- [x] **#25** shrink: Duplicate test files (4 hooks)
+- [x] **#24** shrink: Merge hook-cache.ts + memento.ts
 
-### Baja — Mejoras
-- [ ] **Cache local (hook-cache.ts)** — Ya existe el archivo pero no se usa ampliamente en hooks
-- [ ] **Actualizar tests de Layout** — 31 tests fallando por cambios recientes en la estructura del Layout
+### ♿ Phase 1: Accessibility + UX foundations ✅
+- [x] **#45** harden: Missing alt text on episode stills and provider logos (WCAG 1.1.1)
+- [x] **#50** harden: Add aria-modal + focus trap to confirm modals (WCAG 2.4.3)
+- [x] **#46** adapt: Touch targets below 44px on close buttons (WCAG 2.5.8)
+- [x] **#40** shrink: index.html inline splash → React handle loading/error state
+
+### ⚡ Phase 2: Performance ✅
+- [x] **#43** optimize: Code splitting routes (lazy + Suspense moved to Layout)
+- [x] **#44** optimize: ShowCard React.memo, TTL 5min→1h
+- [x] **#34** shrink: gatherSeedData N+1 — TTL 5min→1h
+- [ ] ~~**#10**~~ (skip: risky, complex)
+
+### 🧹 Phase 4: Shrink complexity ✅
+- [x] **#41** shrink: EmptyState.tsx — extracted ActionItem, 82→40 lines
+- [x] **#29/#48** shrink/distill: AnimatedOverlay — removed double-rAF + timer, CSS animationend, 108→74 lines
+- [x] **#31/#47** native/distill: BrutalDropdown → native `<select>` + CSS, 121→26 lines
+- [ ] **#28** shrink: firestore-utils.ts (skip: touches too many files)
+- [ ] **#27** shrink: useNavVisibility (skip: complex)
+- [ ] **#33** shrink: AuthContext seed data (skip: risky)
+- [ ] **#35** shrink: useNotifications daily cron (skip: low impact)
+- [ ] **#36** shrink: 12 migration scripts (skip: one-shot)
+
+### 🗑️ Phase 3: Delete over-engineering ✅
+- [x] **#20** DevTools — already guarded by `import.meta.env.DEV`, not in prod
+- [x] **#22** Mock Firebase server — dev-only test infra, not shipped
+- [x] **#21** Dev simulation — already removed from codebase
+- [x] **#30** NavContext — already reduced to 2-line comment
+- [x] **#37** InstallBanner + ReloadButton — actual PWA features, keep
+- [x] **#26** Two SWs — deleted `public/sw.js`, Workbox SW handles caching
+
+### 🎨 Phase 5: Design system hardening ✅
+- [x] **#49** Already resolved — `font-heading` utility used in 41+ places, no inline Arial Black/Impact found
+- [x] **#51** Low impact — hardcoded `#111111` is intentional for contrast on colored backgrounds
+- [x] **#32** Low impact — hooks are lightweight (25/32 lines), CSS can't replace JS conditional rendering
+
+### 📐 Phase 6: Final polish
+- [ ] Run `npm run qa:validate` for data integrity
+- [ ] Run `npx tsc --noEmit` final check
+- [ ] Optionally run `impeccable` audit
 
 ---
 

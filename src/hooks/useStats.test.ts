@@ -5,7 +5,7 @@ import { clearCache } from '../lib/hook-cache'
 
 const mockStats = { time_spent: 3600, nb_episodes_watched: 150, nb_shows_followed: 10, score: 85, user_id: 'user-1' }
 const mockDist = [{ rating: 8, count: 5 }]
-const mockBadges = [{ user_id: 'user-1', badge_id: '1', earned_at: '2024-01-15T20:00:00Z' }]
+const mockBadges = [{ id: 'b1', user_id: 'user-1', badge_id: '1', earned_at: '2024-01-15T20:00:00Z' }]
 
 vi.mock('../services/statsService', () => ({
   getUserStats: vi.fn(),

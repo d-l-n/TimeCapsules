@@ -1,18 +1,20 @@
+import { lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './lib/AuthContext'
 import Layout from './components/Layout'
 import Loading from './components/Loading'
 import ErrorBoundary from './components/ErrorBoundary'
 import LoginPage from './pages/LoginPage'
-import Dashboard from './pages/Dashboard'
-import ShowDetail from './pages/ShowDetail'
-import DiscoverPage from './pages/DiscoverPage'
-import ProfilePage from './pages/ProfilePage'
-import GroupsPage from './pages/GroupsPage'
-import LibraryPage from './pages/LibraryPage'
-import GroupDetail from './pages/GroupDetail'
-import UpcomingPage from './pages/UpcomingPage'
-import ListDetail from './pages/ListDetail'
+
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const ShowDetail = lazy(() => import('./pages/ShowDetail'))
+const DiscoverPage = lazy(() => import('./pages/DiscoverPage'))
+const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const GroupsPage = lazy(() => import('./pages/GroupsPage'))
+const LibraryPage = lazy(() => import('./pages/LibraryPage'))
+const GroupDetail = lazy(() => import('./pages/GroupDetail'))
+const UpcomingPage = lazy(() => import('./pages/UpcomingPage'))
+const ListDetail = lazy(() => import('./pages/ListDetail'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -27,8 +29,8 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/show/:id" element={<ShowDetail />} />
           <Route path="/discover" element={<DiscoverPage />} />

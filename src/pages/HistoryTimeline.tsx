@@ -32,7 +32,7 @@ export default function HistoryTimeline() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b-4 border-border pb-4">
-        <h2 className="text-xl sm:text-2xl font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.history.watchHistory}</h2>
+        <h2 className="text-xl sm:text-2xl font-heading uppercase">{t.history.watchHistory}</h2>
         <BrutalDropdown
           value={selected}
           options={months.map(m => ({ value: m, label: m }))}

@@ -19,27 +19,59 @@ service cloud.firestore {
         && request.resource.data.keys().size() == fields.size()
     }
 
+    function isGroupMember(groupId) {
+      return get(/databases/$(database)/documents/groups/$(groupId)) != null
+        && get(/databases/$(database)/documents/groups/$(groupId)).data.member_ids != null
+        && get(/databases/$(database)/documents/groups/$(groupId)).data.member_ids.hasAny([request.auth.uid])
+    }
+
+    // ── Collections ──
+
     match /shows/{docId} {
       allow read: if isAuth()
       allow create: if isAuth()
-      allow update: if isAuth()
-      allow delete: if isAuth()
+        && allowFields(['tmdb_id', 'name', 'poster_url', 'backdrop_url', 'synopsis', 'imdb_rating', 'imdb_votes', 'imdb_id', 'media_type'])
+        && request.resource.data.tmdb_id is number
+        && request.resource.data.name is string && request.resource.data.name.size() <= 500
+        && (request.resource.data.poster_url == null || (request.resource.data.poster_url is string && request.resource.data.poster_url.size() <= 500))
+        && (request.resource.data.backdrop_url == null || (request.resource.data.backdrop_url is string && request.resource.data.backdrop_url.size() <= 500))
+        && (request.resource.data.synopsis == null || (request.resource.data.synopsis is string && request.resource.data.synopsis.size() <= 10000))
+        && (request.resource.data.imdb_rating == null || request.resource.data.imdb_rating is number)
+        && (request.resource.data.imdb_votes == null || request.resource.data.imdb_votes is number)
+        && (request.resource.data.imdb_id == null || (request.resource.data.imdb_id is string && request.resource.data.imdb_id.size() <= 50))
+        && request.resource.data.media_type is string && request.resource.data.media_type.size() <= 10
+      allow update: if isAdmin()
+      allow delete: if isAdmin()
     }
 
     match /episodes/{docId} {
       allow read: if isAuth()
       allow create: if isAuth()
-      allow update: if isAuth()
-      allow delete: if isAuth()
+        && allowFields(['tmdb_id', 'show_id', 'season_number', 'episode_number', 'title'])
+        && request.resource.data.tmdb_id is number
+        && request.resource.data.show_id is number
+        && request.resource.data.season_number is number
+        && request.resource.data.episode_number is number
+        && (request.resource.data.title == null || (request.resource.data.title is string && request.resource.data.title.size() <= 500))
+      allow update: if isAdmin()
+      allow delete: if isAdmin()
     }
 
     match /followed_shows/{docId} {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'active', 'followed_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.active is number
+        && (request.resource.data.followed_at == null || (request.resource.data.followed_at is string && request.resource.data.followed_at.size() <= 100))
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'active', 'followed_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.active is number
+        && (request.resource.data.followed_at == null || (request.resource.data.followed_at is string && request.resource.data.followed_at.size() <= 100))
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
@@ -47,9 +79,17 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'episode_id', 'show_id', 'watched_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.episode_id is number
+        && (request.resource.data.show_id == null || request.resource.data.show_id is number)
+        && request.resource.data.watched_at is string && request.resource.data.watched_at.size() <= 100
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'episode_id', 'show_id', 'watched_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.episode_id is number
+        && (request.resource.data.show_id == null || request.resource.data.show_id is number)
+        && request.resource.data.watched_at is string && request.resource.data.watched_at.size() <= 100
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
@@ -57,15 +97,26 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'rating', 'rated_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.rating is number
+        && (request.resource.data.rated_at == null || (request.resource.data.rated_at is string && request.resource.data.rated_at.size() <= 100))
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'rating', 'rated_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.rating is number
+        && (request.resource.data.rated_at == null || (request.resource.data.rated_at is string && request.resource.data.rated_at.size() <= 100))
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /badges/{docId} {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAdmin()
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.badge_id is string && request.resource.data.badge_id.size() <= 100
+        && (request.resource.data.earned_at == null || (request.resource.data.earned_at is string && request.resource.data.earned_at.size() <= 100))
       allow update: if isAdmin()
       allow delete: if isAdmin()
     }
@@ -74,32 +125,66 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'episode_id', 'emotion_id', 'created_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.episode_id is number
+        && request.resource.data.emotion_id is string && request.resource.data.emotion_id.size() <= 30
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 100
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'episode_id', 'emotion_id', 'created_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.episode_id is number
+        && request.resource.data.emotion_id is string && request.resource.data.emotion_id.size() <= 30
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 100
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /user_stats/{docId} {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
+        && allowFields(['user_id', 'nb_episodes_watched', 'time_spent'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.nb_episodes_watched is number
+        && request.resource.data.time_spent is number
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
-    match /groups/{docId} {
+    match /invite_codes/{code} {
       allow read: if isAuth()
       allow create: if isAuth()
-        && allowFields(['name', 'invite_code', 'created_by', 'created_at'])
+        && allowFields(['group_id'])
+        && get(/databases/$(database)/documents/groups/$(request.resource.data.group_id)).data.created_by == request.auth.uid
+        && request.resource.data.group_id is string && request.resource.data.group_id.size() <= 128
+      allow delete: if false
+    }
+
+    match /groups/{docId} {
+      allow read: if isAuth() && (resource.data.created_by == request.auth.uid || isGroupMember(docId))
+      allow create: if isAuth()
+        && allowFields(['name', 'invite_code', 'created_by', 'created_at', 'member_ids'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.invite_code is string && request.resource.data.invite_code.size() <= 10
+        && request.resource.data.created_by is string && request.resource.data.created_by.size() <= 128
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 100
+        && request.resource.data.member_ids is list && request.resource.data.member_ids.size() <= 200
       allow update: if false
       allow delete: if isAuth() && resource.data.created_by == request.auth.uid
     }
 
     match /group_members/{docId} {
-      allow read: if isAuth()
+      allow read: if isAuth() && (
+        resource == null
+        || resource.data.user_id == request.auth.uid
+        || isGroupMember(resource.data.group_id)
+      )
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['group_id', 'user_id', 'role', 'joined_at'])
+        && request.resource.data.group_id is string && request.resource.data.group_id.size() <= 128
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.role is string && request.resource.data.role.size() <= 10
+        && request.resource.data.joined_at is string && request.resource.data.joined_at.size() <= 100
       allow update: if false
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
@@ -107,15 +192,25 @@ service cloud.firestore {
     match /group_shows/{docId} {
       allow read: if isAuth()
       allow create: if isAuth()
+        && isGroupMember(request.resource.data.group_id)
         && allowFields(['group_id', 'show_id', 'added_by', 'added_at'])
+        && request.resource.data.group_id is string && request.resource.data.group_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.added_by is string && request.resource.data.added_by.size() <= 128
+        && request.resource.data.added_at is string && request.resource.data.added_at.size() <= 100
       allow update: if false
-      allow delete: if isAuth()
+      allow delete: if isAuth() && isGroupMember(resource.data.group_id)
     }
 
     match /group_watch_events/{docId} {
       allow read: if isAuth()
       allow create: if isAuth() && request.resource.data.marked_by == request.auth.uid
         && allowFields(['group_id', 'episode_id', 'show_id', 'marked_by', 'created_at'])
+        && request.resource.data.group_id is string && request.resource.data.group_id.size() <= 128
+        && request.resource.data.episode_id is number
+        && request.resource.data.show_id is number
+        && request.resource.data.marked_by is string && request.resource.data.marked_by.size() <= 128
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 100
       allow update: if false
       allow delete: if false
     }
@@ -124,9 +219,23 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'type', 'title', 'body', 'show_id', 'read', 'created_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.type is string && request.resource.data.type.size() <= 30
+        && request.resource.data.title is string && request.resource.data.title.size() <= 500
+        && request.resource.data.body is string && request.resource.data.body.size() <= 1000
+        && (request.resource.data.show_id == null || request.resource.data.show_id is number)
+        && request.resource.data.read is bool
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 100
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'type', 'title', 'body', 'show_id', 'read', 'created_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.type is string && request.resource.data.type.size() <= 30
+        && request.resource.data.title is string && request.resource.data.title.size() <= 500
+        && request.resource.data.body is string && request.resource.data.body.size() <= 1000
+        && (request.resource.data.show_id == null || request.resource.data.show_id is number)
+        && request.resource.data.read is bool
+        && request.resource.data.created_at is string && request.resource.data.created_at.size() <= 100
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
@@ -134,26 +243,28 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'added_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.added_at is string && request.resource.data.added_at.size() <= 100
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'show_id', 'added_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.show_id is number
+        && request.resource.data.added_at is string && request.resource.data.added_at.size() <= 100
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
     match /user_profiles/{docId} {
       allow read: if isAuth()
       allow create: if isAuth() && request.auth.uid == docId
-        && request.resource.data.display_name is string
-        && request.resource.data.display_name.size() <= 100
-        && request.resource.data.photo_url is string
-        && request.resource.data.photo_url.size() <= 500
-        && request.resource.data.updated_at is string
+        && request.resource.data.display_name is string && request.resource.data.display_name.size() <= 100
+        && request.resource.data.photo_url is string && request.resource.data.photo_url.size() <= 500
+        && request.resource.data.updated_at is string && request.resource.data.updated_at.size() <= 100
       allow update: if isAuth() && request.auth.uid == docId
-        && request.resource.data.display_name is string
-        && request.resource.data.display_name.size() <= 100
-        && request.resource.data.photo_url is string
-        && request.resource.data.photo_url.size() <= 500
-        && request.resource.data.updated_at is string
+        && request.resource.data.display_name is string && request.resource.data.display_name.size() <= 100
+        && request.resource.data.photo_url is string && request.resource.data.photo_url.size() <= 500
+        && request.resource.data.updated_at is string && request.resource.data.updated_at.size() <= 100
       allow delete: if isAuth() && request.auth.uid == docId
     }
 
@@ -161,9 +272,21 @@ service cloud.firestore {
       allow read: if isAuth() && resource.data.user_id == request.auth.uid
       allow create: if isAuth() && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'content_id', 'content_type', 'show_id', 'position_seconds', 'updated_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.content_id is number
+        && request.resource.data.content_type is string && request.resource.data.content_type.size() <= 10
+        && request.resource.data.show_id is number
+        && request.resource.data.position_seconds is number
+        && request.resource.data.updated_at is string && request.resource.data.updated_at.size() <= 100
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'content_id', 'content_type', 'show_id', 'position_seconds', 'updated_at'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.content_id is number
+        && request.resource.data.content_type is string && request.resource.data.content_type.size() <= 10
+        && request.resource.data.show_id is number
+        && request.resource.data.position_seconds is number
+        && request.resource.data.updated_at is string && request.resource.data.updated_at.size() <= 100
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
     }
 
@@ -175,9 +298,23 @@ service cloud.firestore {
         && (request.resource.data.is_default != true
             || (request.resource.data.is_default == true
                 && docId in ['default-upcoming', 'default-pending', 'default-uptodate', 'default-finished']))
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.description is string && request.resource.data.description.size() <= 5000
+        && request.resource.data.show_ids is list && request.resource.data.show_ids.size() <= 5000
+        && request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 100
+        && request.resource.data.is_default is bool
+        && request.resource.data.seeded is bool
       allow update: if isAuth() && resource.data.user_id == request.auth.uid
         && request.resource.data.user_id == request.auth.uid
         && allowFields(['user_id', 'name', 'description', 'show_ids', 'createdAt', 'is_default', 'seeded'])
+        && request.resource.data.user_id is string && request.resource.data.user_id.size() <= 128
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.description is string && request.resource.data.description.size() <= 5000
+        && request.resource.data.show_ids is list && request.resource.data.show_ids.size() <= 5000
+        && request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 100
+        && request.resource.data.is_default is bool
+        && request.resource.data.seeded is bool
       allow delete: if isAuth() && resource.data.user_id == request.auth.uid
         && resource.data.is_default != true
     }

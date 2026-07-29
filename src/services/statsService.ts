@@ -1,5 +1,5 @@
-import { where, orderBy } from 'firebase/firestore'
-import { findOne, findMany } from '../lib/firestore-utils'
+import { collection, query, getDocs, where, orderBy, limit } from 'firebase/firestore'
+import { db } from '../lib/firebase'
 import type { UserStatsDoc, RatingDoc, BadgeDoc, WatchedEpisodeDoc } from '../lib/firebase-queries'
 
 export interface RatingDistItem { rating: number; count: number }
@@ -11,35 +11,40 @@ export const BADGE_NAMES: Record<number, string> = {
 }
 
 export async function getUserStats(uid: string) {
-  const result = await findOne<UserStatsDoc>('user_stats', where('user_id', '==', uid))
+  const _snap = await getDocs(query(collection(db, 'user_stats'), where('user_id', '==', uid), limit(1)))
+  const result = _snap.empty ? null : (_snap.docs[0].data() as UserStatsDoc)
   return result ?? ({} as Partial<UserStatsDoc>)
 }
 
 export async function getRatingDistribution(uid: string): Promise<RatingDistItem[]> {
-  const items = await findMany<RatingDoc>('ratings', where('user_id', '==', uid))
+  const _snap = await getDocs(query(collection(db, 'ratings'), where('user_id', '==', uid)))
+  const items = _snap.docs.map(d => ({ ...(d.data() as RatingDoc), id: d.id }))
   const dist: Record<number, number> = {}
   items.forEach(r => { const k = Math.floor(r.rating); dist[k] = (dist[k] || 0) + 1 })
   return Object.entries(dist).map(([r, c]) => ({ rating: parseInt(r), count: c })).sort((a, b) => a.rating - b.rating)
 }
 
 export async function getShowCount(uid: string) {
-  const items = await findMany<{ show_id: number }>('followed_shows', where('user_id', '==', uid))
-  return items.length
+  const _snap2 = await getDocs(query(collection(db, 'followed_shows'), where('user_id', '==', uid)))
+  return _snap2.docs.length
 }
 
 export async function getBadges(uid: string) {
-  return findMany<BadgeDoc>('badges', where('user_id', '==', uid), orderBy('badge_id'))
+  const _snap = await getDocs(query(collection(db, 'badges'), where('user_id', '==', uid), orderBy('badge_id')))
+  return _snap.docs.map(d => ({ ...(d.data() as BadgeDoc), id: d.id }))
 }
 
 export async function getTodayEpisodeCount(uid: string): Promise<number> {
   const today = new Date()
   const startStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
-  const items = await findMany<WatchedEpisodeDoc>('watched_episodes', where('user_id', '==', uid))
+  const _snap = await getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid)))
+  const items = _snap.docs.map(d => ({ ...(d.data() as WatchedEpisodeDoc), id: d.id }))
   return items.filter(w => w.watched_at?.startsWith(startStr)).length
 }
 
 export async function getStreak(uid: string): Promise<number> {
-  const items = await findMany<WatchedEpisodeDoc>('watched_episodes', where('user_id', '==', uid), orderBy('watched_at', 'desc'))
+  const _snap = await getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid), orderBy('watched_at', 'desc')))
+  const items = _snap.docs.map(d => ({ ...(d.data() as WatchedEpisodeDoc), id: d.id }))
   const dates = new Set<string>()
   items.forEach(w => { if (w.watched_at) dates.add(w.watched_at.slice(0, 10)) })
   const sorted = [...dates].sort().reverse()

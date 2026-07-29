@@ -5,7 +5,7 @@ import { useI18n } from '../lib/I18nContext'
 import { getFollowedActiveShows } from '../services/showService'
 import { getTvNextEpisode, getUpcomingMovies, getTmdbImage, getOnTheAirTv, tmdbLang } from '../services/tmdb'
 import type { NextEpisodeToAir, UpcomingMovie, TmdbSearchResult } from '../services/tmdb'
-import { buildShowsMap } from '../lib/firestore-utils'
+import { buildShowsMap } from '../services/showService'
 import Loading from '../components/Loading'
 
 interface FollowedShowUpcoming {
@@ -93,7 +93,7 @@ export default function UpcomingPage() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4 border-b-4 border-border pb-4 flex-wrap">
-        <h1 className="text-xl sm:text-2xl font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.upcoming.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-heading uppercase">{t.upcoming.title}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => setMode('followed')}

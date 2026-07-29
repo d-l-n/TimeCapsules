@@ -22,6 +22,7 @@ vi.mock('../services/showService', () => ({
   getFinishedContent: vi.fn(),
   toggleWatchedEpisode: vi.fn(),
   getBingingShows: vi.fn(() => Promise.resolve([])),
+  buildShowsMap: vi.fn(),
 }))
 
 vi.mock('../services/watchlistService', () => ({
@@ -34,14 +35,19 @@ vi.mock('../services/tmdb', () => ({
   tmdbLang: vi.fn(() => 'en-US'),
 }))
 
-vi.mock('../lib/firestore-utils', () => ({
-  buildShowsMap: vi.fn(),
-  findMany: vi.fn(() => Promise.resolve([])),
-}))
-
-vi.mock('../lib/memento', () => ({
-  memento: vi.fn(() => vi.fn()),
-  mementoClear: vi.fn(),
+vi.mock('../lib/hook-cache', () => ({
+  memoize: vi.fn(() => vi.fn()),
+  memoClear: vi.fn(),
+  memoClearKey: vi.fn(),
+  invalidateByPrefix: vi.fn(),
+  getCached: vi.fn(),
+  setCached: vi.fn(),
+  invalidate: vi.fn(),
+  clearCache: vi.fn(),
+  getCachedStale: vi.fn(),
+  cacheGet: vi.fn(),
+  cacheSet: vi.fn(),
+  memoSize: vi.fn(() => 0),
 }))
 
 // ── Dynamic imports (post-mock) ────────────────────────
@@ -51,7 +57,6 @@ const hooksModule = await import('../hooks')
 const showServiceModule = await import('../services/showService')
 const wlServiceModule = await import('../services/watchlistService')
 const tmdbModule = await import('../services/tmdb')
-const firestoreUtilsModule = await import('../lib/firestore-utils')
 const { default: Dashboard } = await import('./Dashboard')
 
 // ── Translations fixture ───────────────────────────────
@@ -184,7 +189,7 @@ describe('Dashboard', () => {
     vi.mocked(wlServiceModule.getWatchlist).mockResolvedValue([])
     vi.mocked(wlServiceModule.removeFromWatchlist).mockResolvedValue(undefined)
     vi.mocked(tmdbModule.getTvNextEpisode).mockResolvedValue(null)
-    vi.mocked(firestoreUtilsModule.buildShowsMap).mockResolvedValue(new Map())
+    vi.mocked(showServiceModule.buildShowsMap).mockResolvedValue(new Map())
   })
 
   // ── Loading State ───────────────────────────────────
@@ -221,10 +226,12 @@ describe('Dashboard', () => {
     expect(screen.getByText('day streak')).toBeInTheDocument()
   })
 
-  it('does not show streak stat when streak is 0', () => {
+  it('shows dash instead of streak number when streak is 0', () => {
     withMinimalData()
     renderDashboard()
-    expect(screen.queryByText('day streak')).not.toBeInTheDocument()
+    // The hero always renders the streak stat; value is dash when streak <= 1
+    expect(screen.getByText('day streak')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
   })
 
   it('shows episode count in stats bar', () => {

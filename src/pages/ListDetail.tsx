@@ -11,7 +11,7 @@ import type { ShowDoc } from '../lib/firebase-queries'
 import Loading from '../components/Loading'
 import EmptyState from '../components/EmptyState'
 import ShowCard from '../components/ShowCard'
-import AnimatedOverlay from '../components/AnimatedOverlay'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 export default function ListDetail() {
   const { id } = useParams<{ id: string }>()
@@ -84,7 +84,7 @@ export default function ListDetail() {
             </div>
           ) : (
             <>
-              <h2 className="text-xl font-bold uppercase" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{getListDisplayName(list, lang)}</h2>
+              <h2 className="text-xl font-heading uppercase">{getListDisplayName(list, lang)}</h2>
               {list.description && <p className="text-text-secondary text-sm mt-1">{list.description}</p>}
               <p className="text-xs font-bold text-text-secondary mt-1">{list.show_ids.length} {t.lists.shows}</p>
             </>
@@ -122,57 +122,26 @@ export default function ListDetail() {
           ))}
         </div>
       )}
-      <AnimatedOverlay open={showDeleteConfirm} onClose={() => setShowDeleteConfirm(false)} className="p-4">
-        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
-          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-            {t.lists.delete}
-          </h3>
-            <p className="text-sm font-bold">
-              {t.lists.confirmDelete}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowDeleteConfirm(false); handleDelete() }}
-                aria-label="Confirm delete"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-              >
-                {t.lists.delete}
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-              >                {t.lists.cancel}
-              </button>
-            </div>
-          </div>
-        </AnimatedOverlay>
-      <AnimatedOverlay open={showEmptyConfirm} onClose={() => setShowEmptyConfirm(false)} className="p-4">
-          <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
-            <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3 font-heading">
-              {t.lists.emptyListBtn}
-            </h3>
-            <p className="text-sm font-bold">
-              {t.lists.confirmEmpty}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowEmptyConfirm(false); handleEmpty() }}
-                aria-label="Confirm empty"
-                className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-              >
-                {t.lists.emptyListBtn}
-              </button>
-              <button
-                onClick={() => setShowEmptyConfirm(false)}
-                aria-label="Cancel"
-                className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-              >
-                {t.lists.cancel}
-              </button>
-            </div>
-          </div>
-        </AnimatedOverlay>
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title={t.lists.delete}
+        message={t.lists.confirmDelete}
+        confirmLabel={t.lists.delete}
+        confirmAction={() => { setShowDeleteConfirm(false); handleDelete() }}
+        cancelLabel={t.lists.cancel}
+        variant="danger"
+      />
+      <ConfirmDialog
+        open={showEmptyConfirm}
+        onClose={() => setShowEmptyConfirm(false)}
+        title={t.lists.emptyListBtn}
+        message={t.lists.confirmEmpty}
+        confirmLabel={t.lists.emptyListBtn}
+        confirmAction={() => { setShowEmptyConfirm(false); handleEmpty() }}
+        cancelLabel={t.lists.cancel}
+        variant="danger"
+      />
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n } from '../lib/I18nContext'
 
@@ -30,7 +31,7 @@ const STATUS_LABEL: Record<string, { en: string; es: string }> = {
   dropped: { en: 'DROPPED', es: 'DEJADO' },
 }
 
-export default function ShowCard({ id, name, posterUrl, imdbRating, userRating, episodeCount, mediaType, wrapperClassName = '', actions, onRemove, removing, status, span }: ShowCardProps) {
+const ShowCard = memo(function ShowCard({ id, name, posterUrl, imdbRating, userRating, episodeCount, mediaType, wrapperClassName = '', actions, onRemove, removing, status, span }: ShowCardProps) {
   const { t, lang } = useI18n()
 
   const spanClass = span ? `tile-${span} ${span !== '1x1' ? 'row-span-2' : ''}` : ''
@@ -89,4 +90,6 @@ export default function ShowCard({ id, name, posterUrl, imdbRating, userRating, 
       </div>
     </Link>
   )
-}
+})
+
+export default ShowCard

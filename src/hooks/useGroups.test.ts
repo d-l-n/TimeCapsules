@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, waitFor } from '@testing-library/react'
 import { useGroups, useGroupMembers, useGroupShows, useGroupProgress } from './useGroups'
+import { clearCache } from '../lib/hook-cache'
 
 const mockGroups = [
   { id: 'g1', name: 'Marvel Fans', invite_code: 'ABC123', created_by: 'user-1', created_at: '2024-01-01T00:00:00Z', member_count: 3 },
@@ -30,6 +31,7 @@ const groupService = await import('../services/groupService')
 
 describe('useGroups', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(groupService.getUserGroups).mockResolvedValue([])
   })
@@ -106,6 +108,7 @@ describe('useGroups', () => {
 
 describe('useGroupMembers', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(groupService.getGroupMembers).mockResolvedValue([])
   })
@@ -156,6 +159,7 @@ describe('useGroupMembers', () => {
 
 describe('useGroupShows', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(groupService.getGroupShows).mockResolvedValue([])
   })
@@ -189,6 +193,7 @@ describe('useGroupShows', () => {
 
 describe('useGroupProgress', () => {
   beforeEach(() => {
+    clearCache()
     vi.clearAllMocks()
     vi.mocked(groupService.getGroupEpisodeProgress).mockResolvedValue([])
   })

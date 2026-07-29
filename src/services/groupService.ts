@@ -1,6 +1,6 @@
-import { collection, query, where, getDocs, addDoc, doc, getDoc, writeBatch, onSnapshot, setDoc } from 'firebase/firestore'
+import { collection, query, where, getDocs, addDoc, doc, getDoc, writeBatch, onSnapshot, setDoc, deleteDoc, limit } from 'firebase/firestore'
 import { db } from '../lib/firebase'
-import { findOneWithId, findMany, exists, deleteOne, buildShowsMap } from '../lib/firestore-utils'
+import { buildShowsMap } from './showService'
 import { toggleWatchedEpisode } from './showService'
 import type { GroupDoc, GroupMemberDoc, GroupShowDoc, ShowDoc, WatchedEpisodeDoc, GroupWatchEventDoc } from '../lib/firebase-queries'
 
@@ -52,11 +52,11 @@ export async function createGroup(uid: string, name: string): Promise<string> {
 }
 
 export async function joinGroupByCode(uid: string, inviteCode: string): Promise<string | null> {
-  const groupWithId = await findOneWithId<GroupDoc>('groups', where('invite_code', '==', inviteCode))
-  if (!groupWithId) return null
-  const groupId = groupWithId.id
-  const alreadyMember = await exists('group_members', where('group_id', '==', groupId), where('user_id', '==', uid))
-  if (alreadyMember) return groupId
+  const gSnap = await getDocs(query(collection(db, 'groups'), where('invite_code', '==', inviteCode), limit(1)))
+  if (gSnap.empty) return null
+  const groupId = gSnap.docs[0].id
+  const mSnap = await getDocs(query(collection(db, 'group_members'), where('group_id', '==', groupId), where('user_id', '==', uid), limit(1)))
+  if (!mSnap.empty) return groupId
   await addDoc(collection(db, 'group_members'), {
     group_id: groupId,
     user_id: uid,
@@ -67,7 +67,8 @@ export async function joinGroupByCode(uid: string, inviteCode: string): Promise<
 }
 
 export async function getUserGroups(uid: string): Promise<GroupWithMeta[]> {
-  const memberItems = await findMany<GroupMemberDoc>('group_members', where('user_id', '==', uid))
+  const mSnap = await getDocs(query(collection(db, 'group_members'), where('user_id', '==', uid)))
+  const memberItems = mSnap.docs.map(d => ({ ...(d.data() as GroupMemberDoc), id: d.id }))
   if (memberItems.length === 0) return []
   const groups: GroupWithMeta[] = []
   for (const m of memberItems) {
@@ -81,7 +82,8 @@ export async function getUserGroups(uid: string): Promise<GroupWithMeta[]> {
 }
 
 export async function getGroupMembers(groupId: string): Promise<MemberWithProfile[]> {
-  const items = await findMany<GroupMemberDoc>('group_members', where('group_id', '==', groupId))
+  const mSnap = await getDocs(query(collection(db, 'group_members'), where('group_id', '==', groupId)))
+  const items = mSnap.docs.map(d => ({ ...(d.data() as GroupMemberDoc), id: d.id }))
   const members = items.map(m => ({ user_id: m.user_id, role: m.role, joined_at: m.joined_at }))
   const uids = members.map(m => m.user_id)
   const profiles = await getUserProfiles(uids)
@@ -117,8 +119,8 @@ export async function saveUserProfile(uid: string, displayName: string, photoURL
 }
 
 export async function addShowToGroup(groupId: string, showId: number, uid: string) {
-  const alreadyAdded = await exists('group_shows', where('group_id', '==', groupId), where('show_id', '==', showId))
-  if (alreadyAdded) return
+  const existing = await getDocs(query(collection(db, 'group_shows'), where('group_id', '==', groupId), where('show_id', '==', showId), limit(1)))
+  if (!existing.empty) return
   await addDoc(collection(db, 'group_shows'), {
     group_id: groupId,
     show_id: showId,
@@ -128,10 +130,11 @@ export async function addShowToGroup(groupId: string, showId: number, uid: strin
 }
 
 export async function getGroupShows(groupId: string): Promise<(ShowDoc & { show_id: number })[]> {
-  const [showsMap, gsItems] = await Promise.all([
+  const [showsMap, gsSnap] = await Promise.all([
     buildShowsMap(),
-    findMany<GroupShowDoc>('group_shows', where('group_id', '==', groupId)),
+    getDocs(query(collection(db, 'group_shows'), where('group_id', '==', groupId))),
   ])
+  const gsItems = gsSnap.docs.map(d => ({ ...(d.data() as GroupShowDoc), id: d.id }))
   return gsItems.map(g => ({ ...showsMap.get(g.show_id)!, show_id: g.show_id })).filter(Boolean)
 }
 
@@ -139,7 +142,8 @@ export async function getGroupEpisodeProgress(groupId: string, showId: number): 
   const members = await getGroupMembers(groupId)
   const userIds = members.map(m => m.user_id)
   if (userIds.length === 0) return []
-  const weItems = await findMany<WatchedEpisodeDoc>('watched_episodes', where('show_id', '==', showId))
+  const weSnap = await getDocs(query(collection(db, 'watched_episodes'), where('show_id', '==', showId)))
+  const weItems = weSnap.docs.map(d => ({ ...(d.data() as WatchedEpisodeDoc), id: d.id }))
   const progressMap = new Map<number, string[]>()
   weItems.forEach(w => {
     if (userIds.includes(w.user_id)) {
@@ -155,11 +159,13 @@ export async function getGroupEpisodeProgress(groupId: string, showId: number): 
 }
 
 export async function removeShowFromGroup(groupId: string, showId: number) {
-  await deleteOne('group_shows', where('group_id', '==', groupId), where('show_id', '==', showId))
+  const snap = await getDocs(query(collection(db, 'group_shows'), where('group_id', '==', groupId), where('show_id', '==', showId)))
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
 }
 
 export async function leaveGroup(groupId: string, uid: string) {
-  await deleteOne('group_members', where('group_id', '==', groupId), where('user_id', '==', uid))
+  const snap = await getDocs(query(collection(db, 'group_members'), where('group_id', '==', groupId), where('user_id', '==', uid)))
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)))
 }
 
 export async function createGroupWatchEvent(groupId: string, episodeId: number, showId: number, uid: string) {
@@ -178,14 +184,13 @@ export async function getGroupMoviesWatched(uid: string, showIds: number[]): Pro
   if (showIds.length === 0) return watched
   // Firestore 'in' supports at most 10 values, so chunk into batches
   const chunkSize = 10
-  const batches: Promise<WatchedEpisodeDoc[]>[] = []
+  const batches: Promise<(WatchedEpisodeDoc & { id: string })[]>[] = []
   for (let i = 0; i < showIds.length; i += chunkSize) {
     const chunk = showIds.slice(i, i + chunkSize)
-    batches.push(findMany<WatchedEpisodeDoc>(
-      'watched_episodes',
-      where('user_id', '==', uid),
-      where('show_id', 'in', chunk),
-    ))
+    batches.push(
+      getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid), where('show_id', 'in', chunk)))
+        .then(snap => snap.docs.map(d => ({ ...(d.data() as WatchedEpisodeDoc), id: d.id })))
+    )
   }
   const results = await Promise.all(batches)
   results.forEach(items => {
@@ -230,5 +235,6 @@ export async function getGroup(groupId: string): Promise<(GroupDoc & { id: strin
 }
 
 export async function isUserInGroup(groupId: string, uid: string): Promise<boolean> {
-  return exists('group_members', where('group_id', '==', groupId), where('user_id', '==', uid))
+  const snap = await getDocs(query(collection(db, 'group_members'), where('group_id', '==', groupId), where('user_id', '==', uid), limit(1)))
+  return !snap.empty
 }

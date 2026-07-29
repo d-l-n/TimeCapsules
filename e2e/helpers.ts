@@ -12,20 +12,16 @@ export async function getShowCards(page: Page): Promise<Locator> {
 }
 
 export async function login(page: Page) {
-  const email = process.env.PLAYWRIGHT_USER
-  const password = process.env.PLAYWRIGHT_PASSWORD
+  const email = process.env.PLAYWRIGHT_USER || 'e2e-test@timecapsules.local'
+  const password = process.env.PLAYWRIGHT_PASSWORD || 'te2eAuto!'
   await page.goto('/')
-  if (email && password) {
-    await page.waitForSelector('input[type="email"]', { timeout: 15000 })
-    await page.fill('input[type="email"]', email)
-    await page.fill('input[type="password"]', password)
-    await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await expect(page).toHaveURL('/dashboard', { timeout: 20000 })
-    await page.locator('#main-content').waitFor({ state: 'visible', timeout: 20000 })
-    await waitForLoadComplete(page)
-    return
-  }
-  throw new Error('PLAYWRIGHT_USER / PLAYWRIGHT_PASSWORD env vars required for e2e auth')
+  await page.waitForSelector('input[type="email"]', { timeout: 15000 })
+  await page.fill('input[type="email"]', email)
+  await page.fill('input[type="password"]', password)
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await expect(page).toHaveURL('/dashboard', { timeout: 20000 })
+  await page.locator('#main-content').waitFor({ state: 'visible', timeout: 20000 })
+  await waitForLoadComplete(page)
 }
 
 const KNOWN_SHOWS = {

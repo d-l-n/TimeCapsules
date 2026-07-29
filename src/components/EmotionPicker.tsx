@@ -1,7 +1,6 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { setEmotion } from '../services/emotionService'
 import { FaceSmile2, EmojiSad, Ghost, Flame, MagicStar, EmojiNormal, Heart, Fire, Confetti, Star } from 'reicon-react'
-import AnimatedOverlay from './AnimatedOverlay'
 
 const EMOTIONS = [
   { id: 'happy', label: 'Happy', Icon: FaceSmile2 },
@@ -30,8 +29,11 @@ export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect
     onClose()
   }, [uid, episodeId, currentEmotion, onSelect, onClose])
 
+  const ref = useRef<HTMLDialogElement>(null)
+  useEffect(() => { ref.current?.showModal() }, [])
+
   return (
-    <AnimatedOverlay open onClose={onClose} className="p-4" ariaLabel="How did it make you feel?">
+    <dialog ref={ref} onClose={onClose}>
       <div className="bg-surface border-[3px] border-border max-w-xs w-full mx-auto p-4 shadow-brutal-xl">
         <div className="text-xs font-bold uppercase border-b-4 border-border pb-2 mb-3">How did it make you feel?</div>
         <div className="grid grid-cols-5 gap-2">
@@ -57,6 +59,6 @@ export default function EmotionPicker({ uid, episodeId, currentEmotion, onSelect
           </button>
         )}
       </div>
-    </AnimatedOverlay>
+    </dialog>
   )
 }

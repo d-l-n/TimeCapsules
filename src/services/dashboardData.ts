@@ -3,10 +3,10 @@ import type { DashItem } from './showService'
 import { getWatchlist } from './watchlistService'
 import { getBingingShows } from './showService'
 import { getTvNextEpisode, tmdbLang } from './tmdb'
-import { buildShowsMap } from '../lib/firestore-utils'
-import { memento } from '../lib/memento'
+import { buildShowsMap } from './showService'
+import { memoize } from '../lib/hook-cache'
 
-const cachedGetTvNextEpisode = memento(getTvNextEpisode, 5 * 60_000)
+const cachedGetTvNextEpisode = memoize(getTvNextEpisode, 60 * 60_000)
 
 export async function splitFinishedByAiringStatus(uid: string, lang: string): Promise<{ finished: DashItem[]; upToDate: DashItem[] }> {
   const [allFinished, showsMap] = await Promise.all([getFinishedContent(uid), buildShowsMap()])

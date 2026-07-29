@@ -4,7 +4,6 @@ import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './lib/AuthContext'
 import { ThemeProvider } from './lib/ThemeContext'
 import { I18nProvider } from './lib/I18nContext'
-import { DevSimulationProvider } from './lib/dev-simulation'
 import App from './App'
 import './index.css'
 
@@ -14,9 +13,7 @@ createRoot(document.getElementById('root')!).render(
       <ThemeProvider>
         <I18nProvider>
           <AuthProvider>
-            <DevSimulationProvider>
-              <App />
-            </DevSimulationProvider>
+            <App />
           </AuthProvider>
         </I18nProvider>
       </ThemeProvider>
@@ -24,39 +21,4 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-declare global {
-  interface Window {
-    __swPendingReload?: boolean
-    __swReloadTimer?: number
-    __swUpdateComplete?: boolean
-  }
-}
 
-if (import.meta.env.DEV) {
-  ;(window as any).__simulateSwUpdate = () => window.dispatchEvent(new CustomEvent('sw-update-available'))
-} else if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').then(reg => {
-    reg.addEventListener('updatefound', () => {
-      const newWorker = reg.installing
-      if (newWorker) {
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            window.dispatchEvent(new CustomEvent('sw-update-available'))
-          }
-        })
-      }
-    })
-  })
-
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (window.__swPendingReload) {
-      if (window.__swReloadTimer !== undefined) {
-        clearTimeout(window.__swReloadTimer)
-        window.__swReloadTimer = undefined
-      }
-      window.__swUpdateComplete = true
-      window.dispatchEvent(new CustomEvent('sw-update-complete'))
-      setTimeout(() => window.location.reload(), 1500)
-    }
-  })
-}

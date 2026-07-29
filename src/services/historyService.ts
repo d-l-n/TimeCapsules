@@ -1,16 +1,18 @@
-import { where, orderBy, limit } from 'firebase/firestore'
-import { findMany, buildShowsMap } from '../lib/firestore-utils'
+import { collection, query, getDocs, where, orderBy, limit } from 'firebase/firestore'
+import { db } from '../lib/firebase'
+import { buildShowsMap } from './showService'
 import type { WatchedEpisodeDoc, EpisodeDoc } from '../lib/firebase-queries'
 
 export interface HistoryItem { id: number; watched_at: string; episode_number: number; season_number: number; show_name: string; show_id: number; is_movie?: boolean }
 
 export async function getWatchHistory(uid: string): Promise<{ entries: HistoryItem[]; months: string[] }> {
-  const [weItems, epItems, showsMap] = await Promise.all([
-    findMany<WatchedEpisodeDoc>('watched_episodes', where('user_id', '==', uid), orderBy('watched_at', 'desc'), limit(200)),
-    findMany<EpisodeDoc>('episodes'),
+  const [weSnap, epSnap, showsMap] = await Promise.all([
+    getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid), orderBy('watched_at', 'desc'), limit(200))),
+    getDocs(collection(db, 'episodes')),
     buildShowsMap(),
   ])
-
+  const weItems = weSnap.docs.map(d => ({ ...(d.data() as WatchedEpisodeDoc), id: d.id }))
+  const epItems = epSnap.docs.map(d => ({ ...(d.data() as EpisodeDoc), id: d.id }))
   const episodes = new Map<number, EpisodeDoc>()
   epItems.forEach(e => { if (e.tmdb_id) episodes.set(e.tmdb_id, e) })
 

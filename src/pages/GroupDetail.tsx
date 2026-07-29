@@ -11,7 +11,7 @@ import Loading from '../components/Loading'
 import ShowCard from '../components/ShowCard'
 import SectionHeader from '../components/SectionHeader'
 import ErrorBox from '../components/ErrorBox'
-import AnimatedOverlay from '../components/AnimatedOverlay'
+import ConfirmDialog from '../components/ConfirmDialog'
 
 const TRENDING_LIMIT = 8
 
@@ -449,48 +449,27 @@ export default function GroupDetail() {
 
       {error && <ErrorBox message={error} className="mb-4" />}
 
-      <AnimatedOverlay open={confirmLeave} onClose={() => setConfirmLeave(false)} className="p-4">
-        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
-          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.leaveTitle}</h3>
-          <p className="text-sm font-bold">{t.groups.leaveConfirm}</p>
-          <div className="flex gap-3">
-            <button
-              onClick={handleLeave}
-              aria-label="Confirm leave group"
-              className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-            >                {t.groups.leaveBtn}
-            </button>
-            <button
-              onClick={() => setConfirmLeave(false)}
-              aria-label="Cancel"
-              className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-            >                {t.lists.cancel}
-            </button>
-          </div>
-        </div>
-      </AnimatedOverlay>
+      <ConfirmDialog
+        open={confirmLeave}
+        onClose={() => setConfirmLeave(false)}
+        title={t.groups.leaveTitle}
+        message={t.groups.leaveConfirm}
+        confirmLabel={t.groups.leaveBtn}
+        confirmAction={handleLeave}
+        cancelLabel={t.lists.cancel}
+        variant="danger"
+      />
 
-      <AnimatedOverlay open={confirmRemove != null} onClose={() => setConfirmRemove(null)} className="p-4">
-        <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl space-y-6">
-          <h3 className="text-lg font-bold uppercase border-b-4 border-border pb-3" style={{ fontFamily: 'Arial Black, Impact, sans-serif' }}>{t.groups.removeTitle}</h3>
-          <p className="text-sm font-bold">{t.groups.removeConfirm}</p>
-          <div className="flex gap-3">
-            <button
-              onClick={confirmRemoveShow}
-              aria-label="Confirm remove"
-              className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors cursor-pointer"
-            >
-              {t.groups.removeBtn}
-            </button>
-            <button
-              onClick={() => setConfirmRemove(null)}
-              aria-label="Cancel"
-              className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors cursor-pointer"
-            >                {t.lists.cancel}
-            </button>
-          </div>
-        </div>
-      </AnimatedOverlay>
+      <ConfirmDialog
+        open={confirmRemove != null}
+        onClose={() => setConfirmRemove(null)}
+        title={t.groups.removeTitle}
+        message={t.groups.removeConfirm}
+        confirmLabel={t.groups.removeBtn}
+        confirmAction={confirmRemoveShow}
+        cancelLabel={t.lists.cancel}
+        variant="danger"
+      />
     </div>
   )
 }
