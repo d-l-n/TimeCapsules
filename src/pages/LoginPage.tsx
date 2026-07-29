@@ -54,9 +54,10 @@ export default function LoginPage() {
           <label htmlFor="login-email" className="sr-only">{t.auth.email}</label>
           <input
             id="login-email"
+            name="email"
             type="email" placeholder={t.auth.email} value={email} onChange={e => setEmail(e.target.value)}
             className="w-full border-[3px] border-border px-3 py-2.5 text-sm font-bold bg-surface mb-3 outline-none focus:bg-yellow/30 transition-colors"
-            required autoComplete="email"
+            required autoComplete="email" spellCheck={false} autoCapitalize="none"
           />
           <label htmlFor="login-password" className="sr-only">{t.auth.password}</label>
           <input

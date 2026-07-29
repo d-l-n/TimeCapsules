@@ -44,6 +44,7 @@ html.theme-transitioning *::after {
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --color-bg: #0f0f0f;
   --color-surface: #1c1c1c;
   --color-surface-light: #282828;
@@ -561,6 +562,7 @@ header.bg-text .sidebar-pill--invert:active {
 .sidebar-drawer--open {
   transform: translateX(0);
   box-shadow: 8px 0 24px rgba(0,0,0,0.12);
+  overscroll-behavior: contain;
 }
 
 [data-theme="dark"] .sidebar-drawer--open {
@@ -625,11 +627,6 @@ header.bg-text .sidebar-pill--invert:active {
   opacity: 0.3;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: var(--color-accent); }
-
-/* ── DevTools decorative diagonal cut ──── */
-.clip-diagonal {
-  clip-path: polygon(100% 0, 0 0, 100% 100%);
-}
 
 /* ── Brutalist CSS tooltip — pure CSS via data-tooltip attr ── */
 .tooltip-brutal {
@@ -829,6 +826,12 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Inter', 'Geist', system-ui, sans-serif;
   font-weight: 900;
   letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Touch interaction — no double-tap zoom delay on mobile */
+button, a, select, input, textarea {
+  touch-action: manipulation;
 }
 
 @media (max-width: 640px) {
@@ -853,6 +856,8 @@ h1, h2, h3, h4, h5, h6 {
   background-size: 200% 100%;
   animation: progress-shimmer 2s ease-in-out infinite;
 }
+
+/* ── X/close buttons & small square buttons — keep square on mobile ── */
 
 /* ── X/close buttons & small square buttons — keep square on mobile ── */
 /* Overrides global button { min-height: 44px } on <640px */
@@ -954,17 +959,13 @@ dialog::backdrop {
 dialog[open] {
   opacity: 1;
   scale: 1;
+  overscroll-behavior: contain;
 }
 dialog {
   opacity: 0;
   scale: 0.95;
 }
 /* avoid FOIT on initial open — rely on showModal() skipping this */
-/* ── DevTools entrance animations ──────────────────────── */
-@keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 
 @keyframes fade-in {
   from { opacity: 0; }
@@ -978,30 +979,12 @@ dialog {
 }
 .animate-fade-out { animation: fade-out 0.1s ease-out both; }
 
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.animate-spin-slow { animation: spin-slow 4s linear infinite; }
-
 /* ── Entrance animations (no bounce) ────────────────── */
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-fade-in-up { animation: fade-in-up 0.18s ease-out both; }
-
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(-12px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-.animate-slide-in-right { animation: slide-in-right 0.15s ease-out both; }
-
-@keyframes scale-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-.animate-scale-in { animation: scale-in 0.14s ease-out both; }
 
 @keyframes slide-in-corner {
   from {
@@ -1014,18 +997,6 @@ dialog {
   }
 }
 .animate-slide-in-corner { animation: slide-in-corner 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
-
-@keyframes slide-out-corner {
-  from {
-    opacity: 1;
-    transform: scale(1) translate(0, 0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.92) translate(8px, -8px);
-  }
-}
-.animate-slide-out-corner { animation: slide-out-corner 0.15s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @keyframes float-up {
   0% { opacity: 0; transform: translate(-50%, -30%) scale(0.8); }

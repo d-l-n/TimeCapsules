@@ -75,7 +75,7 @@ export default function GroupsPage() {
             aria-label={t.groups.createBtn}
             className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
           >
-            {busy ? '...' : t.groups.createBtn}
+            {busy ? '…' : t.groups.createBtn}
           </button>
         </div>
 
@@ -95,7 +95,7 @@ export default function GroupsPage() {
             aria-label={t.groups.joinBtn}
             className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
           >
-            {busy ? '...' : t.groups.joinBtn}
+            {busy ? '…' : t.groups.joinBtn}
           </button>
         </div>
       </div>

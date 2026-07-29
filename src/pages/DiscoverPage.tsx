@@ -476,7 +476,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                     className="w-full border-2 border-border bg-yellow text-text py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
                     aria-label={`${t.discover.addToDashboard} ${name}`}
                   >
-                    {addingId === item.id ? '...' : t.discover.addToDashboard}
+                    {addingId === item.id ? '…' : t.discover.addToDashboard}
                   </button>
                 ) : (
                   <>
@@ -488,7 +488,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                           className={`w-full border-2 border-border py-1 sm:py-1.5 text-[9px] sm:text-[10px] font-bold uppercase transition-colors disabled:opacity-40 cursor-pointer ${isWatched ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
                           aria-label={isWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
                         >
-                          {togglingId === item.id ? '...' : isWatched ? `${t.showDetail.watched}${meta?.watchedCount && meta.watchedCount > 1 ? ` ×${meta.watchedCount}` : ''}` : t.showDetail.markAsWatched}
+                          {togglingId === item.id ? '…' : isWatched ? `${t.showDetail.watched}${meta?.watchedCount && meta.watchedCount > 1 ? ` ×${meta.watchedCount}` : ''}` : t.showDetail.markAsWatched}
                         </button>
                         {moviePrompt === item.id && (
                           <>

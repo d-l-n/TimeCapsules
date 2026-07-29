@@ -50,10 +50,10 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isPro
             </p>
             <div className="flex gap-3">
               <button onClick={() => onConfirm(true)} disabled={isProcessing} className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-yellow/50 text-text/50 cursor-wait' : 'bg-yellow text-text sm:hover:bg-pink cursor-pointer'}`} aria-label={t.showDetail.laterUnwatchYes}>
-                {isProcessing ? '...' : t.showDetail.laterUnwatchYes}
+                {isProcessing ? '…' : t.showDetail.laterUnwatchYes}
               </button>
               <button onClick={() => onConfirm(false)} disabled={isProcessing} className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-surface/50 text-text/50 cursor-not-allowed' : 'bg-surface text-text sm:hover:bg-pink cursor-pointer'}`} aria-label={t.showDetail.laterUnwatchNo}>
-                {isProcessing ? '...' : t.showDetail.laterUnwatchNo}
+                {isProcessing ? '…' : t.showDetail.laterUnwatchNo}
               </button>
             </div>
           </>
@@ -70,7 +70,7 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isPro
             <div className="flex gap-3">
               <button onClick={() => onConfirm()} disabled={isProcessing} className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-yellow/50 text-text/50 cursor-wait' : 'bg-yellow text-text sm:hover:bg-pink cursor-pointer'}`}
                 aria-label={data.action === 'watch' ? t.showDetail.catchUpYes : t.showDetail.confirmUnwatchYes}>
-                {isProcessing ? '...' : (data.action === 'watch' ? t.showDetail.catchUpYes : t.showDetail.confirmUnwatchYes)}
+                {isProcessing ? '…' : (data.action === 'watch' ? t.showDetail.catchUpYes : t.showDetail.confirmUnwatchYes)}
               </button>
               <button onClick={onCancel} disabled={isProcessing} className={`flex-1 border-[3px] border-border px-4 py-3 text-sm font-bold uppercase transition-colors ${isProcessing ? 'bg-surface/50 text-text/50 cursor-not-allowed' : 'bg-surface text-text sm:hover:bg-pink cursor-pointer'}`}
                 aria-label={t.lists.cancel}>

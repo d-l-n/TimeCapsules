@@ -361,7 +361,7 @@ export default function GroupDetail() {
                         disabled={searching}
                         className="w-full border-t-2 border-border px-3 py-3 text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow/30 transition-colors disabled:opacity-40 cursor-pointer text-center"
                       >
-                        {searching ? '...' : t.groups.seeMore}
+                        {searching ? '…' : t.groups.seeMore}
                       </button>
                     )}
                   </div>
@@ -412,7 +412,7 @@ export default function GroupDetail() {
                               aria-label={t.showDetail.markAsWatched}
                               className="btn-brutal btn-accent text-[9px] px-2 py-1 text-text flex-1"
                             >
-                              {markingId === s.tmdb_id ? '...' : t.showDetail.markAsWatched}
+                              {markingId === s.tmdb_id ? '…' : t.showDetail.markAsWatched}
                             </button>
                           )}
                           {s.media_type !== 'movie' && (
@@ -538,7 +538,7 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
         <span className={`border-2 border-border px-2.5 py-1 text-[10px] font-bold shrink-0 transition-colors ${
           isAdding ? 'bg-yellow text-text' : 'bg-yellow text-text'
         }`}>
-          {isAdding ? '...' : t.groups.addShowBtn}
+          {isAdding ? '…' : t.groups.addShowBtn}
         </span>
       )}
     </button>

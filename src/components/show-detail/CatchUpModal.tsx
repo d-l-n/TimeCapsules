@@ -43,7 +43,7 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t, isProcessing
             className={`flex-1 border-[3px] border-border px-2 sm:px-3 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase transition-all ${isProcessing ? 'bg-yellow/50 text-text/50 cursor-wait' : 'bg-yellow text-text active:translate-x-px active:translate-y-px active:shadow-none sm:hover:bg-pink cursor-pointer'}`}
             aria-label={t.showDetail.catchUpYes}
           >
-            {isProcessing ? '...' : t.showDetail.catchUpYes}
+            {isProcessing ? '…' : t.showDetail.catchUpYes}
           </button>
           <button
             onClick={() => onCatchUp(false)}
@@ -51,7 +51,7 @@ export default function CatchUpModal({ data, onCatchUp, onClose, t, isProcessing
             className={`flex-1 border-[3px] border-border px-2 sm:px-3 py-2 sm:py-2.5 text-[10px] sm:text-xs font-bold uppercase transition-all ${isProcessing ? 'bg-surface/50 text-text/50 cursor-not-allowed' : 'bg-surface text-text active:translate-x-px active:translate-y-px active:shadow-none sm:hover:bg-yellow cursor-pointer'}`}
             aria-label={t.showDetail.catchUpNo}
           >
-            {isProcessing ? '...' : t.showDetail.catchUpNo}
+            {isProcessing ? '…' : t.showDetail.catchUpNo}
           </button>
         </div>
       </div>

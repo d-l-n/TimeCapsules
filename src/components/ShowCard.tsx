@@ -46,7 +46,7 @@ const ShowCard = memo(function ShowCard({ id, name, posterUrl, imdbRating, userR
       <div className="relative">
         <div className="aspect-[2/3] bg-surface-light border-b-[3px] border-border overflow-hidden">
           {posterUrl ? (
-            <img src={posterUrl} alt={`${name} poster`} className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-200" loading="lazy" />
+            <img src={posterUrl} alt={`${name} poster`} width="300" height="450" className="w-full h-full object-cover sm:group-hover:scale-105 transition-transform duration-200" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center p-3 text-center text-sm font-bold uppercase leading-tight break-words">{name}</div>
           )}
@@ -68,7 +68,7 @@ const ShowCard = memo(function ShowCard({ id, name, posterUrl, imdbRating, userR
             aria-label={t.lists.remove}
             className="x-btn absolute top-2 right-2 z-10 grid h-6 w-6 shrink-0 min-h-0 aspect-square place-items-center border-2 border-border bg-pink text-[11px] font-bold leading-none text-text sm:hover:bg-yellow focus:opacity-100 max-sm:opacity-100 disabled:opacity-40 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100"
           >
-            {removing ? '...' : '✕'}
+            {removing ? '…' : '✕'}
           </button>
         )}
         {actions && (

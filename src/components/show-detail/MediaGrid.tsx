@@ -80,7 +80,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
                         className="w-full border-2 border-border bg-surface text-text py-1.5 text-[10px] font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer"
                         aria-label={`${t.showDetail.markAsWatched} — ${name}`}
                       >
-                        {adding === item.id ? '...' : t.showDetail.markAsWatched}
+                        {adding === item.id ? '…' : t.showDetail.markAsWatched}
                       </button>
                     ) : (
                       <button
@@ -89,7 +89,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
                         className="w-full border-2 border-border bg-yellow text-text py-1.5 text-[10px] font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
                         aria-label={`${t.discover.addToDashboard} — ${name}`}
                       >
-                        {adding === item.id ? '...' : t.discover.addToDashboard}
+                        {adding === item.id ? '…' : t.discover.addToDashboard}
                       </button>
                     )}
                   </div>

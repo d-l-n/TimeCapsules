@@ -147,7 +147,7 @@ function NotificationPanel({ notifications, unreadCount, markAsRead, markAllAsRe
 
 function DesktopSidebar(props: SidebarProps & { scrollToTop: () => void }) {
   return (
-    <aside className="sidebar fixed top-0 left-0 bottom-0 w-[224px] flex flex-col z-30" role="banner">
+    <aside className="sidebar fixed top-0 left-0 bottom-0 w-[224px] flex flex-col z-30">
       <SidebarContent {...props} />
     </aside>
   )
@@ -297,7 +297,7 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
       <div className={`sidebar-overlay ${sidebarOpen ? 'sidebar-overlay--visible' : ''}`} onClick={closeSidebar} />
 
       {/* Sidebar drawer */}
-      <aside className={`sidebar-drawer ${sidebarOpen ? 'sidebar-drawer--open' : ''}`} role="banner" aria-hidden={!sidebarOpen}>
+      <aside className={`sidebar-drawer ${sidebarOpen ? 'sidebar-drawer--open' : ''}`} aria-hidden={!sidebarOpen}>
         <SidebarContent
           user={user}
           navItems={navItems}

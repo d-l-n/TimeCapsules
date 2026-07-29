@@ -60,7 +60,7 @@ export default function EpisodeRow({
           aria-label={`${t.showDetail.episode} ${ep.episode_number}${ep.title ? ` — ${ep.title}` : ''}${isWatched ? ` — ${t.showDetail.watched}` : ''}`}
         >
           <span className={`border-2 px-1 sm:px-2 py-0.5 text-[9px] sm:text-xs shrink-0 flex items-center gap-1 transition-all duration-300 ease-out ${isWatched ? 'border-text bg-green text-text' : isCurrent ? 'border-text bg-yellow text-text' : 'border-border bg-surface text-text'}`} aria-hidden="true">
-            {isToggling ? '...' : isWatched ? <><WatchedIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{watchedCounts.get(ep.id)! > 1 && `×${watchedCounts.get(ep.id)}`}</> : `E${ep.episode_number}`}
+            {isToggling ? '…' : isWatched ? <><WatchedIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{watchedCounts.get(ep.id)! > 1 && `×${watchedCounts.get(ep.id)}`}</> : `E${ep.episode_number}`}
           </span>
           <span className={`transition-all duration-300 ease-out ${compactMode ? 'break-words' : 'truncate'} ${isWatched ? 'line-through opacity-70' : ''}`}>{ep.title}</span>
         </button>
@@ -72,7 +72,7 @@ export default function EpisodeRow({
             title={isToggling ? 'Toggling...' : 'Rewatch'}
             aria-label="Mark as rewatched"
           >
-            {isToggling ? '...' : <RewatchIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
+            {isToggling ? '…' : <RewatchIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
           </button>
         )}
         {!compactMode && emotions.has(ep.id) && (

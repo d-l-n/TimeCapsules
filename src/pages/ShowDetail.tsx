@@ -1021,7 +1021,7 @@ export default function ShowDetail() {
               className={`btn-brutal text-xs sm:text-sm ${wlToggling ? 'bg-yellow/50 text-text/50 cursor-wait' : inWatchlist ? 'bg-yellow cursor-pointer' : 'bg-surface cursor-pointer'}`}
               aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
             >
-              {wlToggling ? '...' : inWatchlist ? t.watchlist.added : t.watchlist.add}
+              {wlToggling ? '…' : inWatchlist ? t.watchlist.added : t.watchlist.add}
             </button>
           )}
           {user?.uid && show?.tmdb_id && (
@@ -1051,7 +1051,7 @@ export default function ShowDetail() {
                         className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 transition-colors ${isToggling ? 'bg-surface/50 text-text/50 cursor-wait' : inList ? 'bg-yellow text-text sm:hover:bg-yellow cursor-pointer' : 'bg-surface text-text sm:hover:bg-yellow cursor-pointer'}`}
                         aria-label={`${inList ? "Remove from" : "Add to"} list: ${getListDisplayName(list, lang)}`}
                       >
-                        {isToggling ? '...' : `${getListDisplayName(list, lang)} ${inList ? 'OK' : ''}`}
+                        {isToggling ? '…' : `${getListDisplayName(list, lang)} ${inList ? 'OK' : ''}`}
                       </button>
                     )
                   })}
@@ -1068,7 +1068,7 @@ export default function ShowDetail() {
                 className={`btn-brutal text-xs sm:text-sm transition-all duration-300 ease-out ${movieToggling ? 'bg-yellow/50 text-text/50 cursor-wait' : movieWatched ? 'bg-yellow cursor-pointer' : 'bg-surface cursor-pointer'}`}
                 aria-label={movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               >
-                {movieToggling ? '...' : movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
+                {movieToggling ? '…' : movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               </button>
               {editingPosition === show.tmdb_id ? (
                 <PositionEditor

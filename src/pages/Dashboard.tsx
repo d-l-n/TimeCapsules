@@ -145,7 +145,7 @@ export default function Dashboard() {
           className="btn-brutal btn-accent text-[9px] px-2 py-1 text-text flex-1"
           aria-label={t.showDetail.markAsWatched}
         >
-          {actionLoading === id ? '...' : t.showDetail.markAsWatched}
+          {actionLoading === id ? '…' : t.showDetail.markAsWatched}
         </button>
       )}
     </div>

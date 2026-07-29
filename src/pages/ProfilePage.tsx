@@ -510,7 +510,7 @@ export default function ProfilePage() {
               </p>
               <div className="flex gap-3">
                 <button onClick={handleReauthAction} disabled={reauthLoading} className="flex-1 border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-50 cursor-pointer">
-                  {reauthLoading ? '...' : t.profile.reauthGoogleBtn}
+                  {reauthLoading ? '…' : t.profile.reauthGoogleBtn}
                 </button>
                 <button onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }} disabled={reauthLoading} className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer">
                   {t.lists.cancel}
@@ -538,7 +538,7 @@ export default function ProfilePage() {
               />
               <div className="flex gap-3">
                 <button onClick={handleReauthAction} disabled={reauthLoading || !reauthPassword.trim()} className="flex-1 border-[3px] border-border bg-pink text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-text sm:hover:text-pink transition-colors disabled:opacity-50 cursor-pointer">
-                  {reauthLoading ? '...' : (pendingAction === 'save-profile' ? t.profile.reauthVerifySaveBtn : t.profile.reauthVerifyDeleteBtn)}
+                  {reauthLoading ? '…' : (pendingAction === 'save-profile' ? t.profile.reauthVerifySaveBtn : t.profile.reauthVerifyDeleteBtn)}
                 </button>
                 <button onClick={() => { setShowReauth(false); setReauthPassword(''); setReauthError(null); setPendingAction(null) }} disabled={reauthLoading} className="flex-1 border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-50 cursor-pointer">
                   {t.lists.cancel}

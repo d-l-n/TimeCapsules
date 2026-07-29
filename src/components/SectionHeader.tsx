@@ -32,7 +32,7 @@ export default function SectionHeader({ id, title, count, actionLabel, actionTo,
             className="text-[10px] sm:text-xs font-bold uppercase text-text-secondary sm:hover:text-text transition-colors disabled:opacity-40 shrink-0 cursor-pointer leading-none"
             aria-label={actionLabel}
           >
-            {actionLoading ? '...' : actionLabel}
+            {actionLoading ? '…' : actionLabel}
           </button>
         )
       )}
