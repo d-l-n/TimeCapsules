@@ -301,6 +301,7 @@ export default function GroupDetail() {
                   onChange={e => { setSearchQuery(e.target.value); setError('') }}
                   onFocus={handleFocus}
                   placeholder={t.groups.showSearchPlaceholder}
+                  aria-label={t.groups.showSearchPlaceholder}
                   className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold uppercase outline-none focus:bg-yellow/30 pr-10"
                 />
                 {searchQuery && (
@@ -308,7 +309,7 @@ export default function GroupDetail() {
                     type="button"
                     onClick={() => { setSearchQuery(''); setSearchResults([]); setShowDropdown(false) }}
                     className="absolute right-1 top-1/2 -translate-y-1/2 border border-border px-1.5 py-0.5 text-[10px] font-bold bg-surface sm:hover:bg-pink transition-colors"
-                    aria-label="Clear search"
+                    aria-label={t.discover.clear}
                   >
                     X
                   </button>
@@ -523,7 +524,7 @@ function SearchResultItem({ item, alreadyInGroup, addingId, t, onAdd }: {
           <span className={`border px-1 text-[9px] font-bold uppercase leading-none py-[1px] ${
             'border-yellow text-text bg-yellow/5'
           }`}>
-            {isMovie ? 'MOVIE' : 'TV'}
+            {isMovie ? t.discover.movie : t.discover.tv}
           </span>
           {alreadyInGroup && (
             <span className="border border-pink px-1 text-[9px] font-bold uppercase leading-none py-[1px] text-pink bg-pink/5">

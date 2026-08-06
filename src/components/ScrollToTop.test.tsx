@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { ReactElement } from 'react'
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import ScrollToTop from './ScrollToTop'
+import { I18nProvider } from '../lib/I18nContext'
+
+const renderWithI18n = (ui: ReactElement) => render(<I18nProvider>{ui}</I18nProvider>)
 
 describe('ScrollToTop', () => {
   beforeEach(() => {
@@ -13,19 +17,19 @@ describe('ScrollToTop', () => {
 
   it('renders nothing when scrollY is 0', () => {
     Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
-    const { container } = render(<ScrollToTop />)
+    const { container } = renderWithI18n(<ScrollToTop />)
     expect(container.firstChild).toBeNull()
   })
 
   it('renders nothing when scrollY is below threshold', () => {
     Object.defineProperty(window, 'scrollY', { value: 200, configurable: true })
-    const { container } = render(<ScrollToTop />)
+    const { container } = renderWithI18n(<ScrollToTop />)
     expect(container.firstChild).toBeNull()
   })
 
   it('renders button when scrollY is above 300', () => {
     Object.defineProperty(window, 'scrollY', { value: 301, configurable: true })
-    render(<ScrollToTop />)
+    renderWithI18n(<ScrollToTop />)
 
     act(() => {
       Object.defineProperty(window, 'scrollY', { value: 301, configurable: true })
@@ -37,7 +41,7 @@ describe('ScrollToTop', () => {
 
   it('button appears after scrolling past threshold', () => {
     Object.defineProperty(window, 'scrollY', { value: 0, configurable: true })
-    render(<ScrollToTop />)
+    renderWithI18n(<ScrollToTop />)
 
     act(() => {
       Object.defineProperty(window, 'scrollY', { value: 400, configurable: true })
@@ -49,7 +53,7 @@ describe('ScrollToTop', () => {
 
   it('button disappears when scrolling back above threshold', () => {
     Object.defineProperty(window, 'scrollY', { value: 400, configurable: true })
-    render(<ScrollToTop />)
+    renderWithI18n(<ScrollToTop />)
 
     act(() => {
       window.dispatchEvent(new Event('scroll'))
@@ -68,7 +72,7 @@ describe('ScrollToTop', () => {
   it('calls window.scrollTo on button click', () => {
     const scrollToSpy = vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
     Object.defineProperty(window, 'scrollY', { value: 400, configurable: true })
-    render(<ScrollToTop />)
+    renderWithI18n(<ScrollToTop />)
 
     act(() => {
       window.dispatchEvent(new Event('scroll'))
@@ -80,14 +84,14 @@ describe('ScrollToTop', () => {
 
   it('has accessible aria-label', () => {
     Object.defineProperty(window, 'scrollY', { value: 400, configurable: true })
-    render(<ScrollToTop />)
+    renderWithI18n(<ScrollToTop />)
     act(() => { window.dispatchEvent(new Event('scroll')) })
     expect(screen.getByRole('button', { name: 'Scroll to top' })).toBeInTheDocument()
   })
 
   it('removes scroll listener on unmount', () => {
     const removeSpy = vi.spyOn(window, 'removeEventListener')
-    const { unmount } = render(<ScrollToTop />)
+    const { unmount } = renderWithI18n(<ScrollToTop />)
     unmount()
     expect(removeSpy).toHaveBeenCalledWith('scroll', expect.any(Function))
   })

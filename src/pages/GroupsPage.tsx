@@ -53,47 +53,67 @@ export default function GroupsPage() {
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{t.groups.eyebrow}</div>
             <h1 className="text-2xl sm:text-3xl font-bold uppercase leading-none font-heading">{t.groups.title}</h1>
-            <div className="text-xs sm:text-sm text-text-secondary mt-1.5">{groups.length} {groups.length === 1 ? t.groups.groupSingular : t.groups.groupPlural}</div>
+            <p className="text-xs sm:text-sm text-text-secondary mt-2 max-w-md leading-relaxed">{t.groups.description}</p>
           </div>
-          <div className="border-2 border-border px-3 py-1.5 text-sm font-bold shrink-0">{groups.length}</div>
+          {groups.length > 0 && (
+            <div className="border-2 border-border px-3 py-1.5 text-xs font-bold uppercase shrink-0 bg-yellow text-text" aria-label={`${groups.length} ${groups.length === 1 ? t.groups.groupSingular : t.groups.groupPlural}`}>
+              {groups.length} {groups.length === 1 ? t.groups.groupSingular : t.groups.groupPlural}
+            </div>
+          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <div className="bg-surface border-[3px] border-border p-4 sm:p-5 space-y-4">
-          <h2 className="text-sm font-bold uppercase border-b-2 border-border pb-2">{t.groups.createGroup}</h2>
+        <div className="bg-surface border-[3px] border-border shadow-brutal-sm p-4 sm:p-6 space-y-4 sm:hover:shadow-brutal-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-xl font-black leading-none text-text">+</span>
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold uppercase leading-tight">{t.groups.createGroup}</h2>
+              <p className="text-[10px] font-bold uppercase text-text-secondary mt-0.5 leading-relaxed">{t.groups.createDesc}</p>
+            </div>
+          </div>
           <input
             type="text"
             value={createName}
             onChange={e => setCreateName(e.target.value)}
             placeholder={t.groups.createPlaceholder}
-            className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-yellow/30 transition-colors"
+            aria-label={t.groups.createPlaceholder}
+            className="w-full border-2 border-border bg-surface px-3 py-2.5 text-xs font-bold outline-none focus:bg-yellow/30 transition-colors"
+            onKeyDown={e => { if (e.key === 'Enter') handleCreate() }}
           />
           <button
             onClick={handleCreate}
             disabled={busy || !createName.trim()}
             aria-label={t.groups.createBtn}
-            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
+            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
             {busy ? '…' : t.groups.createBtn}
           </button>
         </div>
 
-        <div className="bg-surface border-[3px] border-border p-4 sm:p-5 space-y-4">
-          <h2 className="text-sm font-bold uppercase border-b-2 border-border pb-2">{t.groups.joinGroup}</h2>
+        <div className="bg-surface border-[3px] border-border shadow-brutal-sm p-4 sm:p-6 space-y-4 sm:hover:shadow-brutal-md transition-shadow">
+          <div className="flex items-center gap-3">
+            <span className="w-10 h-10 shrink-0 bg-surface-light border-[3px] border-border flex items-center justify-center text-xl font-black leading-none text-text">→</span>
+            <div className="min-w-0">
+              <h2 className="text-sm font-bold uppercase leading-tight">{t.groups.joinGroup}</h2>
+              <p className="text-[10px] font-bold uppercase text-text-secondary mt-0.5 leading-relaxed">{t.groups.joinDesc}</p>
+            </div>
+          </div>
           <input
             type="text"
             value={joinCode}
             onChange={e => setJoinCode(e.target.value.toUpperCase())}
             placeholder={t.groups.joinPlaceholder}
+            aria-label={t.groups.joinPlaceholder}
             maxLength={6}
-            className="w-full border-2 border-border bg-surface px-3 py-2 text-xs font-bold outline-none focus:bg-yellow/30 uppercase tracking-widest transition-colors"
+            className="w-full border-2 border-border bg-surface px-3 py-2.5 text-sm font-mono font-bold outline-none focus:bg-yellow/30 uppercase tracking-[0.3em] text-center transition-colors"
+            onKeyDown={e => { if (e.key === 'Enter') handleJoin() }}
           />
           <button
             onClick={handleJoin}
             disabled={busy || joinCode.trim().length < 4}
             aria-label={t.groups.joinBtn}
-            className="w-full border-[3px] border-border bg-yellow text-text px-4 py-2.5 text-xs font-bold uppercase sm:hover:bg-orange transition-colors disabled:opacity-40 cursor-pointer"
+            className="w-full border-[3px] border-border bg-surface text-text px-4 py-3 text-sm font-bold uppercase sm:hover:bg-yellow transition-colors disabled:opacity-40 cursor-pointer shadow-brutal-sm active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
             {busy ? '…' : t.groups.joinBtn}
           </button>

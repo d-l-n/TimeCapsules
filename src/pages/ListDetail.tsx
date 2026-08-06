@@ -75,8 +75,8 @@ export default function ListDetail() {
         <div>
           {editing ? (
             <div className="space-y-2">
-              <input value={name} onChange={e => setName(e.target.value)} className="border-2 border-border bg-bg px-2 py-1 text-sm font-bold w-full" />
-              <input value={desc} onChange={e => setDesc(e.target.value)} className="border-2 border-border bg-bg px-2 py-1 text-sm w-full" />
+              <input value={name} onChange={e => setName(e.target.value)} aria-label={t.lists.namePlaceholder} className="border-2 border-border bg-bg px-2 py-1 text-sm font-bold w-full" />
+              <input value={desc} onChange={e => setDesc(e.target.value)} aria-label={t.lists.descPlaceholder} className="border-2 border-border bg-bg px-2 py-1 text-sm w-full" />
               <div className="flex gap-2">
                 <button onClick={handleSave} aria-label={t.lists.save} className="bg-yellow border-2 border-border px-2 py-0.5 text-xs font-bold uppercase cursor-pointer">{t.lists.save}</button>
                 <button onClick={() => setEditing(false)} aria-label={t.lists.cancel} className="border-2 border-border px-2 py-0.5 text-xs font-bold uppercase cursor-pointer">{t.lists.cancel}</button>

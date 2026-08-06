@@ -19,7 +19,7 @@ export default function EditorialBlocks({ streak, finishedCount, upToDateCount, 
   const remaining = goal - todayCount
 
   return (
-    <section aria-label="Highlights" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <section aria-label={t.dashboard.highlights} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <Link
         to="/profile?section=history"
         className="block bg-surface border-[3px] border-border p-5 shadow-brutal lg:col-span-2 group sm:hover:-translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal-md transition-all"

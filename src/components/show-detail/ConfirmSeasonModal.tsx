@@ -29,7 +29,7 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isPro
   const hasLater = data.action === 'unwatch' && data.laterEpisodeIds && data.laterEpisodeIds.length > 0
 
   return (
-    <dialog ref={ref} onClose={onCancel} aria-modal="true">
+    <dialog ref={ref} onClose={onCancel} aria-modal="true" aria-labelledby="confirm-season-title">
       <div className="bg-surface border-[3px] border-border max-w-sm w-full mx-auto p-6 shadow-brutal-xl relative">
         <button
           onClick={onCancel}
@@ -41,7 +41,7 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isPro
         </button>
         {hasLater ? (
           <>
-            <h3 className="text-lg font-heading uppercase border-b-4 border-border pb-3 mb-4">{t.showDetail.laterUnwatchTitle}</h3>
+            <h3 id="confirm-season-title" className="text-lg font-heading uppercase border-b-4 border-border pb-3 mb-4">{t.showDetail.laterUnwatchTitle}</h3>
             <p className="text-sm font-bold mb-6">
               {t.showDetail.laterUnwatchMsg
                 .replace('{current}', String(data.seasonNumber))
@@ -59,7 +59,7 @@ export default function ConfirmSeasonModal({ data, onConfirm, onCancel, t, isPro
           </>
         ) : (
           <>
-            <h3 className="text-lg font-heading uppercase border-b-4 border-border pb-3 mb-4">
+            <h3 id="confirm-season-title" className="text-lg font-heading uppercase border-b-4 border-border pb-3 mb-4">
               {data.action === 'watch' ? t.showDetail.markAllWatched : t.showDetail.markAllUnwatched}
             </h3>
             <p className="text-sm font-bold mb-6">

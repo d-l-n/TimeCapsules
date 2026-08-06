@@ -3,7 +3,25 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// App version = date of this build/deploy, format YY.MM.DD (e.g. 26.08.06)
+function dateVersion(): string {
+  const d = new Date()
+  const y = String(d.getFullYear()).slice(-2)
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}.${m}.${day}`
+}
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(dateVersion()),
+  },
+  server: {
+    proxy: {
+      // QR login API — run `npm run dev:api` (wrangler pages dev) on 8788
+      '/api': 'http://localhost:8788',
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,
@@ -11,7 +29,9 @@ export default defineConfig({
     include: ['src/**/*.test.{ts,tsx}'],
   },
   build: {
-    chunkSizeWarningLimit: 600,
+    // firebase chunk is ~650 kB raw (~190 kB gzip) — split into its own chunk,
+    // raise the warning limit to match its real size
+    chunkSizeWarningLimit: 700,
     rolldownOptions: {
       output: {
         manualChunks(id: string) {

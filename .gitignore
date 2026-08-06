@@ -1,15 +1,40 @@
 node_modules
 dist
+.wrangler
 .env
 .env.e2e
+.dev.vars
 *.local
 imdb_data
 service-account.json
 nul
 e2e/.auth/
-.specify/memory/constitution.md
 data/
 *.zip
 server.log
+*.log
 test-results/
+playwright-report/
+
+# AI agent config & skills (internal tooling, not part of the app)
+.agents/
+.claude/
+.qwen/
+.opencode/
+.specify/
 .impeccable/
+skills/
+skills-lock.json
+opencode.json
+AGENTS.md
+
+# Internal planning docs
+BACKLOG.md
+DESIGN.md
+FEATURES.md
+PRODUCT.md
+timecapsule-*-prompt.md
+
+# Dev executables
+*.bat
+*.cmd

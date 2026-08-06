@@ -90,4 +90,6 @@ async function main() {
   console.log(`Shows: Breaking Bad (1396), The Matrix (603)`)
 }
 
-main().catch(e => { console.error(e); process.exit(1) })
+main()
+  .then(() => process.exit(0))
+  .catch(e => { console.error(e); process.exit(1) })

@@ -20,7 +20,7 @@ export default function RatingPicker({ rating, showTmdbId, userUid, setRating, o
           {[1,2,3,4,5,6,7,8,9,10].map(n => (
             <button
               key={n}
-              aria-label={`Rate ${n}`}
+              aria-label={t.showDetail.rate.replace('{n}', String(n))}
               onClick={async () => {
                 await setRatingService(userUid, showTmdbId, n)
                 setRating(rating ? { ...rating, rating: n } : { user_id: userUid, show_id: showTmdbId, rating: n, rated_at: new Date().toISOString() })
@@ -40,7 +40,7 @@ export default function RatingPicker({ rating, showTmdbId, userUid, setRating, o
               onClose()
             }}
             className="w-full border-2 border-border px-2 py-1 text-[10px] font-bold bg-surface text-pink sm:hover:bg-pink sm:hover:text-text transition-colors cursor-pointer"
-            aria-label="Clear rating"
+            aria-label={t.showDetail.clearRating}
           >
             {t.showDetail.clearRating ?? 'CLEAR'}
           </button>

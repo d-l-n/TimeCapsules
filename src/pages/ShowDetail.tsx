@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getShowById, getEpisodesByShow, getRatingForShow, getWatchedEpisodesForShow, toggleWatchedEpisode, addWatchedEpisode, removeWatchedEpisode, batchUpdateStats, getResumePositions, setResumePosition, getShowByTmdbId, createShowFromTmdb, addFollowedShow, ensureEpisode, getFollowedTmdbIds } from '../services/showService'
+import { getShowById, getEpisodesByShow, getRatingForShow, getWatchedEpisodesForShow, toggleWatchedEpisode, addWatchedEpisode, removeWatchedEpisode, batchUpdateStats, getResumePositions, getShowByTmdbId, createShowFromTmdb, addFollowedShow, ensureEpisode, getFollowedTmdbIds } from '../services/showService'
 import type { ShowDoc, EpisodeDoc, RatingDoc } from '../lib/firebase-queries'
 import { getTmdbDetails, getTmdbDetailsAuto, getTmdbAllEpisodes, getWatchProviders, getTmdbCollection, getSimilar, getRecommended, tmdbLang } from '../services/tmdb'
 import type { WatchProvidersResult, TmdbSeasonEpisode, TmdbCollectionPart, TmdbCollectionInfo, TmdbSearchResult, TmdbDetails } from '../services/tmdb'
@@ -23,7 +23,6 @@ import EmptyState from '../components/EmptyState'
 import MediaGrid from '../components/show-detail/MediaGrid'
 import CatchUpModal from '../components/show-detail/CatchUpModal'
 import ConfirmSeasonModal from '../components/show-detail/ConfirmSeasonModal'
-import SeriesReactions from '../components/show-detail/SeriesReactions'
 import StreamProviders from '../components/show-detail/StreamProviders'
 import CollectionGrid from '../components/show-detail/CollectionGrid'
 import SeasonSection from '../components/show-detail/SeasonSection'
@@ -33,6 +32,8 @@ import { playWatchSound, playUnwatchSound, playCelebrationSound } from '../lib/s
 import { triggerConfetti } from '../lib/confetti'
 import { TimerIcon } from '../components/Icons'
 import BrutalDropdown from '../components/BrutalDropdown'
+import ShowToasts from '../components/show-detail/ShowToasts'
+import { useResumePosition } from '../hooks/useResumePosition'
 import { MEMBER_COLORS, fmtPos } from '../components/show-detail/types'
 
 export default function ShowDetail() {
@@ -95,11 +96,9 @@ export default function ShowDetail() {
   const [movieToggling, setMovieToggling] = useState(false)
   const [showGroupFeed, setShowGroupFeed] = useState(false)
   const [resumePositions, setResumePositions] = useState<Map<number, number>>(new Map())
-  const [editingPosition, setEditingPosition] = useState<number | null>(null)
-  const [editValue, setEditValue] = useState('')
   const [feedbackEp, setFeedbackEp] = useState<{ id: number; watched: boolean; x: number; y: number } | null>(null)
-  const editInputRef = useRef<HTMLInputElement>(null)
   const togglingRef = useRef(false)
+  const resume = useResumePosition(user?.uid, show, setResumePositions)
   const movieTogglingRef = useRef(false)
   const { groups } = useGroups(user?.uid)
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null)
@@ -160,7 +159,7 @@ export default function ShowDetail() {
       )
       await addFollowedShow(user.uid, showId)
       setSimAdded(m => new Map(m).set(item.id, true))
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setSimAdding(null)
   }, [user?.uid, simAdding])
 
@@ -176,7 +175,7 @@ export default function ShowDetail() {
       )
       await toggleWatchedEpisode(user.uid, showId, showId, true, true)
       setSimAdded(m => new Map(m).set(item.id, true))
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setSimAdding(null)
   }, [user?.uid, simAdding])
 
@@ -334,7 +333,7 @@ export default function ShowDetail() {
             }
           }
         }
-      } catch {}
+      } catch (e) { console.warn('showDetail action failed', e) }
       setLoading(false)
     })()
     return () => { cancelled = true }
@@ -607,7 +606,7 @@ export default function ShowDetail() {
           }
         }
       }
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setToggling(null)
     togglingRef.current = false
   }, [user?.uid, id, toggling, mergedEpisodes, watchedCounts, selectedGroupId, resolveEpisodeId])
@@ -657,7 +656,7 @@ export default function ShowDetail() {
         return alreadyWatched || justWatched
       })
       if (allSeriesWatched) { triggerConfetti(260); playCelebrationSound(); setSeriesToast(prompt.episodeId); setTimeout(() => setSeriesToast(null), 4000) } else { setEmotionPickerFor(prompt.episodeId) }
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setBatchProgress(null)
     setToggling(null)
     togglingRef.current = false
@@ -692,7 +691,7 @@ export default function ShowDetail() {
         setEpisodeToast({ episodeNumber: ep.episode_number, seasonNumber: ep.season_number, watched: true })
         setTimeout(() => setEpisodeToast(null), 3000)
       }
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setToggling(null)
   }, [user?.uid, id, toggling, selectedGroupId, mergedEpisodes, resolveEpisodeId])
 
@@ -788,7 +787,7 @@ export default function ShowDetail() {
         })
         if (allSeriesWatched) { triggerConfetti(260); playCelebrationSound(); setSeriesToast(lastEpId); setTimeout(() => setSeriesToast(null), 4000) } else { setEmotionPickerFor(lastEpId) }
       }
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setBatchProgress(null)
     setMarkingSeason(null)
   }, [confirmSeason, user?.uid, id, markingSeason, selectedGroupId, resolveEpisodeId, mergedEpisodes, watchedCounts])
@@ -837,92 +836,12 @@ export default function ShowDetail() {
       else playUnwatchSound()
       setMovieToast({ watched: !isCurrentlyWatched, name: show?.name || '' })
       setTimeout(() => setMovieToast(null), 3000)
-    } catch {}
+    } catch (e) { console.warn('showDetail action failed', e) }
     setMovieToggling(false)
     movieTogglingRef.current = false
   }, [user?.uid, movieToggling, show, isMovie, watchedCounts, selectedGroupId])
 
-  function parsePosition(input: string): number | null {
-    const trimmed = input.trim()
-    if (!trimmed) return null
-    const parts = trimmed.split(':')
-    if (parts.length === 1) {
-      const n = parseInt(parts[0])
-      return isNaN(n) ? null : n
-    }
-    if (parts.length === 2) {
-      const m = parseInt(parts[0])
-      const s = parseInt(parts[1])
-      if (isNaN(m) || isNaN(s)) return null
-      return m * 60 + s
-    }
-    if (parts.length === 3) {
-      const h = parseInt(parts[0])
-      const m = parseInt(parts[1])
-      const s = parseInt(parts[2])
-      if (isNaN(h) || isNaN(m) || isNaN(s)) return null
-      return h * 3600 + m * 60 + s
-    }
-    return null
-  }
 
-  const handleResumeClick = useCallback((contentId: number, currentSeconds: number | undefined) => {
-    setEditingPosition(contentId)
-    setEditValue(currentSeconds !== undefined ? fmtPos(currentSeconds) : '')
-    requestAnimationFrame(() => editInputRef.current?.focus())
-  }, [])
-
-  const editValueRef = useRef(editValue)
-  editValueRef.current = editValue
-
-  const handleResumeSave = useCallback(async (contentId: number, contentType: 'episode' | 'movie') => {
-    if (!user?.uid || !show) return
-    const trimmed = editValueRef.current.trim()
-    if (!trimmed) { setEditingPosition(null); setEditValue(''); return }
-    const seconds = parsePosition(trimmed)
-    if (seconds === null) { setEditingPosition(null); setEditValue(''); return }
-    setEditingPosition(null)
-    setEditValue('')
-    await setResumePosition(user.uid, contentId, show.tmdb_id, contentType, seconds)
-    setResumePositions(prev => {
-      const next = new Map(prev)
-      next.set(contentId, seconds)
-      return next
-    })
-  }, [user?.uid, show])
-
-  const handlePresetPosition = useCallback(async (contentId: number, contentType: 'episode' | 'movie', seconds: number) => {
-    if (!user?.uid || !show) return
-    setEditValue(fmtPos(seconds))
-    await setResumePosition(user.uid, contentId, show.tmdb_id, contentType, seconds)
-    setResumePositions(prev => {
-      const next = new Map(prev)
-      next.set(contentId, seconds)
-      return next
-    })
-  }, [user?.uid, show])
-
-  const handleClearPosition = useCallback(async (contentId: number, contentType: 'episode' | 'movie') => {
-    if (!user?.uid || !show) return
-    setEditValue('')
-    await setResumePosition(user.uid, contentId, show.tmdb_id, contentType, null)
-    setResumePositions(prev => {
-      const next = new Map(prev)
-      next.delete(contentId)
-      return next
-    })
-  }, [user?.uid, show])
-
-  const handleResumeKeyDown = useCallback((e: React.KeyboardEvent, contentId: number, contentType: 'episode' | 'movie') => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleResumeSave(contentId, contentType)
-    }
-    if (e.key === 'Escape') {
-      setEditingPosition(null)
-      setEditValue('')
-    }
-  }, [handleResumeSave])
 
   const backdrop = show?.backdrop_url ?? null
   const movieWatched = isMovie && show && (watchedCounts.get(show.tmdb_id) ?? 0) > 0
@@ -971,7 +890,7 @@ export default function ShowDetail() {
                   navigate('/discover')
                 }}
                 className="border-2 border-border px-1.5 sm:px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors cursor-pointer"
-                aria-label={`Filter by ${g.name}`}
+                aria-label={t.showDetail.filterBy.replace('{name}', g.name)}
               >
                 {g.name}
               </button>
@@ -1000,7 +919,7 @@ export default function ShowDetail() {
             )}
           </div>
           <h1 className="text-xl sm:text-4xl md:text-5xl font-black uppercase leading-tight break-words font-heading">{show.name}</h1>
-          {(tmdbOverview ?? show.synopsis) && <p className="text-xs sm:text-sm leading-relaxed max-w-3xl border-l-[3px] border-accent pl-3">{tmdbOverview ?? show.synopsis}</p>}
+          {(tmdbOverview ?? show.synopsis) && <p className="text-xs sm:text-sm leading-relaxed max-w-3xl">{tmdbOverview ?? show.synopsis}</p>}
         </div>
         <div className="flex flex-row flex-wrap gap-2 sm:gap-3">
           {!wlLoading && user?.uid && show?.tmdb_id && (
@@ -1014,12 +933,12 @@ export default function ShowDetail() {
                   else { await addToWatchlist(user.uid, show.tmdb_id); setInWatchlist(true); playWatchSound() }
                   setWatchlistToast({ added: adding })
                   setTimeout(() => setWatchlistToast(null), 3000)
-                } catch {}
+                } catch (e) { console.warn('showDetail action failed', e) }
                 setWlToggling(false)
               }}
               disabled={wlToggling}
               className={`btn-brutal text-xs sm:text-sm ${wlToggling ? 'bg-yellow/50 text-text/50 cursor-wait' : inWatchlist ? 'bg-yellow cursor-pointer' : 'bg-surface cursor-pointer'}`}
-              aria-label={inWatchlist ? "Remove from watchlist" : "Add to watchlist"}
+              aria-label={inWatchlist ? t.watchlist.removeAction : t.watchlist.addAction}
             >
               {wlToggling ? '…' : inWatchlist ? t.watchlist.added : t.watchlist.add}
             </button>
@@ -1044,14 +963,14 @@ export default function ShowDetail() {
                           try {
                             if (inList) { await removeShowFromList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.delete(list.id); return n }) }
                             else { await addShowToList(list.id, show.tmdb_id); setShowInLists(prev => { const n = new Set(prev); n.add(list.id); return n }) }
-                          } catch {}
+                          } catch (e) { console.warn('showDetail action failed', e) }
                           setListToggling(prev => { const n = new Set(prev); n.delete(list.id); return n })
                         }}
                         disabled={isToggling}
                         className={`w-full text-left px-3 py-2 text-xs font-bold border-b-2 border-border last:border-b-0 transition-colors ${isToggling ? 'bg-surface/50 text-text/50 cursor-wait' : inList ? 'bg-yellow text-text sm:hover:bg-yellow cursor-pointer' : 'bg-surface text-text sm:hover:bg-yellow cursor-pointer'}`}
-                        aria-label={`${inList ? "Remove from" : "Add to"} list: ${getListDisplayName(list, lang)}`}
+                        aria-label={(inList ? t.lists.removeFromListAria : t.lists.addToListAria).replace('{name}', getListDisplayName(list, lang))}
                       >
-                        {isToggling ? '…' : `${getListDisplayName(list, lang)} ${inList ? 'OK' : ''}`}
+                        {isToggling ? '…' : `${getListDisplayName(list, lang)} ${inList ? t.common.ok : ''}`}
                       </button>
                     )
                   })}
@@ -1070,24 +989,24 @@ export default function ShowDetail() {
               >
                 {movieToggling ? '…' : movieWatched ? t.showDetail.watched : t.showDetail.markAsWatched}
               </button>
-              {editingPosition === show.tmdb_id ? (
+              {resume.editingPosition === show.tmdb_id ? (
                 <PositionEditor
                   contentId={show.tmdb_id}
                   contentType="movie"
                   maxSeconds={movieRuntime ? movieRuntime * 60 : 7200}
-                  editValue={editValue}
-                  setEditValue={setEditValue}
-                  editInputRef={editInputRef}
+                  editValue={resume.editValue}
+                  setEditValue={resume.setEditValue}
+                  editInputRef={resume.editInputRef}
                   currentSeconds={resumePositions.get(show.tmdb_id)}
-                  onSave={handleResumeSave}
-                  onPreset={handlePresetPosition}
-                  onClear={handleClearPosition}
-                  onKeyDown={handleResumeKeyDown}
+                  onSave={resume.handleResumeSave}
+                  onPreset={resume.handlePresetPosition}
+                  onClear={resume.handleClearPosition}
+                  onKeyDown={resume.handleResumeKeyDown}
                   t={t}
                 />
               ) : (
                 <button
-                  onClick={() => handleResumeClick(show.tmdb_id, resumePositions.get(show.tmdb_id))}
+                  onClick={() => resume.handleResumeClick(show.tmdb_id, resumePositions.get(show.tmdb_id))}
                   className="btn-brutal text-xs sm:text-sm"
                   aria-label={t.showDetail.resumePosition}
                 >
@@ -1127,7 +1046,7 @@ export default function ShowDetail() {
                 try {
                   await addShowToGroup(selectedGroupId, show.tmdb_id, user.uid)
                   setShowsInGroups(prev => new Set(prev).add(selectedGroupId))
-                } catch {}
+                } catch (e) { console.warn('showDetail action failed', e) }
                 setAddingToGroup(null)
               }}
               disabled={!show?.tmdb_id || showsInGroups.has(selectedGroupId) || addingToGroup !== null}
@@ -1138,7 +1057,7 @@ export default function ShowDetail() {
                     ? 'bg-green/30 text-text border-green cursor-pointer'
                     : 'bg-surface text-text sm:hover:bg-yellow cursor-pointer'
               }`}
-              aria-label={showsInGroups.has(selectedGroupId) ? 'Already in group' : 'Add show to group'}
+              aria-label={showsInGroups.has(selectedGroupId) ? t.groups.alreadyInGroup : t.showDetail.addShowToGroup}
             >
               {addingToGroup === selectedGroupId
                 ? '...'
@@ -1225,7 +1144,7 @@ export default function ShowDetail() {
                 className={`border-2 border-border px-2 py-1 text-[10px] font-bold uppercase transition-colors cursor-pointer ${compactMode ? 'bg-yellow text-text' : 'bg-surface sm:hover:bg-yellow'}`}
                 aria-label={t.showDetail.compactMode}
               >
-                {t.showDetail.compactMode} {compactMode ? 'ON' : 'OFF'}
+                {t.showDetail.compactMode} {compactMode ? t.settings.on : t.settings.off}
               </button>
               <button
                 onClick={allCollapsed ? handleExpandAll : handleCollapseAll}
@@ -1255,10 +1174,10 @@ export default function ShowDetail() {
               expandedSynopsis={expandedSynopsis}
               emotions={emotions}
               resumePositions={resumePositions}
-              editingPosition={editingPosition}
-              editValue={editValue}
-              setEditValue={setEditValue}
-              editInputRef={editInputRef}
+              editingPosition={resume.editingPosition}
+              editValue={resume.editValue}
+              setEditValue={resume.setEditValue}
+              editInputRef={resume.editInputRef}
               selectedGroupId={selectedGroupId}
               groupMembers={groupMembers}
               groupProgress={groupProgress}
@@ -1277,11 +1196,11 @@ export default function ShowDetail() {
               onToggle={handleToggle}
               onRewatch={handleRewatch}
               onToggleSynopsis={handleToggleSynopsis}
-              onResumeClick={handleResumeClick}
-              onResumeSave={handleResumeSave}
-              onResumePreset={handlePresetPosition}
-              onResumeClear={handleClearPosition}
-              onResumeKeyDown={handleResumeKeyDown}
+              onResumeClick={resume.handleResumeClick}
+              onResumeSave={resume.handleResumeSave}
+              onResumePreset={resume.handlePresetPosition}
+              onResumeClear={resume.handleClearPosition}
+              onResumeKeyDown={resume.handleResumeKeyDown}
               onSortByProgressToggle={(n) => setSortByProgress(prev => { const s = new Set(prev); if (s.has(n)) s.delete(n); else s.add(n); return s })}
             />
           )
@@ -1303,7 +1222,7 @@ export default function ShowDetail() {
       <MediaGrid
         items={recommended}
         isMovie={isMovie}
-        label="Recomendaciones"
+        label={t.showDetail.recommendations}
         expanded={showRecommended}
         onToggle={() => setShowRecommended(prev => !prev)}
         onAdd={handleSimilarAdd}
@@ -1339,108 +1258,29 @@ export default function ShowDetail() {
             setEmotions(prev => { const next = new Map(prev); if (emotionId) next.set(emotionPickerFor, emotionId); else next.delete(emotionPickerFor); return next })
           }}
           onClose={() => setEmotionPickerFor(null)}
+          t={t}
         />
       )}
-      {batchProgress && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/80" role="progressbar" aria-valuenow={batchProgress.current} aria-valuemin={0} aria-valuemax={batchProgress.total} aria-label={`Saving ${batchProgress.current} of ${batchProgress.total} episodes`}>
-          <div className="bg-surface border-[3px] border-border p-6 shadow-brutal-xl max-w-xs w-full mx-4">
-            <div className="text-xs font-bold uppercase text-text-secondary mb-3 text-center">{batchProgress.context === 'season' ? t.profile.saving : t.showDetail.catchUpTitle}</div>
-            <div className="text-lg font-black text-center mb-3">
-              <span className="text-yellow">{batchProgress.current}</span>
-              <span className="text-text-secondary"> / </span>
-              <span>{batchProgress.total}</span>
-            </div>
-            <div className="h-3 bg-surface-light border-2 border-border overflow-hidden">
-              <div
-                className="h-full bg-yellow progress-shimmer transition-all duration-300 ease-out"
-                style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      {watchlistToast && (
-        <div className="fixed bottom-0 right-4 z-50 animate-slide-up mb-2">
-          <div className={`bg-surface border-[3px] px-4 py-3 shadow-brutal-xl max-w-xs ${watchlistToast.added ? 'border-yellow' : 'border-pink'}`}>
-            <div className="text-[10px] font-bold text-text-secondary uppercase">{t.watchlist.title}</div>
-            <div className="text-xs font-bold mt-1">
-              <span className={watchlistToast.added ? 'text-yellow' : 'text-pink'}>
-                {watchlistToast.added ? t.watchlist.added : t.watchlist.removed}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-      {episodeToast && (
-        <div className="fixed bottom-12 right-4 z-50 animate-slide-up">
-          <div className={`bg-surface border-[3px] px-4 py-3 shadow-brutal-xl max-w-xs ${episodeToast.watched ? 'border-yellow' : 'border-pink'}`}>
-            <div className="text-[10px] font-bold text-text-secondary uppercase">{t.showDetail.season} {episodeToast.seasonNumber} · {t.showDetail.episode} {episodeToast.episodeNumber}</div>
-            <div className="text-xs font-bold mt-1">
-              <span className={episodeToast.watched ? 'text-yellow' : 'text-pink'}>
-                {episodeToast.watched ? t.showDetail.watched : t.showDetail.unwatched}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-      {movieToast && (
-        <div className="fixed bottom-24 right-4 z-50 animate-slide-up">
-          <div className={`bg-surface border-[3px] px-4 py-3 shadow-brutal-xl max-w-xs ${movieToast.watched ? 'border-yellow' : 'border-pink'}`}>
-            <div className="text-[10px] font-bold text-text-secondary uppercase truncate max-w-[200px]">{movieToast.name}</div>
-            <div className="text-xs font-bold mt-1">
-              <span className={movieToast.watched ? 'text-yellow' : 'text-pink'}>
-                {movieToast.watched ? t.showDetail.watched : t.showDetail.unwatched}
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-      {seriesToast !== null && (
-        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-50 animate-slide-down">
-          <div className="bg-surface border-[3px] border-yellow px-6 py-5 shadow-brutal-xl max-w-sm text-center">
-            <div className="text-lg sm:text-xl font-black text-yellow">{t.showDetail.seriesComplete}</div>
-            <div className="text-[10px] font-bold text-text-secondary uppercase mt-2">{show?.name}</div>
-            <SeriesReactions episodeId={seriesToast} uid={user?.uid ?? ''} currentEmotion={emotions.get(seriesToast) ?? null} onSelect={(emotionId) => { setEmotions(prev => { const n = new Map(prev); if (emotionId) n.set(seriesToast, emotionId); else n.delete(seriesToast); return n }) }} onClose={() => setSeriesToast(null)} />
-          </div>
-        </div>
-      )}
-      {seasonToast && (
-        <div className="fixed bottom-36 right-4 z-50 animate-slide-up">
-          <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-brutal-xl max-w-xs">
-            <div className="text-[10px] font-bold text-text-secondary uppercase">{seasonToast.action === 'watch' ? t.showDetail.markedWatched : t.showDetail.markedUnwatched}</div>
-            <div className="text-xs font-bold mt-1">
-              {seasonToast.seasonNumber > 0 && <span className="text-pink">{t.showDetail.season} {seasonToast.seasonNumber}</span>}
-              {seasonToast.seasonNumber > 0 && <span> — </span>}
-              <span>{seasonToast.count} {seasonToast.count !== 1 ? `${t.showDetail.episode}s` : t.showDetail.episode}</span>
-            </div>
-          </div>
-        </div>
-      )}
-      {groupWatchToast && (
-        <div className="fixed bottom-48 right-4 z-50 animate-slide-up">
-          <div className="bg-surface border-[3px] border-yellow px-4 py-3 shadow-brutal-xl max-w-xs">
-            <div className="text-[10px] font-bold text-text-secondary uppercase">{t.watchParty.watchingTogether}</div>
-            <div className="text-xs font-bold mt-1">
-              <span className="text-pink">{t.watchParty.aMember}</span>
-              {' '}{t.watchParty.watchedEpisode.replace('{episode}', (() => {
-                const ep = mergedEpisodes.find(e => e.id === groupWatchToast.episode_id)
-                return ep ? `${t.showDetail.episode} ${ep.episode_number} — ${ep.title}` : `#${groupWatchToast.episode_id}`
-              })())}
-            </div>
-          </div>
-        </div>
-      )}
-      {feedbackEp && (
-        <div
-          className="fixed pointer-events-none z-50 animate-float-up"
-          style={{ left: feedbackEp.x, top: feedbackEp.y, transform: 'translate(-50%, -50%)' }}
-          aria-hidden="true"
-        >
-          <span className={`text-3xl font-bold ${feedbackEp.watched ? 'text-yellow' : 'text-pink'}`}>
-            {feedbackEp.watched ? 'OK' : 'X'}
-          </span>
-        </div>
-      )}
+      <ShowToasts
+        batchProgress={batchProgress}
+        watchlistToast={watchlistToast}
+        episodeToast={episodeToast}
+        movieToast={movieToast}
+        seasonToast={seasonToast}
+        groupWatchToast={groupWatchToast}
+        seriesToast={seriesToast}
+        feedbackEp={feedbackEp}
+        showName={show?.name ?? null}
+        uid={user?.uid ?? ''}
+        mergedEpisodes={mergedEpisodes}
+        currentEmotion={seriesToast !== null ? emotions.get(seriesToast) ?? null : null}
+        onEmotionSelect={(emotionId) => {
+          if (seriesToast === null) return
+          setEmotions(prev => { const n = new Map(prev); if (emotionId) n.set(seriesToast, emotionId); else n.delete(seriesToast); return n })
+        }}
+        onSeriesToastClose={() => setSeriesToast(null)}
+        t={t}
+      />
     </div>
     )}
     </>

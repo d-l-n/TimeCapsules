@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -26,7 +26,6 @@ interface ThemeCtx {
 const ThemeContext = createContext<ThemeCtx>(null!)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const firstRender = useRef(true)
   const [theme, setThemeState] = useState<Theme>(() => {
     const stored = localStorage.getItem('timecapsules-theme')
     if (stored === 'dark' || stored === 'light') return stored
@@ -42,27 +41,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const accentHex = ACCENT_PRESETS[accent]
 
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false
-      // Apply theme directly on mount — no transition needed
-      document.documentElement.setAttribute('data-theme', theme)
-      localStorage.setItem('timecapsules-theme', theme)
-      const meta = document.querySelector('meta[name="theme-color"]')
-      if (meta) meta.setAttribute('content', theme === 'dark' ? '#0f0f0f' : '#F6F6F3')
-      return
-    }
-    // Activate smooth transition class
-    document.documentElement.classList.add('theme-transitioning')
-    // Apply theme
+    // Apply theme instantly — no transition (avoids CLS/jank from animating colors)
     document.documentElement.setAttribute('data-theme', theme)
     localStorage.setItem('timecapsules-theme', theme)
     const meta = document.querySelector('meta[name="theme-color"]')
     if (meta) meta.setAttribute('content', theme === 'dark' ? '#0f0f0f' : '#F6F6F3')
-    // Remove transition class after animation completes
-    const timer = setTimeout(() => {
-      document.documentElement.classList.remove('theme-transitioning')
-    }, 250)
-    return () => clearTimeout(timer)
   }, [theme])
 
   useEffect(() => {

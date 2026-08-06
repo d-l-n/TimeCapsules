@@ -1,3 +1,10 @@
 name = "time-capsules"
 pages_build_output_dir = "dist"
 compatibility_date = "2025-04-01"
+
+# KV namespace for QR login pairing.
+# Create it once with: npx wrangler kv namespace create PAIRINGS
+# Then paste the returned id below. `wrangler pages deploy` requires a real id.
+[[kv_namespaces]]
+binding = "PAIRINGS"
+id = "5ea993f6b97143cea3e5bc7cd65cf2c9"

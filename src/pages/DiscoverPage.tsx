@@ -213,7 +213,7 @@ export default function DiscoverPage() {
             type="submit"
             disabled={loading || !query.trim()}
             className="btn-brutal btn-accent w-full sm:w-auto"
-            aria-label="Search"
+            aria-label={t.discover.searchButton}
           >
             {loading ? t.discover.loading : t.discover.searchButton}
           </button>
@@ -432,7 +432,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
   }
 
   return (
-    <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch">
+    <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch grid-virtualize">
       {items.map(item => {
         const name = item.name || item.title || t.discover.unknown
         const imgSrc = getPosterUrl(item.poster_path)
@@ -498,7 +498,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                                 <button
                                   onClick={() => setMoviePrompt(null)}
                                   className="x-btn absolute top-1 right-1 w-5 h-5 flex items-center justify-center border-2 border-border bg-surface text-text font-bold text-[9px] sm:hover:bg-pink transition-colors"
-                                  aria-label="Close"
+                                  aria-label={t.common.close}
                                 >
                                   X
                                 </button>
@@ -507,7 +507,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                                     onClick={() => handleUnwatch(item)}
                                     disabled={togglingId === item.id}
                                     className="w-full border-2 border-border px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase bg-surface sm:hover:bg-pink transition-colors"
-                                    aria-label="Mark as unwatched"
+                                    aria-label={t.showDetail.markAsUnwatched}
                                   >
                                     {t.showDetail.markAsUnwatched}
                                   </button>
@@ -515,7 +515,7 @@ function DiscoverGrid({ items, user, t, metaMap, setMetaMap }: {
                                     onClick={() => handleRewatch(item)}
                                     disabled={togglingId === item.id}
                                     className="w-full border-2 border-border px-2 py-1 text-[9px] sm:text-[10px] font-bold uppercase bg-surface sm:hover:bg-yellow transition-colors"
-                                    aria-label="Rewatch"
+                                    aria-label={t.showDetail.rewatch}
                                   >
                                     {t.showDetail.markAsWatched}
                                   </button>

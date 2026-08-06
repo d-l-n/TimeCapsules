@@ -34,7 +34,7 @@ export default function MediaGrid({ items, isMovie, label, expanded, onToggle, o
         </h2>
       </button>
       {expanded && (
-        <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-2 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch">
+        <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-4 max-sm:scrollbar-none sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-5 sm:items-stretch grid-virtualize">
           {items.map(item => {
             const name = item.name || item.title || 'Unknown'
             const imgSrc = getTmdbImage(item.poster_path, 'w500')

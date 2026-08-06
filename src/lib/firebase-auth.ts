@@ -14,6 +14,6 @@ export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const googleProvider = new GoogleAuthProvider()
 
-if (import.meta.env.VITE_USE_EMULATOR === 'true') {
+if (import.meta.env.VITE_USE_EMULATOR?.trim() === 'true') {
   connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true })
 }

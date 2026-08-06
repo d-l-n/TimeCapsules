@@ -74,8 +74,8 @@ export default function ListsPage() {
 
       {creating && (
         <div className="bg-surface border-[3px] border-border p-4 space-y-3 shadow-brutal-md">
-          <input value={name} onChange={e => setName(e.target.value)} placeholder={t.lists.namePlaceholder} className="w-full border-[3px] border-border bg-bg px-3 py-2 text-sm font-bold outline-none focus:bg-yellow/30" />
-          <input value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.lists.descPlaceholder} className="w-full border-[3px] border-border bg-bg px-3 py-2 text-sm outline-none focus:bg-yellow/30" />
+          <input value={name} onChange={e => setName(e.target.value)} placeholder={t.lists.namePlaceholder} aria-label={t.lists.namePlaceholder} className="w-full border-[3px] border-border bg-bg px-3 py-2 text-sm font-bold outline-none focus:bg-yellow/30" />
+          <input value={desc} onChange={e => setDesc(e.target.value)} placeholder={t.lists.descPlaceholder} aria-label={t.lists.descPlaceholder} className="w-full border-[3px] border-border bg-bg px-3 py-2 text-sm outline-none focus:bg-yellow/30" />
           <div className="flex gap-2">
             <button onClick={handleCreate} disabled={!name.trim()} aria-label={t.lists.create} className="btn-brutal btn-accent text-xs">{t.lists.create}</button>
             <button onClick={() => setCreating(false)} aria-label={t.lists.cancel} className="btn-brutal bg-surface text-xs">{t.lists.cancel}</button>

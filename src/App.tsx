@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import Loading from './components/Loading'
 import ErrorBoundary from './components/ErrorBoundary'
 import LoginPage from './pages/LoginPage'
+import { checkUpcomingEpisodes } from './services/notificationService'
 
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const ShowDetail = lazy(() => import('./pages/ShowDetail'))
@@ -15,6 +16,8 @@ const LibraryPage = lazy(() => import('./pages/LibraryPage'))
 const GroupDetail = lazy(() => import('./pages/GroupDetail'))
 const UpcomingPage = lazy(() => import('./pages/UpcomingPage'))
 const ListDetail = lazy(() => import('./pages/ListDetail'))
+const QrLoginPage = lazy(() => import('./pages/QrLoginPage'))
+const QrConfirmPage = lazy(() => import('./pages/QrConfirmPage'))
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
@@ -31,11 +34,9 @@ export default function App() {
     const lastCheck = localStorage.getItem('lastNotifCheck')
     const today = new Date().toDateString()
     if (lastCheck !== today) {
-      import('./services/notificationService').then(({ checkUpcomingEpisodes }) =>
-        checkUpcomingEpisodes(user.uid).then(() => {
-          localStorage.setItem('lastNotifCheck', today)
-        })
-      )
+      checkUpcomingEpisodes(user.uid)
+        .then(() => { localStorage.setItem('lastNotifCheck', today) })
+        .catch(e => console.warn('checkUpcomingEpisodes failed', e))
     }
   }, [user?.uid])
 
@@ -43,6 +44,8 @@ export default function App() {
     <ErrorBoundary>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/qr" element={<QrLoginPage />} />
+        <Route path="/pair" element={<QrConfirmPage />} />
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />

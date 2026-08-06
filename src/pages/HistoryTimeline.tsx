@@ -50,7 +50,7 @@ export default function HistoryTimeline() {
           <button
             onClick={() => setSelected('')}
             className="mt-4 border-2 border-border px-3 py-1.5 text-xs font-bold bg-surface sm:hover:bg-yellow transition-colors cursor-pointer"
-            aria-label="Clear filter"
+            aria-label={t.history.clearFilter}
           >
             {t.history.allTime}
           </button>
@@ -64,7 +64,7 @@ export default function HistoryTimeline() {
               <Link key={entry.id} to={`/show/${entry.show_id}`} className="flex items-center gap-2 sm:gap-3 bg-surface border-[3px] border-border px-3 sm:px-4 py-2.5 sm:py-3 sm:hover:translate-x-0.5 sm:hover:-translate-y-0.5 sm:hover:shadow-brutal active:translate-x-px active:translate-y-px active:shadow-none transition-all" aria-label={`${entry.show_name} ${t.showDetail.season} ${entry.season_number} ${t.showDetail.episode} ${entry.episode_number}`}>
                 <div className="w-7 h-7 sm:w-8 sm:h-8 bg-yellow border-2 border-border flex items-center justify-center font-bold text-[10px] sm:text-xs shrink-0" aria-hidden="true">{entry.episode_number}</div>
                 <div className="flex-1 min-w-0"><span className="font-bold text-xs sm:text-sm uppercase truncate block">{entry.show_name}</span><span className="text-text-secondary text-[10px] sm:text-xs">S{entry.season_number} &middot; E{entry.episode_number}</span></div>
-                {emotions.has(entry.id) && <span className="shrink-0 text-lg" title={emotions.get(entry.id)!}>{getEmoji(emotions.get(entry.id)!)}</span>}
+                {emotions.has(entry.id) && <span className="shrink-0 text-lg" title={t.emotions[emotions.get(entry.id)! as keyof typeof t.emotions] ?? emotions.get(entry.id)!}>{getEmoji(emotions.get(entry.id)!)}</span>}
               </Link>
             ))}
           </div>

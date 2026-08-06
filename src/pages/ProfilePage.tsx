@@ -14,6 +14,7 @@ import StatsPage from './StatsPage'
 import ListsPage from './ListsPage'
 import { SunIcon, MoonIcon } from '../components/Icons'
 import ConfirmDialog from '../components/ConfirmDialog'
+import { APP_VERSION } from '../lib/version'
 
 export default function ProfilePage() {
   const { user, logout, refreshUser } = useAuth()
@@ -332,7 +333,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => setShowSignOutConfirm(true)}
                     aria-label={t.auth.signOut}
-                    className="w-full border-[3px] border-border border-l-[6px] border-l-yellow bg-surface text-text py-2 text-xs font-bold uppercase flex items-center justify-center gap-2 sm:hover:bg-yellow sm:hover:text-text sm:hover:border-l-yellow transition-colors cursor-pointer"
+                    className="w-full border-[3px] border-border bg-surface text-text py-2 text-xs font-bold uppercase flex items-center justify-center gap-2 sm:hover:bg-yellow sm:hover:text-text transition-colors cursor-pointer"
                   >
                     {t.auth.signOut}
                   </button>
@@ -419,6 +420,11 @@ export default function ProfilePage() {
                       <TogglePill active={lang === 'en'} onClick={() => setLang('en')} label={t.settings.english}>{t.settings.english}</TogglePill>
                       <TogglePill active={lang === 'es'} onClick={() => setLang('es')} label={t.settings.spanish}>{t.settings.spanish}</TogglePill>
                     </div>
+                  </div>
+
+                  <div className="space-y-1.5 pt-2">
+                    <Row label={t.settings.version} />
+                    <span className="inline-block border-2 border-border bg-surface-light px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-widest">v{APP_VERSION}</span>
                   </div>
                 </div>
               </SettingsBlock>
@@ -568,6 +574,7 @@ function ProfileHero({ user, initial, hideEmail }: {
   initial: string
   hideEmail: boolean
 }) {
+  const { t } = useI18n()
   return (
     <div className="bg-surface border-[3px] border-border shadow-brutal p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center gap-5 animate-fade-in-up">
       <div className="shrink-0">
@@ -580,8 +587,8 @@ function ProfileHero({ user, initial, hideEmail }: {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{hideEmail ? 'PROFILE' : (user?.email?.split('@')[1] ?? '').toUpperCase() || 'PROFILE'}</div>
-        <h1 className="text-2xl sm:text-3xl font-bold uppercase truncate font-heading leading-none">{(user?.displayName || (!hideEmail && user?.email?.split('@')[0])) ?? 'User'}</h1>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-1">{hideEmail ? t.profile.title : (user?.email?.split('@')[1] ?? '').toUpperCase() || t.profile.title}</div>
+        <h1 className="text-2xl sm:text-3xl font-bold uppercase truncate font-heading leading-none">{(user?.displayName || (!hideEmail && user?.email?.split('@')[0])) ?? t.profile.user}</h1>
         {!hideEmail && user?.email && <div className="text-xs sm:text-sm text-text-secondary mt-1.5 truncate">{user.email}</div>}
       </div>
     </div>
@@ -653,7 +660,7 @@ function ProfileForm({ displayName, setDisplayName, photoURL, setPhotoURL, email
           {photoURL.trim() && (
             <div className="flex items-center gap-2 mt-1">
               <img src={photoURL.trim()} alt="" className="w-8 h-8 border-2 border-border object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
-              <span className="text-[10px] text-text-secondary">Preview</span>
+              <span className="text-[10px] text-text-secondary">{t.profile.preview}</span>
             </div>
           )}
         </div>

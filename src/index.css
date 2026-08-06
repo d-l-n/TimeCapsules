@@ -7,21 +7,15 @@
    Flat colors · thick black borders · hard shadows
    ══════════════════════════════════════════════════════ */
 
-/* Smooth theme transition — activated briefly on theme toggle */
-html.theme-transitioning,
-html.theme-transitioning *,
-html.theme-transitioning *::before,
-html.theme-transitioning *::after {
-  transition: background-color 0.2s ease-out,
-              border-color 0.2s ease-out !important;
-}
+/* Theme changes are instant — animating background-color/border-color causes CLS + jank */
 :root {
   --color-bg: #F6F6F3;
   --color-surface: #FFFFFF;
   --color-surface-light: #ECEAE4;
   --color-border: #111111;
   --color-text: #111111;
-  --color-text-secondary: #4a4a4a;
+  /* WCAG AA (4.5:1) on #F6F6F3 — #3a3a3a gives ~5.9:1 */
+  --color-text-secondary: #3a3a3a;
 
   --color-blue: #4D7CFE;
   --color-green: #76E56F;
@@ -115,6 +109,19 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Interactive elements: pointer cursor (except disabled) */
+button:not(:disabled),
+select:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+summary {
+  cursor: pointer;
+}
+button:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
 /* ── Colored backgrounds: always dark text for contrast ── */
 .bg-accent { color: #111111 !important; }
 .bg-highlight { color: #111111 !important; }
@@ -155,6 +162,22 @@ button.hover\:bg-yellow:hover,
 a.hover\:bg-yellow:hover,
 .hover\:bg-yellow:hover button,
 .hover\:bg-yellow:hover a {
+  color: #111111 !important;
+}
+
+/* Tailwind v4 responsive variants (sm:, md:, lg:) — e.g. `sm:hover:bg-yellow`.
+   Only SOLID hover backgrounds get black text (design: colored bg = dark text).
+   `class~=` matches exact class tokens, so translucent variants
+   (`sm:hover:bg-yellow/30`, `sm:hover:bg-white/10`, …) and `sm:hover:bg-text`
+   are excluded and keep their theme text color. */
+button[class~="sm:hover:bg-yellow"]:hover,
+a[class~="sm:hover:bg-yellow"]:hover,
+button[class~="sm:hover:bg-pink"]:hover,
+a[class~="sm:hover:bg-pink"]:hover,
+button[class~="sm:hover:bg-orange"]:hover,
+a[class~="sm:hover:bg-orange"]:hover,
+button[class~="sm:hover:bg-green"]:hover,
+a[class~="sm:hover:bg-green"]:hover {
   color: #111111 !important;
 }
 
@@ -639,6 +662,7 @@ header.bg-text .sidebar-pill--invert:active {
   left: 50%;
   transform: translateX(-50%);
   white-space: nowrap;
+  max-width: max(80vw, 16rem);
   padding: 5px 10px;
   background: var(--color-surface);
   border: 2px solid var(--color-border);
@@ -661,6 +685,21 @@ header.bg-text .sidebar-pill--invert:active {
 .tooltip-brutal--down::after {
   bottom: auto;
   top: calc(100% + 10px);
+}
+
+/* Left-aligned sidebar (desktop): align tooltip to button start so it
+   never overflows past the viewport left edge (#69) */
+.sidebar .tooltip-brutal::after,
+.sidebar-drawer .tooltip-brutal::after {
+  left: 0;
+  transform: none;
+}
+
+/* Right-edge buttons in fixed headers (profile): pin tooltip to the end */
+.tooltip-brutal--end::after {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 /* ── Notification panel buttons (brutalist micro-buttons) ── */
@@ -952,6 +991,10 @@ dialog {
   background: transparent;
   max-width: 32rem;
   width: calc(100% - 2rem);
+  /* Always center modals in the viewport (#84) */
+  position: fixed;
+  inset: 0;
+  margin: auto;
 }
 dialog::backdrop {
   background: rgba(10, 10, 10, 0.7);

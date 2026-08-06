@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import EmotionPicker from './EmotionPicker'
+import en from '../i18n/en'
 
 vi.mock('../services/emotionService', () => ({
   setEmotion: vi.fn(),
@@ -15,6 +16,7 @@ describe('EmotionPicker', () => {
     currentEmotion: null,
     onSelect: vi.fn(),
     onClose: vi.fn(),
+    t: en,
   }
 
   beforeEach(() => {

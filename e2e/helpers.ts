@@ -18,7 +18,7 @@ export async function login(page: Page) {
   await page.waitForSelector('input[type="email"]', { timeout: 15000 })
   await page.fill('input[type="email"]', email)
   await page.fill('input[type="password"]', password)
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await page.getByRole('button', { name: 'SIGN IN', exact: true }).click()
   await expect(page).toHaveURL('/dashboard', { timeout: 20000 })
   await page.locator('#main-content').waitFor({ state: 'visible', timeout: 20000 })
   await waitForLoadComplete(page)

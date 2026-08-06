@@ -69,8 +69,8 @@ export default function EpisodeRow({
             onClick={(e) => { e.stopPropagation(); onRewatch(ep.id) }}
             disabled={isToggling}
               className={`shrink-0 px-1 sm:px-1.5 text-[10px] sm:text-xs font-bold border-2 border-border transition-colors ${isToggling ? 'bg-green/50 text-text/50 cursor-wait' : 'bg-surface text-text sm:hover:bg-green cursor-pointer'}`}
-            title={isToggling ? 'Toggling...' : 'Rewatch'}
-            aria-label="Mark as rewatched"
+            title={isToggling ? t.common.toggling : t.showDetail.rewatch}
+            aria-label={t.showDetail.markAsRewatched}
           >
             {isToggling ? '…' : <RewatchIcon className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
           </button>
@@ -127,7 +127,7 @@ export default function EpisodeRow({
         <div className="border-t-2 border-border px-3 sm:px-4 py-2 sm:py-3 bg-surface text-xs sm:text-sm flex flex-col sm:flex-row gap-3 sm:gap-4">
           {ep.still_path && !(spoilerFree && !isWatched) && (
             <div className="sm:w-48 shrink-0">
-              <img src={getTmdbImage(ep.still_path, 'w500')!} alt={ep.title ? `Still from ${ep.title}` : `Episode ${ep.episode_number}`} className="w-full border-2 border-border" />
+              <img src={getTmdbImage(ep.still_path, 'w500')!} alt={ep.title ? t.showDetail.stillFrom.replace('{title}', ep.title) : `${t.showDetail.episode} ${ep.episode_number}`} className="w-full border-2 border-border" />
             </div>
           )}
           <div className="flex-1 space-y-2">
@@ -226,7 +226,7 @@ function GroupProgressPopover({ members, episodeId, groupProgress, userId, membe
               <div key={m.user_id} className="flex items-center gap-1.5 text-[10px]">
                 <span className="w-2 h-2 border border-border shrink-0" style={{ backgroundColor: color }} />
                 <span className="font-bold truncate">{name}</span>
-                <span className="text-text-secondary ml-auto shrink-0">OK</span>
+                <span className="text-text-secondary ml-auto shrink-0">{t.common.ok}</span>
               </div>
             )
           })}

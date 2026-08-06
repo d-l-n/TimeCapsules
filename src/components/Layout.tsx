@@ -12,6 +12,7 @@ import InstallBanner from './InstallBanner'
 import OfflineBanner from './OfflineBanner'
 import ScrollToTop from './ScrollToTop'
 import Loading from './Loading'
+import { APP_VERSION } from '../lib/version'
 
 
 
@@ -231,12 +232,15 @@ function SidebarContent({ user, navItems, theme, toggle, t, pathname, notificati
           onClick={() => { onNavClick?.(); scrollToTop?.() }}
         >
           {user?.photoURL ? (
-            <img src={user.photoURL} alt="" className="w-10 h-10 border-2 border-white/30 object-cover shrink-0" />
+            <img src={user.photoURL} alt={user?.displayName || t.profile.user} className="w-10 h-10 border-2 border-white/30 object-cover shrink-0" />
           ) : (
             <div className="w-10 h-10 bg-yellow border-2 border-white/30 flex items-center justify-center text-sm font-black text-text shrink-0">U</div>
           )}
           <span className="text-xs font-bold uppercase truncate leading-tight text-left">{user?.displayName || user?.email?.split('@')[0] || 'User'}</span>
         </NavLink>
+        <div className="pt-1 text-center">
+          <span className="inline-block border border-white/30 px-1.5 py-0.5 text-[8px] font-mono uppercase tracking-widest opacity-70">v{APP_VERSION}</span>
+        </div>
       </div>}
     </>
   )
@@ -256,8 +260,8 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
             <button
               onClick={() => setSidebarOpen(prev => !prev)}
               className="sidebar-pill tooltip-brutal tooltip-brutal--down"
-              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-              data-tooltip={sidebarOpen ? 'Close menu' : 'Menu'}
+              aria-label={sidebarOpen ? t.nav.closeMenu : t.nav.openMenu}
+              data-tooltip={sidebarOpen ? t.nav.closeMenu : t.nav.menu}
             >
               {sidebarOpen ? <CloseIcon className="w-5 h-5" /> : <MenuIcon className="w-5 h-5" />}
             </button>
@@ -279,12 +283,12 @@ function TabletLayout({ user, navItems, theme, toggle, t, pathname, notification
             </button>
             <Link
               to="/profile"
-              className="sidebar-pill sidebar-pill--invert overflow-hidden tooltip-brutal tooltip-brutal--down"
+              className="sidebar-pill sidebar-pill--invert overflow-hidden tooltip-brutal tooltip-brutal--down tooltip-brutal--end"
               aria-label={t.profile.title}
               data-tooltip={t.profile.title}
             >
               {user?.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                <img src={user.photoURL} alt={user?.displayName || t.profile.user} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-xs font-black text-white">{user?.displayName?.charAt(0)?.toUpperCase() || 'U'}</span>
               )}
@@ -355,12 +359,12 @@ function MobileLayout({ user, navItems, theme, toggle, t, notifications, unreadC
             </button>
             <Link
               to="/profile"
-              className="sidebar-pill sidebar-pill--invert overflow-hidden tooltip-brutal tooltip-brutal--down"
+              className="sidebar-pill sidebar-pill--invert overflow-hidden tooltip-brutal tooltip-brutal--down tooltip-brutal--end"
               aria-label={t.profile.title}
               data-tooltip={t.profile.title}
             >
               {user?.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
+                <img src={user.photoURL} alt={user?.displayName || t.profile.user} className="w-full h-full object-cover" />
               ) : (
                 <span className="text-xs font-black text-white">{user?.displayName?.charAt(0)?.toUpperCase() || 'U'}</span>
               )}

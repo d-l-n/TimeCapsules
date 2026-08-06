@@ -109,10 +109,10 @@ export default function SeasonSection({
                 <button
                   onClick={(e) => { e.stopPropagation(); onSortByProgressToggle(seasonNum) }}
                   className={`border-2 border-border px-2 py-0.5 text-[10px] font-bold transition-colors ${sortByProgress.has(seasonNum) ? 'bg-yellow text-text' : 'bg-surface text-text sm:hover:bg-yellow'}`}
-                  title="Sort by most group members watched"
-                  aria-label="Sort by group progress"
+                  title={t.showDetail.sortByGroupProgress}
+                  aria-label={t.showDetail.sortByProgressAria}
                 >
-                  ⇅ {sortByProgress.has(seasonNum) ? 'ON' : ''}
+                  ⇅ {sortByProgress.has(seasonNum) ? t.settings.on : ''}
                 </button>
               )}
             </span>

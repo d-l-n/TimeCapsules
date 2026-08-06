@@ -27,7 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
 const STATUS_LABEL: Record<string, { en: string; es: string }> = {
   watching: { en: 'WATCHING', es: 'VIENDO' },
   completed: { en: 'COMPLETED', es: 'TERMINADO' },
-  planned: { en: 'PENDING', es: 'PENDIENTE' },
+  planned: { en: 'TO WATCH', es: 'POR VER' },
   dropped: { en: 'DROPPED', es: 'DEJADO' },
 }
 

@@ -51,88 +51,106 @@ export default function Dashboard() {
     if (!user?.uid) return
     let cancelled = false
     ;(async () => {
-      const wl = await getWatchlist(user.uid)
-      const withTmdb = wl
-        .filter(f => f.media_type !== 'movie')
-        .slice(0, 8)
-        .map(f => ({
-          show_id: f.show_id,
-          name: f.name,
-          poster_url: f.poster_url,
-          media_type: f.media_type,
-          tmdb_id: f.show_id,
-        }))
+      try {
+        const wl = await getWatchlist(user.uid)
+        const withTmdb = wl
+          .filter(f => f.media_type !== 'movie')
+          .slice(0, 8)
+          .map(f => ({
+            show_id: f.show_id,
+            name: f.name,
+            poster_url: f.poster_url,
+            media_type: f.media_type,
+            tmdb_id: f.show_id,
+          }))
 
-      const results = await Promise.allSettled(
-        withTmdb.map(s => s.tmdb_id ? cachedGetTvNextEpisode(s.tmdb_id, tmdbLang(lang)) : Promise.resolve(null))
-      )
+        const results = await Promise.allSettled(
+          withTmdb.map(s => s.tmdb_id ? cachedGetTvNextEpisode(s.tmdb_id, tmdbLang(lang)) : Promise.resolve(null))
+        )
 
-      const now = new Date()
-      const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
-      const items: UpcomingShow[] = []
-      withTmdb.forEach((s, i) => {
-        const detail = results[i].status === 'fulfilled' ? results[i].value : null
-        const next = detail?.next_episode_to_air
-        if (!next?.air_date) return
-        const airDate = new Date(next.air_date)
-        if (airDate > thirtyDays || airDate < now) return
-        items.push({ ...s, next_episode: next, daysUntil: Math.ceil((airDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) })
-      })
-      if (!cancelled) setUpcoming(items.sort((a, b) => (a.daysUntil ?? 999) - (b.daysUntil ?? 999)))
+        const now = new Date()
+        const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)
+        const items: UpcomingShow[] = []
+        withTmdb.forEach((s, i) => {
+          const detail = results[i].status === 'fulfilled' ? results[i].value : null
+          const next = detail?.next_episode_to_air
+          if (!next?.air_date) return
+          const airDate = new Date(next.air_date)
+          if (airDate > thirtyDays || airDate < now) return
+          items.push({ ...s, next_episode: next, daysUntil: Math.ceil((airDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) })
+        })
+        if (!cancelled) setUpcoming(items.sort((a, b) => (a.daysUntil ?? 999) - (b.daysUntil ?? 999)))
+      } catch (e) { console.warn('dashboard upcoming load failed', e) }
     })()
     return () => { cancelled = true }
   }, [user?.uid, lang])
 
   useEffect(() => {
     if (!user?.uid) return
-    ensureDefaultLists(user.uid, lang)
+    ensureDefaultLists(user.uid, lang).catch(e => console.warn('ensureDefaultLists failed', e))
   }, [user?.uid, lang])
 
   useEffect(() => {
     if (!user?.uid) return
+    let interval: ReturnType<typeof setInterval> | null = null
     const load = async () => {
-      const { finished: f, upToDate: u } = await splitFinishedByAiringStatus(user.uid, lang)
-      setFinished(f)
-      setUpToDate(u)
+      try {
+        const { finished: f, upToDate: u } = await splitFinishedByAiringStatus(user.uid, lang)
+        setFinished(f)
+        setUpToDate(u)
+      } catch (e) { console.warn('splitFinishedByAiringStatus failed', e) }
     }
+    const start = () => {
+      if (interval) clearInterval(interval)
+      interval = setInterval(load, 5 * 60 * 1000)
+    }
+    const stop = () => { if (interval) { clearInterval(interval); interval = null } }
+    const onVisibility = () => { if (document.hidden) stop(); else start() }
     load()
-    const interval = setInterval(load, 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    start()
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => { stop(); document.removeEventListener('visibilitychange', onVisibility) }
   }, [user?.uid, lang])
 
   useEffect(() => {
     if (!user?.uid) return
-    gatherSeedData(user.uid, lang).then(seed => syncDefaultLists(user.uid, seed))
+    gatherSeedData(user.uid, lang)
+      .then(seed => syncDefaultLists(user.uid, seed))
+      .catch(e => console.warn('gatherSeedData/syncDefaultLists failed', e))
   }, [user?.uid, lang])
 
   useEffect(() => {
     if (!user?.uid) return
-    getTodayEpisodeCount(user.uid).then(setTodayCount)
+    getTodayEpisodeCount(user.uid).then(setTodayCount).catch(e => console.warn('getTodayEpisodeCount failed', e))
   }, [user?.uid, stats])
 
   const handleRemoveFromTracking = async (showId: number) => {
     if (!user?.uid || actionLoading !== null) return
     setActionLoading(showId)
-    await removeFromWatchlist(user.uid, showId)
-    await Promise.all([
-      refresh(),
-      refreshWl(),
-      refreshStats(),
-      splitFinishedByAiringStatus(user.uid, lang).then(({ finished: f, upToDate: u }) => { setFinished(f); setUpToDate(u) }),
-    ])
+    try {
+      await removeFromWatchlist(user.uid, showId)
+      await Promise.all([
+        refresh(),
+        refreshWl(),
+        refreshStats(),
+        splitFinishedByAiringStatus(user.uid, lang).then(({ finished: f, upToDate: u }) => { setFinished(f); setUpToDate(u) }),
+      ])
+    } catch (e) { console.warn('removeFromTracking failed', e) }
     setActionLoading(null)
   }
 
   const handleMarkWatched = async (showId: number) => {
     if (!user?.uid || actionLoading !== null) return
     setActionLoading(showId)
-    await toggleWatchedEpisode(user.uid, showId, showId, true)
-    await Promise.all([
-      refresh(),
-      refreshWl(),
-      refreshStats(),
-      splitFinishedByAiringStatus(user.uid, lang).then(({ finished: f, upToDate: u }) => { setFinished(f); setUpToDate(u) }),
-    ])
+    try {
+      await toggleWatchedEpisode(user.uid, showId, showId, true)
+      await Promise.all([
+        refresh(),
+        refreshWl(),
+        refreshStats(),
+        splitFinishedByAiringStatus(user.uid, lang).then(({ finished: f, upToDate: u }) => { setFinished(f); setUpToDate(u) }),
+      ])
+    } catch (e) { console.warn('markWatched failed', e) }
     setActionLoading(null)
   }
 
@@ -188,7 +206,7 @@ export default function Dashboard() {
         />
 
         {filteredWatchlist.length > 0 ? (
-            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr]">
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4 auto-rows-[1fr] grid-virtualize">
             {filteredWatchlist.slice(0, 12).map((item) => (
               <ShowCard
                 key={item.show_id}
@@ -245,7 +263,7 @@ export default function Dashboard() {
         {upToDate.length > 0 ? (
           <>
             <p className="text-xs text-text-secondary mb-4">{t.dashboard.upToDateDesc}</p>
-            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
+            <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr] grid-virtualize">
               {upToDate.map((item) => (
                 <ShowCard
                   key={item.id}
@@ -280,7 +298,7 @@ export default function Dashboard() {
         />
 
         {finished.length > 0 ? (
-          <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr]">
+          <div className="max-sm:grid max-sm:grid-flow-col max-sm:auto-cols-[9.5rem] max-sm:overflow-x-auto max-sm:gap-3 max-sm:snap-x max-sm:pb-3 max-sm:scrollbar-none max-sm:*:snap-start sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4 auto-rows-[1fr] grid-virtualize">
             {finished.map((item) => (
               <ShowCard
                 key={item.id}

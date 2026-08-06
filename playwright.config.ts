@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5199',
     trace: 'on-first-retry',
     locale: 'en-US',
     actionTimeout: 30000,
@@ -32,8 +32,8 @@ export default defineConfig({
     },
   ],  webServer: {
     command: '.\\start-e2e.bat',
-    url: 'http://localhost:5173',
+    url: 'http://localhost:5199',
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 300000,
   },
 })

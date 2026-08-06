@@ -22,7 +22,7 @@ export default function BrutalDropdown({ value, options, onChange, placeholder, 
           <option key={opt.value} value={opt.value}>{opt.label}</option>
         ))}
       </select>
-      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold pointer-events-none">▼</span>
+      <span aria-hidden="true" className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold pointer-events-none">▼</span>
     </div>
   )
 }
