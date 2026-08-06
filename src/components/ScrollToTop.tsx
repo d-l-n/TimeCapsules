@@ -23,7 +23,7 @@ export default function ScrollToTop() {
   return (
     <button
       onClick={scrollToTop}
-      className="btn-square fixed right-4 z-40 w-10 h-10 border-[3px] border-border bg-surface text-text sm:hover:bg-yellow transition-colors flex items-center justify-center text-lg font-bold bottom-24 max-sm:bottom-[calc(6rem+env(safe-area-inset-bottom))]"
+      className="btn-square !fixed right-4 z-40 w-10 h-10 border-[3px] border-border bg-surface text-text sm:hover:bg-yellow transition-colors flex items-center justify-center text-lg font-bold bottom-24 max-sm:bottom-[calc(6rem+env(safe-area-inset-bottom))]"
       aria-label={t.nav.scrollToTop}
     >
       ↑

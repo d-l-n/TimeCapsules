@@ -18,6 +18,16 @@ Object.defineProperty(window, 'matchMedia', {
   }),
 })
 
+// jsdom doesn't implement window/element scrolling — no-op for tests
+Object.defineProperty(window, 'scrollTo', { writable: true, value: () => {} })
+Object.defineProperty(window, 'scrollBy', { writable: true, value: () => {} })
+if (!window.Element.prototype.scrollTo) {
+  Object.defineProperty(window.Element.prototype, 'scrollTo', { writable: true, value: () => {} })
+}
+if (!window.Element.prototype.scrollIntoView) {
+  Object.defineProperty(window.Element.prototype, 'scrollIntoView', { writable: true, value: () => {} })
+}
+
 class MockResizeObserver {
   observe() {}
   unobserve() {}

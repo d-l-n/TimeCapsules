@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getShowById, getEpisodesByShow, getRatingForShow, getWatchedEpisodesForShow, toggleWatchedEpisode, addWatchedEpisode, removeWatchedEpisode, batchUpdateStats, getResumePositions, getShowByTmdbId, createShowFromTmdb, addFollowedShow, ensureEpisode, getFollowedTmdbIds } from '../services/showService'
+import { getShowById, getEpisodesByShow, getRatingForShow, getWatchedEpisodesForShow, toggleWatchedEpisode, removeWatchedEpisode, batchUpdateStats, getResumePositions, getShowByTmdbId, createShowFromTmdb, addFollowedShow, ensureEpisode, getFollowedTmdbIds } from '../services/showService'
+import { applyWatchedBatch } from '../services/episodeBatch'
 import type { ShowDoc, EpisodeDoc, RatingDoc } from '../lib/firebase-queries'
 import { getTmdbDetails, getTmdbDetailsAuto, getTmdbAllEpisodes, getWatchProviders, getTmdbCollection, getSimilar, getRecommended, tmdbLang } from '../services/tmdb'
 import type { WatchProvidersResult, TmdbSeasonEpisode, TmdbCollectionPart, TmdbCollectionInfo, TmdbSearchResult, TmdbDetails } from '../services/tmdb'
@@ -625,11 +626,7 @@ export default function ShowDetail() {
     try {
       const realIds = await Promise.all(idsToWatch.map(eid => resolveEpisodeId(eid)))
       // Parallel Firestore writes — no existence query, no per-item stats
-      await Promise.all(realIds.map(realId => addWatchedEpisode(user.uid, realId, showId)))
-      await batchUpdateStats(user.uid, realIds.length)
-      if (selectedGroupId) {
-        await Promise.all(realIds.map(realId => createGroupWatchEvent(selectedGroupId, realId, showId, user.uid)))
-      }
+      await applyWatchedBatch(user.uid, showId, realIds, selectedGroupId)
       setBatchProgress({ current: realIds.length, total: realIds.length, context: 'catchUp' })
       setWatchedCounts(prev => {
         const next = new Map(prev)
@@ -752,11 +749,7 @@ export default function ShowDetail() {
       setBatchProgress({ current: 0, total: realIds.length, context: 'season' })
       // Parallel Firestore writes — blind add/delete, no per-item stats
       if (watched) {
-        await Promise.all(realIds.map(realId => addWatchedEpisode(user.uid, realId, showId)))
-        await batchUpdateStats(user.uid, realIds.length)
-        if (selectedGroupId) {
-          await Promise.all(realIds.map(realId => createGroupWatchEvent(selectedGroupId, realId, showId, user.uid)))
-        }
+        await applyWatchedBatch(user.uid, showId, realIds, selectedGroupId)
       } else {
         const removedCounts = await Promise.all(realIds.map(realId => removeWatchedEpisode(user.uid, realId)))
         const totalRemoved = removedCounts.reduce((a, b) => a + b, 0)

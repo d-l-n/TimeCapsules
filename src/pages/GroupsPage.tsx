@@ -55,18 +55,13 @@ export default function GroupsPage() {
             <h1 className="text-2xl sm:text-3xl font-bold uppercase leading-none font-heading">{t.groups.title}</h1>
             <p className="text-xs sm:text-sm text-text-secondary mt-2 max-w-md leading-relaxed">{t.groups.description}</p>
           </div>
-          {groups.length > 0 && (
-            <div className="border-2 border-border px-3 py-1.5 text-xs font-bold uppercase shrink-0 bg-yellow text-text" aria-label={`${groups.length} ${groups.length === 1 ? t.groups.groupSingular : t.groups.groupPlural}`}>
-              {groups.length} {groups.length === 1 ? t.groups.groupSingular : t.groups.groupPlural}
-            </div>
-          )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <div className="bg-surface border-[3px] border-border shadow-brutal-sm p-4 sm:p-6 space-y-4 sm:hover:shadow-brutal-md transition-shadow">
           <div className="flex items-center gap-3">
-            <span className="w-10 h-10 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-xl font-black leading-none text-text">+</span>
+            <span className="w-10 h-10 shrink-0 bg-yellow border-[3px] border-border flex items-center justify-center text-xs font-black leading-none text-text">01</span>
             <div className="min-w-0">
               <h2 className="text-sm font-bold uppercase leading-tight">{t.groups.createGroup}</h2>
               <p className="text-[10px] font-bold uppercase text-text-secondary mt-0.5 leading-relaxed">{t.groups.createDesc}</p>
@@ -93,7 +88,7 @@ export default function GroupsPage() {
 
         <div className="bg-surface border-[3px] border-border shadow-brutal-sm p-4 sm:p-6 space-y-4 sm:hover:shadow-brutal-md transition-shadow">
           <div className="flex items-center gap-3">
-            <span className="w-10 h-10 shrink-0 bg-surface-light border-[3px] border-border flex items-center justify-center text-xl font-black leading-none text-text">→</span>
+            <span className="w-10 h-10 shrink-0 bg-surface-light border-[3px] border-border flex items-center justify-center text-xs font-black leading-none text-text">02</span>
             <div className="min-w-0">
               <h2 className="text-sm font-bold uppercase leading-tight">{t.groups.joinGroup}</h2>
               <p className="text-[10px] font-bold uppercase text-text-secondary mt-0.5 leading-relaxed">{t.groups.joinDesc}</p>
