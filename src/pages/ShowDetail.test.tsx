@@ -15,11 +15,15 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../lib/AuthContext', () => ({ useAuth: vi.fn() }))
 vi.mock('../lib/I18nContext', () => ({ useI18n: vi.fn() }))
 
-vi.mock('../hooks', () => ({
-  useGroups: vi.fn(),
-  useWatchlistStatus: vi.fn(),
-  useSpoilerFree: vi.fn(),
-}))
+vi.mock('../hooks', async () => {
+  const actual = await vi.importActual<typeof import('../hooks')>('../hooks')
+  return {
+    ...actual,
+    useGroups: vi.fn(),
+    useWatchlistStatus: vi.fn(),
+    useSpoilerFree: vi.fn(),
+  }
+})
 
 vi.mock('../services/showService', () => ({
   getShowById: vi.fn(),

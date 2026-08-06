@@ -9,7 +9,7 @@ import { addToWatchlist, removeFromWatchlist } from '../../services/watchlistSer
 import { addShowToList, removeShowFromList, getListDisplayName } from '../../services/listService'
 import { playWatchSound, playUnwatchSound } from '../../lib/sound'
 import type { useI18n } from '../../lib/I18nContext'
-import type { useResumePosition } from '../../hooks/useResumePosition'
+import type { useResumePosition } from '../../hooks'
 import type { ShowDoc, RatingDoc, CustomListDoc } from '../../lib/firebase-queries'
 import type { WatchProvidersResult } from '../../services/tmdb'
 
