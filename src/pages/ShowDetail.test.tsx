@@ -16,9 +16,9 @@ vi.mock('../lib/AuthContext', () => ({ useAuth: vi.fn() }))
 vi.mock('../lib/I18nContext', () => ({ useI18n: vi.fn() }))
 
 vi.mock('../hooks', () => ({
-  useGroups: vi.fn(() => ({ groups: [] })),
-  useWatchlistStatus: vi.fn(() => ({ inWatchlist: false, loading: false, setInWatchlist: vi.fn() })),
-  useSpoilerFree: vi.fn(() => [false, vi.fn()]),
+  useGroups: vi.fn(),
+  useWatchlistStatus: vi.fn(),
+  useSpoilerFree: vi.fn(),
 }))
 
 vi.mock('../services/showService', () => ({
@@ -27,6 +27,10 @@ vi.mock('../services/showService', () => ({
   getRatingForShow: vi.fn(),
   getWatchedEpisodesForShow: vi.fn(),
   toggleWatchedEpisode: vi.fn(),
+  removeWatchedEpisode: vi.fn(),
+  batchUpdateStats: vi.fn(),
+  ensureEpisode: vi.fn(),
+  getFollowedTmdbIds: vi.fn(),
   getResumePositions: vi.fn(),
   setResumePosition: vi.fn(),
   getShowByTmdbId: vi.fn(),
@@ -52,6 +56,8 @@ vi.mock('../services/groupService', () => ({
   getGroupEpisodeProgress: vi.fn(() => Promise.resolve([])),
   createGroupWatchEvent: vi.fn(),
   listenToGroupWatchEvents: vi.fn(() => vi.fn()),
+  getGroupShows: vi.fn(() => Promise.resolve([])),
+  addShowToGroup: vi.fn(),
 }))
 
 vi.mock('../services/watchlistService', () => ({
@@ -63,6 +69,7 @@ vi.mock('../services/listService', () => ({
   getUserLists: vi.fn(() => Promise.resolve([])),
   addShowToList: vi.fn(),
   removeShowFromList: vi.fn(),
+  getListDisplayName: vi.fn(() => 'L'),
 }))
 
 vi.mock('../services/emotionService', () => ({
@@ -70,7 +77,10 @@ vi.mock('../services/emotionService', () => ({
   getEmoji: vi.fn(() => '😊'),
 }))
 
-vi.mock('../lib/firebase', () => ({ db: 'mock-db' }))
+vi.mock('../lib/firebase', () => ({
+  db: 'mock-db',
+  getDb: vi.fn(() => Promise.resolve({})),
+}))
 
 vi.mock('firebase/firestore', () => ({
   doc: vi.fn(() => 'mock-doc'),
@@ -111,9 +121,31 @@ const enT = {
     remaining: 'Remaining',
     allCaughtUp: 'ALL CAUGHT UP!',
     left: 'left',
+    filterBy: 'Filter by {name}',
+    statusReturning: 'RETURNING',
+    statusEnded: 'ENDED',
+    statusCanceled: 'CANCELED',
+    statusInProduction: 'IN PRODUCTION',
+    statusPlanned: 'PLANNED',
+    statusPilot: 'PILOT',
+    markAllWatched: 'MARK ALL WATCHED',
+    markAllUnwatched: 'MARK ALL UNWATCHED',
+    sortByGroupProgress: 'Sort by progress',
+    sortByProgressAria: 'Sort by group progress',
+    compactMode: 'COMPACT MODE',
+    expandAll: 'EXPAND ALL',
+    collapseAll: 'COLLAPSE ALL',
+    addShowToGroup: 'Add show to group',
   },
-  watchlist: { title: 'Watchlist', add: 'ADD TO WATCHLIST', added: 'IN WATCHLIST' },
-  lists: { addToList: 'ADD TO LIST', noLists: 'No lists' },
+  watchlist: {
+    title: 'Watchlist', add: 'ADD TO WATCHLIST', added: 'IN WATCHLIST',
+    addAction: 'ADD TO WATCHLIST', removeAction: 'REMOVE FROM WATCHLIST',
+  },
+  lists: {
+    addToList: 'ADD TO LIST', noLists: 'No lists',
+    addToListAria: 'Add {name} to list', removeFromListAria: 'Remove {name} from list',
+  },
+  common: { ok: '✓' },
   watchParty: {
     selectGroup: 'Switch Group',
     watchingTogether: 'Watching together',
@@ -123,9 +155,11 @@ const enT = {
     watchedEpisode: 'watched {episode}',
     aMember: 'A member',
     groupProgress: 'Group Progress',
+    addToGroup: 'Add to group',
   },
-  groups: { you: 'You' },
+  groups: { you: 'You', alreadyInGroup: 'Already in group' },
   discover: { movie: 'MOVIE', tv: 'TV' },
+  settings: { on: 'ON', off: 'OFF' },
 }
 
 const mockUser = { uid: 'user-1', email: 'test@test.com' } as any
@@ -174,6 +208,10 @@ describe('ShowDetail', () => {
     vi.mocked(useParams).mockReturnValue({ id: '1' })
     vi.mocked(authModule.useAuth).mockReturnValue({ user: mockUser, loading: false } as any)
     vi.mocked(i18nModule.useI18n).mockReturnValue({ t: enT, lang: 'en', setLang: vi.fn() } as any)
+    // Stable references: the showsInGroups effect depends on `groups`, so a
+    // fresh object per render would create an infinite render loop (OOM).
+    vi.mocked(hooksModule.useGroups).mockReturnValue({ groups: [], loading: false, refresh: () => Promise.resolve() })
+    vi.mocked(hooksModule.useWatchlistStatus).mockReturnValue({ inWatchlist: false, loading: false, setInWatchlist: vi.fn() })
     vi.mocked(hooksModule.useSpoilerFree).mockReturnValue([false, vi.fn()])
 
     // Default: show found, TV type, no episodes
@@ -283,7 +321,8 @@ describe('ShowDetail', () => {
       mediaType: 'movie' as const,
     })
     renderShowDetail()
-    await waitFor(() => expect(screen.getByText(/\u0040 -/)).toBeInTheDocument())
+    const resumeBtn = await screen.findByRole('button', { name: 'Resume' })
+    expect(resumeBtn.textContent).toContain('-')
   })
 
   it('does not show SEASON text for movies', async () => {
