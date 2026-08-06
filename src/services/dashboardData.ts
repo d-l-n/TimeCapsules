@@ -3,10 +3,20 @@ import type { DashItem } from './showService'
 import { getWatchlist } from './watchlistService'
 import { getBingingShows } from './showService'
 import { getTvNextEpisode, tmdbLang } from './tmdb'
+import type { TmdbTvDetails } from './tmdb'
 import { buildShowsMap } from './showService'
 import { memoize } from '../lib/hook-cache'
 
 export const cachedGetTvNextEpisode = memoize(getTvNextEpisode, 60 * 60_000)
+
+const ENDED_STATUS = /(ended|canceled|finalizad|cancelad|terminad)/i
+
+function isSeriesStillAiring(detail: TmdbTvDetails | null): boolean {
+  if (!detail) return false
+  if (detail.next_episode_to_air) return true
+  if (detail.in_production) return true
+  return !detail.status || !ENDED_STATUS.test(detail.status)
+}
 
 export async function splitFinishedByAiringStatus(uid: string, lang: string): Promise<{ finished: DashItem[]; upToDate: DashItem[] }> {
   const [allFinished, showsMap] = await Promise.all([getFinishedContent(uid), buildShowsMap()])
@@ -25,7 +35,7 @@ export async function splitFinishedByAiringStatus(uid: string, lang: string): Pr
   )
   toCheck.forEach((f, i) => {
     const detail = results[i].status === 'fulfilled' ? results[i].value : null
-    if (detail?.next_episode_to_air) {
+    if (isSeriesStillAiring(detail)) {
       stillAiringIds.add(f.id)
       upToDateItems.push(f)
     }

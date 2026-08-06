@@ -4,7 +4,7 @@ import { DEFAULT_LIST_IDS, isDefaultList, type CustomListDoc, type DefaultListId
 
 export const DEFAULT_LIST_NAMES: Record<DefaultListId, { en: string; es: string }> = {
   'default-upcoming': { en: 'Upcoming Releases', es: 'Próximos Estrenos' },
-  'default-pending': { en: 'Pending', es: 'Pendientes' },
+  'default-pending': { en: 'To Watch', es: 'Por Ver' },
   'default-uptodate': { en: 'Up to Date', es: 'Al Día' },
   'default-finished': { en: 'Finished', es: 'Finalizados' },
 }
