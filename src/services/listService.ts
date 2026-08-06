@@ -5,6 +5,7 @@ import { DEFAULT_LIST_IDS, isDefaultList, type CustomListDoc, type DefaultListId
 export const DEFAULT_LIST_NAMES: Record<DefaultListId, { en: string; es: string }> = {
   'default-upcoming': { en: 'Upcoming Releases', es: 'Próximos Estrenos' },
   'default-pending': { en: 'To Watch', es: 'Por Ver' },
+  'default-inprogress': { en: 'In Progress', es: 'En Curso' },
   'default-uptodate': { en: 'Up to Date', es: 'Al Día' },
   'default-finished': { en: 'Finished', es: 'Finalizados' },
 }
@@ -41,6 +42,7 @@ export async function emptyList(id: string) {
 
 export interface DefaultListSeed {
   pending: number[]
+  inprogress: number[]
   finished: number[]
   uptodate: number[]
   upcoming: number[]
@@ -56,6 +58,7 @@ export async function syncDefaultLists(uid: string, seed: DefaultListSeed) {
     'default-finished': seed.finished,
     'default-uptodate': seed.uptodate,
     'default-upcoming': seed.upcoming,
+    'default-inprogress': seed.inprogress,
   }
   await Promise.all(DEFAULT_LIST_IDS.map(id => {
     const l = byId.get(id)

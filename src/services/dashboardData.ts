@@ -48,6 +48,7 @@ export async function splitFinishedByAiringStatus(uid: string, lang: string): Pr
 
 export interface SeedData {
   pending: number[]
+  inprogress: number[]
   finished: number[]
   uptodate: number[]
   upcoming: number[]
@@ -56,7 +57,7 @@ export interface SeedData {
 export async function gatherSeedData(uid: string, lang: string): Promise<SeedData> {
   const [watchlist, binging, { finished, upToDate }] = await Promise.all([
     getWatchlist(uid),
-    getBingingShows(uid),
+    getBingingShows(uid, Number.MAX_SAFE_INTEGER),
     splitFinishedByAiringStatus(uid, lang),
   ])
 
@@ -91,10 +92,16 @@ export async function gatherSeedData(uid: string, lang: string): Promise<SeedDat
     upcoming.push(s.show_id)
   })
 
+  const inprogressIds = new Set<number>()
+  binging.forEach(b => {
+    if (!upToDateIds.has(b.id)) inprogressIds.add(b.id)
+  })
+
   return {
     pending,
-    finished: finished.map(f => f.id),
-    uptodate: upToDate.map(u => u.id),
+    inprogress: [...inprogressIds],
+    finished: finished.filter(f => !inprogressIds.has(f.id)).map(f => f.id),
+    uptodate: upToDate.filter(u => !inprogressIds.has(u.id)).map(u => u.id),
     upcoming,
   }
 }

@@ -8,7 +8,7 @@ vi.mock('firebase/firestore', () => firestoreMock())
 vi.mock('../lib/firebase', () => ({ getDb: vi.fn().mockResolvedValue('mock-db') }))
 
 const firestore = vi.mocked(await import('firebase/firestore'))
-const { getFollowedActiveShows, getBingingShows, getShowById, getEpisodesByShow, getRatingForShow, getShowByTmdbId, createShowFromTmdb, getWatchedEpisodesForShow, toggleWatchedEpisode, addFollowedShow, getResumePositions, setResumePosition } = await import('./showService')
+const { getFollowedActiveShows, getBingingShows, getFinishedContent, getShowById, getEpisodesByShow, getRatingForShow, getShowByTmdbId, createShowFromTmdb, getWatchedEpisodesForShow, toggleWatchedEpisode, addFollowedShow, getResumePositions, setResumePosition } = await import('./showService')
 
 describe('showService', () => {
   beforeEach(() => {
@@ -128,6 +128,74 @@ describe('showService', () => {
 
       const result = await getBingingShows('user-1')
       expect(result).toEqual([])
+    })
+
+    it('includes fully watched show when last episode has a resume position', async () => {
+      vi.mocked(firestore.getDocs)
+        .mockResolvedValueOnce(mockQuerySnapshot([{ show_id: 1 }])) // watchlist
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          buildWatchedEpisode({ episode_id: 101, show_id: 1 }),
+          buildWatchedEpisode({ episode_id: 102, show_id: 1 }),
+          buildWatchedEpisode({ episode_id: 103, show_id: 1 }),
+        ])) // all 3 episodes watched
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          { user_id: 'user-1', content_id: 103, content_type: 'episode', show_id: 1, position_seconds: 120, updated_at: '2024-01-15T20:00:00Z' },
+        ])) // last episode (103) paused mid-way
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          buildEpisode({ tmdb_id: 101, show_id: 1, season_number: 1, episode_number: 1 }),
+          buildEpisode({ tmdb_id: 102, show_id: 1, season_number: 1, episode_number: 2 }),
+          buildEpisode({ tmdb_id: 103, show_id: 1, season_number: 1, episode_number: 3 }),
+        ])) // total: 3 episodes, last = 103
+        .mockResolvedValueOnce(mockQuerySnapshot([buildShow({ tmdb_id: 1 })])) // shows map
+
+      const result = await getBingingShows('user-1')
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe(1)
+      expect(result[0].progress).toBe(100)
+      expect(result[0].episodesWatched).toBe(3)
+    })
+  })
+
+  describe('getFinishedContent', () => {
+    it('excludes fully watched series whose last episode has a resume position', async () => {
+      vi.mocked(firestore.getDocs)
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          buildWatchedEpisode({ episode_id: 101, show_id: 1 }),
+          buildWatchedEpisode({ episode_id: 102, show_id: 1 }),
+          buildWatchedEpisode({ episode_id: 103, show_id: 1 }),
+        ])) // all 3 episodes watched
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          buildEpisode({ tmdb_id: 101, show_id: 1, season_number: 1, episode_number: 1 }),
+          buildEpisode({ tmdb_id: 102, show_id: 1, season_number: 1, episode_number: 2 }),
+          buildEpisode({ tmdb_id: 103, show_id: 1, season_number: 1, episode_number: 3 }),
+        ])) // total: 3 episodes, last = 103
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          { user_id: 'user-1', content_id: 103, content_type: 'episode', show_id: 1, position_seconds: 90, updated_at: '2024-01-15T20:00:00Z' },
+        ])) // last episode paused mid-way
+        .mockResolvedValueOnce(mockQuerySnapshot([buildShow({ tmdb_id: 1 })])) // shows map
+
+      const result = await getFinishedContent('user-1')
+      expect(result).toEqual([])
+    })
+
+    it('includes fully watched series when last episode has no resume position', async () => {
+      vi.mocked(firestore.getDocs)
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          buildWatchedEpisode({ episode_id: 101, show_id: 1 }),
+          buildWatchedEpisode({ episode_id: 102, show_id: 1 }),
+          buildWatchedEpisode({ episode_id: 103, show_id: 1 }),
+        ])) // all 3 episodes watched
+        .mockResolvedValueOnce(mockQuerySnapshot([
+          buildEpisode({ tmdb_id: 101, show_id: 1, season_number: 1, episode_number: 1 }),
+          buildEpisode({ tmdb_id: 102, show_id: 1, season_number: 1, episode_number: 2 }),
+          buildEpisode({ tmdb_id: 103, show_id: 1, season_number: 1, episode_number: 3 }),
+        ])) // total: 3 episodes, last = 103
+        .mockResolvedValueOnce(mockQuerySnapshot([])) // no resume positions
+        .mockResolvedValueOnce(mockQuerySnapshot([buildShow({ tmdb_id: 1 })])) // shows map
+
+      const result = await getFinishedContent('user-1')
+      expect(result).toHaveLength(1)
+      expect(result[0].id).toBe(1)
     })
   })
 

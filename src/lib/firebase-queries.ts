@@ -56,7 +56,7 @@ export interface CustomListDoc {
   seeded?: boolean
 }
 
-export const DEFAULT_LIST_IDS = ['default-upcoming', 'default-pending', 'default-uptodate', 'default-finished'] as const
+export const DEFAULT_LIST_IDS = ['default-upcoming', 'default-pending', 'default-inprogress', 'default-uptodate', 'default-finished'] as const
 export type DefaultListId = typeof DEFAULT_LIST_IDS[number]
 
 export function isDefaultList(id: string | undefined): boolean {

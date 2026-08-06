@@ -34,16 +34,16 @@ export async function getFollowedActiveShows(uid: string): Promise<DashItem[]> {
   }).filter(Boolean) as DashItem[]
 }
 
-export async function getBingingShows(uid: string): Promise<BingingItem[]> {
+export async function getBingingShows(uid: string, limit = 8): Promise<BingingItem[]> {
   const db = await getDb()
-  const [wlSnap, weSnap, rSnap, epSnap, showsMap] = await Promise.all([
+  const [watSnap, weSnap, rSnap, epSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watchlist'), where('user_id', '==', uid))),
     getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid))),
     getDocs(query(collection(db, 'resume_positions'), where('user_id', '==', uid))),
     getDocs(collection(db, 'episodes')),
     buildShowsMap(),
   ])
-  const watchlistItems = wlSnap.docs.map(d => ({ ...(d.data() as { show_id: number }), id: d.id }))
+  const watchlistItems = watSnap.docs.map(d => ({ ...(d.data() as { show_id: number }), id: d.id }))
   const watchedItems = weSnap.docs.map(d => ({ ...(d.data() as { show_id: number; episode_id: number }), id: d.id }))
   const resumeItems = rSnap.docs.map(d => ({ ...(d.data() as ResumePositionDoc), id: d.id }))
   const epsItems = epSnap.docs.map(d => ({ ...(d.data() as EpisodeDoc), id: d.id }))
@@ -56,6 +56,21 @@ export async function getBingingShows(uid: string): Promise<BingingItem[]> {
     epsCount.set(e.show_id, (epsCount.get(e.show_id) || 0) + 1)
   })
 
+  const lastEpByShow = new Map<number, EpisodeDoc>()
+  epsItems.forEach(e => {
+    const cur = lastEpByShow.get(e.show_id)
+    if (!cur || e.season_number > cur.season_number || (e.season_number === cur.season_number && e.episode_number > cur.episode_number)) {
+      lastEpByShow.set(e.show_id, e)
+    }
+  })
+
+  const resumeByEp = new Map<number, ResumePositionDoc>()
+  resumeItems.forEach(r => {
+    if (r.content_type !== 'episode') return
+    const cur = resumeByEp.get(r.content_id)
+    if (!cur || r.updated_at > cur.updated_at) resumeByEp.set(r.content_id, r)
+  })
+
   const watchedUnique = new Map<number, Set<number>>()
   const watchedMovies = new Set<number>()
   watchedItems.forEach(w => {
@@ -66,21 +81,18 @@ export async function getBingingShows(uid: string): Promise<BingingItem[]> {
     watchedUnique.get(sid)!.add(w.episode_id)
   })
 
-  const showsWithResume = new Set<number>()
-  resumeItems.forEach(r => {
-    if (r.position_seconds > 0) showsWithResume.add(r.show_id)
-  })
-
   const result: BingingItem[] = []
 
-  for (const wid of watchlistIds) {
-    const s = showsMap.get(wid)
+  for (const sid of watchlistIds) {
+    const s = showsMap.get(sid)
     if (!s) continue
     if (s.media_type === 'movie') {
-      const isMovieWatched = watchedMovies.has(wid)
-      if (showsWithResume.has(wid) && !isMovieWatched) {
+      const isMovieWatched = watchedMovies.has(sid)
+      const resume = resumeItems.find(r => r.content_type === 'movie' && r.show_id === sid)
+      const isMoviePlayed = resume?.position_seconds && resume.position_seconds > 0 || false
+      if (!isMovieWatched && isMoviePlayed) {
         result.push({
-          id: wid,
+          id: sid,
           name: s?.name ?? 'Unknown',
           poster_url: s?.poster_url ?? null,
           imdb_rating: s?.imdb_rating ?? null,
@@ -91,16 +103,20 @@ export async function getBingingShows(uid: string): Promise<BingingItem[]> {
         })
       }
     } else {
-      const watchedCount = watchedUnique.get(wid)?.size ?? 0
-      const total = epsCount.get(wid) || 0
-      if (watchedCount > 0 && total > 0 && watchedCount < total) {
+      const watchedCount = watchedUnique.get(sid)?.size ?? 0
+      const total = epsCount.get(sid) || 0
+      const lastEp = lastEpByShow.get(sid)
+      const lastEpResume = lastEp ? resumeByEp.get(lastEp.tmdb_id) : undefined
+      const isLastEpPlayed = lastEpResume?.position_seconds && lastEpResume.position_seconds > 0 ? true : false
+      const hasProgress = watchedCount > 0 && total > 0 && (watchedCount < total || isLastEpPlayed)
+      if (hasProgress) {
         result.push({
-          id: wid,
+          id: sid,
           name: s?.name ?? 'Unknown',
           poster_url: s?.poster_url ?? null,
           imdb_rating: s?.imdb_rating ?? null,
           tmdb_id: s?.tmdb_id,
-          progress: Math.round((watchedCount / total) * 100),
+          progress: Math.round((Math.min(watchedCount, total) / total) * 100),
           episodesWatched: watchedCount,
           totalEpisodes: total,
         })
@@ -108,7 +124,7 @@ export async function getBingingShows(uid: string): Promise<BingingItem[]> {
     }
   }
 
-  return result.slice(0, 8)
+  return result.slice(0, limit)
 }
 
 export async function getShowById(showId: number) {
@@ -371,17 +387,34 @@ export async function removeFollowedShow(uid: string, showId: number) {
 
 export async function getFinishedContent(uid: string): Promise<DashItem[]> {
   const db = await getDb()
-  const [weSnap, epSnap, showsMap] = await Promise.all([
+  const [weSnap, epSnap, rSnap, showsMap] = await Promise.all([
     getDocs(query(collection(db, 'watched_episodes'), where('user_id', '==', uid))),
     getDocs(collection(db, 'episodes')),
+    getDocs(query(collection(db, 'resume_positions'), where('user_id', '==', uid))),
     buildShowsMap(),
   ])
   const watchedItems = weSnap.docs.map(d => ({ ...(d.data() as { show_id: number; episode_id?: number; watched_at?: string }), id: d.id }))
   const epsItems = epSnap.docs.map(d => ({ ...(d.data() as EpisodeDoc), id: d.id }))
+  const resumeItems = rSnap.docs.map(d => ({ ...(d.data() as ResumePositionDoc), id: d.id }))
 
   const epsCount = new Map<number, number>()
   epsItems.forEach(e => {
     epsCount.set(e.show_id, (epsCount.get(e.show_id) || 0) + 1)
+  })
+
+  const lastEpByShow = new Map<number, EpisodeDoc>()
+  epsItems.forEach(e => {
+    const cur = lastEpByShow.get(e.show_id)
+    if (!cur || e.season_number > cur.season_number || (e.season_number === cur.season_number && e.episode_number > cur.episode_number)) {
+      lastEpByShow.set(e.show_id, e)
+    }
+  })
+
+  const resumeByEp = new Map<number, ResumePositionDoc>()
+  resumeItems.forEach(r => {
+    if (r.content_type !== 'episode') return
+    const cur = resumeByEp.get(r.content_id)
+    if (!cur || r.updated_at > cur.updated_at) resumeByEp.set(r.content_id, r)
   })
 
   const latestWatch = new Map<number, string>()
@@ -407,7 +440,10 @@ export async function getFinishedContent(uid: string): Promise<DashItem[]> {
   for (const [sid, uniqueEps] of watchedUnique) {
     const count = uniqueEps.size
     const total = epsCount.get(sid) || 0
-    if (total > 0 && count >= total) {
+    const lastEp = lastEpByShow.get(sid)
+    const lastEpResume = lastEp ? resumeByEp.get(lastEp.tmdb_id) : undefined
+    const isLastEpPlayed = lastEpResume?.position_seconds && lastEpResume.position_seconds > 0 ? true : false
+    if (total > 0 && count >= total && !isLastEpPlayed) {
       const s = showsMap.get(sid)
       if (s) {
         finished.push({
